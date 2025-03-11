@@ -7,6 +7,7 @@ use syn::parse::{Parse, ParseStream, Result};
 use syn::punctuated::Punctuated;
 use std::collections::HashMap;
 
+
 struct PlatformAssumptions{
     args:HashMap<Ident, Ident>
 }
@@ -31,8 +32,20 @@ impl Parse for PlatformAssumptions{
 
 // Definição da macro platformaware (por enquanto, apenas "cospe" a definição de uma função)
 #[proc_macro_attribute]
-pub fn platformaware(_metadata: TokenStream, _input: TokenStream) -> TokenStream {
-    TokenStream::from(quote!{fn my_transformed_kernel_function() {}})
+pub fn platformaware(_attr: TokenStream, item: TokenStream) -> TokenStream {
+    //TokenStream::from(quote!{pub fn my_transformed_kernel_function() {println!("hello")}})
+    println!("Sou o módulo: {}", item);
+    println!("atributo: {}", _attr);
+    item
 }
+
+#[proc_macro_attribute]
+pub fn kernelversion(attr: TokenStream, item: TokenStream) -> TokenStream {
+    println!("Sou a função: {}", item);
+    println!("atributo: {}", attr);
+    println!();
+    item
+}
+
 
 

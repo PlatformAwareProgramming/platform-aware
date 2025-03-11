@@ -1,3 +1,9 @@
+[workspace]
+resolver="2"
+members = [
+    "."
+, "platform-aware-features"]
+
 [package]
 name = "platform-aware"
 version = "0.1.0"
@@ -6,6 +12,11 @@ edition = "2021"
 [lib]
 proc-macro = true
 
+[workspace.dependencies]
+platform-aware-features = {path="platform-aware-features"}
+
 [dependencies]
 quote = "1.0.38"
 syn = "2.0.98"
+platform-aware-features = {workspace=true}
+lazy_static = "1.5.0"
