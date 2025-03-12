@@ -2,15 +2,18 @@
     #[allow(unused_variables)]
     mod mymodule {
 
-        use platform_aware_features::{resolve, PlatformParameters};
+        use platform_aware_features::{avx512, cuda10, resolve, Feature, PlatformParameters, Quantifier};
         use std::collections::HashMap;
         use lazy_static::lazy_static;
-
-        const FEATURES1:[(PlatformParameters, i32); 1] = [(PlatformParameters::SIMD,1)];
-        const FEATURES2:[(PlatformParameters, i32); 1] = [(PlatformParameters::ACCBackend, 2)];
-        const FEATURES3:[(PlatformParameters, i32); 2] = [(PlatformParameters::ACCCount,1), (PlatformParameters::ACCBackend, 2)];
                 
-        lazy_static! { static ref V:i32 = resolve(vec![HashMap::from(FEATURES1), HashMap::from(FEATURES2), HashMap::from(FEATURES3)]); }
+        lazy_static! { static ref V:i32 = { 
+                    let features1:[(PlatformParameters, Box<dyn Feature>); 1] = [(PlatformParameters::SIMD, Box::new(avx512))];
+                    let features2:[(PlatformParameters, Box<dyn Feature>); 1] = [(PlatformParameters::ACCBackend, Box::new(cuda10))];
+                    let features3:[(PlatformParameters, Box<dyn Feature>); 2] = [(PlatformParameters::ACCCount,Box::new(Quantifier{val:2})), 
+                                                                                 (PlatformParameters::ACCBackend, Box::new(cuda10))];
+                    resolve(vec![HashMap::from(features1), HashMap::from(features2), HashMap::from(features3)])
+            };
+        }
 
         pub fn f(x:i64, y:i64, z:i64) {
             match *V{
