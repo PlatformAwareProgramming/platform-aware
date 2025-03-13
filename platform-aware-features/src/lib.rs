@@ -12,122 +12,55 @@ pub enum PlatformParameters {
     ACCCount
 }
 
-pub trait Feature {}
-pub trait Subtype {
-    fn subtypeof(self, t:impl Feature) -> bool;
+pub enum FeatureType {
+    Qualifier,
+    Quantifier
 }
+
+pub trait Feature {
+    fn feature_type(self:&Self) -> FeatureType {
+        FeatureType::Qualifier
+    }
+}
+
+pub trait Quantifier {
+    fn val(self:&Self) -> &Self where Self: Sized {
+        self
+    }
+}
+
+pub trait Qualifier {
+    fn supertype() -> &'static dyn Feature; 
+}
+
+pub struct top;
 
 pub struct simd;
 pub struct avx512;
-
 pub struct accmodel;
 pub struct nvidia_H100;
-
 pub struct accbackend;
 pub struct cuda10;
 
-pub struct Quantifier {
-    pub val:i32
-}
-
-fn type_of<T>(_: T) -> &'static str {
-    type_name::<T>()
-}
-
-impl Subtype for simd {
-    fn subtypeof(self, x:impl Feature) -> bool {
-        let t1 = type_of(self);
-        let t2 = type_of(x);
-        t1 == t2 
-    }
-}
-impl Subtype for avx512 {
-    fn subtypeof(self, x:impl Feature) -> bool {
-        let t1 = type_of(self);
-        let t2 = type_of(x);
-        t1 == t2 || t2 == "simd"
-    }
-}
-impl Subtype for accmodel {
-    fn subtypeof(self, x:impl Feature) -> bool {
-        let t1 = type_of(self);
-        let t2 = type_of(x);
-        t1 == t2
-    }
-}
-impl Subtype for nvidia_H100 {
-    fn subtypeof(self, x:impl Feature) -> bool {
-        let t1 = type_of(self);
-        let t2 = type_of(x);
-        t1 == t2 || t2 == "accmodel"
-    }
-}
-impl Subtype for accbackend {
-    fn subtypeof(self, x:impl Feature) -> bool {
-        let t1 = type_of(self);
-        let t2 = type_of(x);
-        t1 == t2 
-    }
-}impl Subtype for cuda10 {
-    fn subtypeof(self, x:impl Feature) -> bool {
-        let t1 = type_of(self);
-        let t2 = type_of(x);
-        t1 == t2 || t2 == "accbackend"
-    }
-}
-impl Subtype for Quantifier {
-    fn subtypeof(self, x:impl Feature) -> bool {
-        let t1 = type_of(self);
-        let t2 = type_of(x);
-        t1 == t2 
-    }
-}
-
-impl Display for simd {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        todo!()
-    }
-}
-impl Display for avx512 {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        todo!()
-    }
-}
-impl Display for accmodel {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        todo!()
-    }
-}
-impl Display for nvidia_H100 {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        todo!()
-    }
-}
-impl Display for accbackend {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        todo!()
-    }
-}
-impl Display for cuda10 {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        todo!()
-    }
-}
-impl Display for Quantifier {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        todo!()
-    }
-}
-
-
+impl Feature for top {}
 impl Feature for simd {}
 impl Feature for avx512 {}
 impl Feature for accmodel {}
 impl Feature for nvidia_H100 {}
 impl Feature for accbackend {}
 impl Feature for cuda10 {}
-impl Feature for Quantifier {}
+impl Feature for i32 { fn feature_type(self:&Self) -> FeatureType { FeatureType::Quantifier } }
+impl Feature for f32 { fn feature_type(self:&Self) -> FeatureType { FeatureType::Quantifier } }
 
+impl Qualifier for simd { fn supertype() -> &'static dyn Feature { &top } }
+impl Qualifier for avx512 { fn supertype() -> &'static dyn Feature { &simd } }
+impl Qualifier for accmodel { fn supertype() -> &'static dyn Feature { &top } }
+impl Qualifier for nvidia_H100 { fn supertype() -> &'static dyn Feature { &accmodel } }
+impl Qualifier for accbackend { fn supertype() -> &'static dyn Feature { &top } }
+impl Qualifier for cuda10 { fn supertype() -> &'static dyn Feature { &accbackend } }
+
+impl Quantifier for i32 {}
+impl Quantifier for f32 {}
 
 
 impl PartialEq for PlatformParameters {
@@ -144,32 +77,39 @@ impl std::hash::Hash for PlatformParameters {
     }
 }
 
+use lazy_static::lazy_static;
+use std::sync::Mutex;
 
-
-// lazy_static! { static ref currentfeatures: HashMap<PlatformParameters, Box<dyn Feature>> = readplatformfeatures(); }
+lazy_static! { static ref currentfeatures: Mutex<HashMap<PlatformParameters, &'static dyn Feature>> = Mutex::new(readplatformfeatures()); }
 
 // TODO
-pub fn readplatformfeatures() -> HashMap<PlatformParameters, Box<dyn Feature>>
+pub fn readplatformfeatures() -> HashMap<PlatformParameters, &'static dyn Feature>
 {
-    let mut m: HashMap<PlatformParameters, Box<dyn Feature>> = HashMap::new();
+    let mut m: HashMap<PlatformParameters, &dyn Feature> = HashMap::new();
 
     println!("readplatformfeatures at startup"); 
 
-    m.insert(PlatformParameters::SIMD, Box::new(avx512));
+    m.insert(PlatformParameters::SIMD, &avx512);
+    m.insert(PlatformParameters::SIMD, &0);
 
     return m;
 }
 
-// TODO
-pub fn resolve(features:Vec<HashMap<PlatformParameters, Box<dyn Feature>>> ) -> i32
-{
-    let currentfeatures2: HashMap<PlatformParameters, Box<dyn Feature>> = readplatformfeatures();
-    let x = currentfeatures2.get(&PlatformParameters::SIMD);
+use std::mem::transmute;
 
-    let r:bool = match x {
-        Some(v) => true,
-        None => false,
+// TODO
+pub fn resolve(features:Vec<HashMap<PlatformParameters, &dyn Feature>> ) -> i32
+{
+    let currentfeatures2: HashMap<PlatformParameters, &dyn Feature> = readplatformfeatures();
+    let x = currentfeatures2.get(&PlatformParameters::SIMD).expect("unexpected error").to_owned();
+
+    let xx = x.feature_type();
+    let xxx = match xx {
+        FeatureType::Qualifier => 0,
+        FeatureType::Quantifier => x.val()
     };
+
+    //let xxx = *xx;
 
     return 0;
 }
