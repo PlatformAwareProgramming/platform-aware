@@ -2,15 +2,15 @@
     #[allow(unused_variables)]
     mod mymodule {
 
-        use platform_aware_features::{avx512, cuda10, resolve, Feature, PlatformParameters, Quantifier};
+        use platform_aware_features::{avx512, cuda10, acc_count, resolve, Feature, PlatformParameters};
         use std::collections::HashMap;
         use lazy_static::lazy_static;
                 
         lazy_static! { static ref V:i32 = { 
-                    let features1:[(PlatformParameters, Box<dyn Feature>); 1] = [(PlatformParameters::SIMD, Box::new(avx512))];
-                    let features2:[(PlatformParameters, Box<dyn Feature>); 1] = [(PlatformParameters::ACCBackend, Box::new(cuda10))];
-                    let features3:[(PlatformParameters, Box<dyn Feature>); 2] = [(PlatformParameters::ACCCount,Box::new(Quantifier{val:2})), 
-                                                                                 (PlatformParameters::ACCBackend, Box::new(cuda10))];
+                    let features1:[(PlatformParameters, &dyn Feature); 1] = [(PlatformParameters::SIMD, &avx512)];
+                    let features2:[(PlatformParameters, &dyn Feature); 1] = [(PlatformParameters::ACCBackend, &cuda10)];
+                    let features3:[(PlatformParameters, &dyn Feature); 2] = [(PlatformParameters::ACCCount,&acc_count {val:2}), 
+                                                                             (PlatformParameters::ACCBackend, &cuda10)];
                     resolve(vec![HashMap::from(features1), HashMap::from(features2), HashMap::from(features3)])
             };
         }

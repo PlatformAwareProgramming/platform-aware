@@ -1,6 +1,7 @@
 use std::any::type_name;
 use std::collections::HashMap;
 use std::fmt::Display;
+use std::hash::{DefaultHasher, Hash, Hasher};
 
 #[allow(unused_variables)]
 #[allow(non_camel_case_types)]
@@ -8,125 +9,114 @@ use std::fmt::Display;
 
 pub enum PlatformParameters {
     SIMD,
+    ACCModel,
     ACCBackend,
     ACCCount
 }
 
-pub trait Feature {}
-pub trait Subtype {
-    fn subtypeof(self, t:impl Feature) -> bool;
+pub enum FeatureType {
+    Qualifier,
+    QuantifierUp,
+    QuantifierDown,
+}
+
+
+pub trait Feature {
+
+    fn string(self:&Self) -> String;
+
+    fn hash_code(self:&Self) -> u64 {
+        let mut s = DefaultHasher::new();
+        self.string().hash(&mut s);
+        let h = s.finish();
+        h
+    }
+
+    fn feature_class(self:&Self) -> PlatformParameters;
+
+    fn feature_type(self:&Self) -> FeatureType {
+        FeatureType::Qualifier
+    }
+
+    fn supertype(self:&Self) -> Option<Box<dyn Feature>> { 
+        match self.feature_type() {
+            FeatureType::Qualifier => None,
+            FeatureType::QuantifierUp => {   
+                let v = self.val().expect("unexpected error");        
+                Some(Box::new(acc_count { val:v+1 }) as Box<dyn Feature>)                         
+            },
+            FeatureType::QuantifierDown => {   
+                let v = self.val().expect("unexpected error");        
+                Some(Box::new(acc_count { val:v-1 }) as Box<dyn Feature>)                         
+            },
+        }
+    } 
+
+    fn subtypeof(self:&Self, other:&dyn Feature) -> bool {
+        if self.feature_class() != other.feature_class() { return false };
+        match self.feature_type() {
+            FeatureType::Qualifier => {
+                let mut s = self.supertype();
+                loop {
+                    match s {
+                        Some(ref f) => { 
+                            if f.hash_code() == other.hash_code() { break } 
+                            else { s = s.expect("unexpected error").supertype() }
+                        },
+                        None => break
+                    };                    
+                };
+                s.is_some()
+            },
+            FeatureType::QuantifierUp => {       
+                let v1 = self.val().expect("unexpected error");
+                let v2 = other.val().expect("unexpected error");
+                v1 <= v2
+            },
+            FeatureType::QuantifierDown => {
+                let v1 = self.val().expect("unexpected error");
+                let v2 = other.val().expect("unexpected error");
+                v1 >= v2
+            },
+        }
+    }
+
+    fn val(self:&Self) -> Option<i32> { None }
 }
 
 pub struct simd;
 pub struct avx512;
-
-pub struct accmodel;
+pub struct acc_model;
 pub struct nvidia_H100;
-
-pub struct accbackend;
+pub struct acc_backend;
 pub struct cuda10;
-
-pub struct Quantifier {
+#[derive(Clone)]
+pub struct acc_count{
     pub val:i32
 }
 
-fn type_of<T>(_: T) -> &'static str {
-    type_name::<T>()
-}
-
-impl Subtype for simd {
-    fn subtypeof(self, x:impl Feature) -> bool {
-        let t1 = type_of(self);
-        let t2 = type_of(x);
-        t1 == t2 
-    }
-}
-impl Subtype for avx512 {
-    fn subtypeof(self, x:impl Feature) -> bool {
-        let t1 = type_of(self);
-        let t2 = type_of(x);
-        t1 == t2 || t2 == "simd"
-    }
-}
-impl Subtype for accmodel {
-    fn subtypeof(self, x:impl Feature) -> bool {
-        let t1 = type_of(self);
-        let t2 = type_of(x);
-        t1 == t2
-    }
-}
-impl Subtype for nvidia_H100 {
-    fn subtypeof(self, x:impl Feature) -> bool {
-        let t1 = type_of(self);
-        let t2 = type_of(x);
-        t1 == t2 || t2 == "accmodel"
-    }
-}
-impl Subtype for accbackend {
-    fn subtypeof(self, x:impl Feature) -> bool {
-        let t1 = type_of(self);
-        let t2 = type_of(x);
-        t1 == t2 
-    }
-}impl Subtype for cuda10 {
-    fn subtypeof(self, x:impl Feature) -> bool {
-        let t1 = type_of(self);
-        let t2 = type_of(x);
-        t1 == t2 || t2 == "accbackend"
-    }
-}
-impl Subtype for Quantifier {
-    fn subtypeof(self, x:impl Feature) -> bool {
-        let t1 = type_of(self);
-        let t2 = type_of(x);
-        t1 == t2 
-    }
-}
-
-impl Display for simd {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        todo!()
-    }
-}
-impl Display for avx512 {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        todo!()
-    }
-}
-impl Display for accmodel {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        todo!()
-    }
-}
-impl Display for nvidia_H100 {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        todo!()
-    }
-}
-impl Display for accbackend {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        todo!()
-    }
-}
-impl Display for cuda10 {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        todo!()
-    }
-}
-impl Display for Quantifier {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        todo!()
-    }
-}
+impl Feature for simd { fn string(self:&Self) -> String { "simd".to_string() } 
+                        fn feature_class(self:&Self) -> PlatformParameters { PlatformParameters::SIMD } }
+impl Feature for avx512 { fn string(self:&Self) -> String { "avx512".to_string() } 
+                          fn supertype(self:&Self) -> Option<Box<dyn Feature>> { Some(Box::new(simd)) } 
+                          fn feature_class(self:&Self) -> PlatformParameters { PlatformParameters::SIMD } }
+impl Feature for acc_model { fn string(self:&Self) -> String { "acc_model".to_string() } 
+                             fn feature_class(self:&Self) -> PlatformParameters { PlatformParameters::ACCModel } }
+impl Feature for nvidia_H100 { fn string(self:&Self) -> String { "nvidia_H100".to_string() } 
+                               fn supertype(self:&Self) -> Option<Box<dyn Feature>> { Some(Box::new(acc_model)) } 
+                               fn feature_class(self:&Self) -> PlatformParameters { PlatformParameters::ACCModel } }
+impl Feature for acc_backend { fn string(self:&Self) -> String { "acc_backend".to_string() } 
+                               fn feature_class(self:&Self) -> PlatformParameters { PlatformParameters::ACCBackend } }
+impl Feature for cuda10 { fn string(self:&Self) -> String { "cuda10".to_string() } 
+                          fn supertype(self:&Self) -> Option<Box<dyn Feature>> { Some(Box::new(acc_backend)) } 
+                             fn feature_class(self:&Self) -> PlatformParameters { PlatformParameters::ACCBackend } }
+impl Feature for acc_count { fn string(self:&Self) -> String { "acc_count".to_string() } 
+                             fn feature_type(self:&Self) -> FeatureType { FeatureType::QuantifierUp } 
+                             fn feature_class(self:&Self) -> PlatformParameters { PlatformParameters::ACCCount}
+                             fn val(self:&Self) -> Option<i32> { Some((*self).val) } }
 
 
-impl Feature for simd {}
-impl Feature for avx512 {}
-impl Feature for accmodel {}
-impl Feature for nvidia_H100 {}
-impl Feature for accbackend {}
-impl Feature for cuda10 {}
-impl Feature for Quantifier {}
+
 
 
 
@@ -144,32 +134,48 @@ impl std::hash::Hash for PlatformParameters {
     }
 }
 
+use lazy_static::lazy_static;
+use std::sync::Mutex;
 
-
-// lazy_static! { static ref currentfeatures: HashMap<PlatformParameters, Box<dyn Feature>> = readplatformfeatures(); }
+// lazy_static! { static ref currentfeatures: Mutex<HashMap<PlatformParameters, &'static dyn Feature>> = Mutex::new(readplatformfeatures()); }
 
 // TODO
-pub fn readplatformfeatures() -> HashMap<PlatformParameters, Box<dyn Feature>>
+pub fn readplatformfeatures() -> HashMap<PlatformParameters, &'static dyn Feature>
 {
-    let mut m: HashMap<PlatformParameters, Box<dyn Feature>> = HashMap::new();
+    let mut m: HashMap<PlatformParameters, &dyn Feature> = HashMap::new();
 
     println!("readplatformfeatures at startup"); 
 
-    m.insert(PlatformParameters::SIMD, Box::new(avx512));
+    m.insert(PlatformParameters::SIMD, &avx512);
+    m.insert(PlatformParameters::ACCCount, &acc_count{ val:10 });
 
     return m;
 }
 
-// TODO
-pub fn resolve(features:Vec<HashMap<PlatformParameters, Box<dyn Feature>>> ) -> i32
-{
-    let currentfeatures2: HashMap<PlatformParameters, Box<dyn Feature>> = readplatformfeatures();
-    let x = currentfeatures2.get(&PlatformParameters::SIMD);
 
-    let r:bool = match x {
-        Some(v) => true,
-        None => false,
+// TODO
+pub fn resolve(features:Vec<HashMap<PlatformParameters, &dyn Feature>> ) -> i32
+{
+    let currentfeatures2: HashMap<PlatformParameters, &dyn Feature> = readplatformfeatures();
+    let x = currentfeatures2.get(&PlatformParameters::ACCCount).expect("unexpected error").to_owned();
+
+    let xx = x.feature_type();
+    let xxx = match xx {
+        FeatureType::Qualifier => 0,
+        FeatureType::QuantifierUp => x.val().expect("error"),
+        FeatureType::QuantifierDown => x.val().expect("error")
     };
+
+    println!("V = {}", xxx);
+
+    let xxxx = match xx {
+        FeatureType::Qualifier => { let y = x.supertype(); &*y.expect("error") },
+        FeatureType::QuantifierUp => &acc_count { val:x.val().expect("error") } as &dyn Feature,
+        FeatureType::QuantifierDown => &acc_count { val:x.val().expect("error") } as &dyn Feature
+    };
+    
+    
+        //let xxx = *xx;
 
     return 0;
 }
