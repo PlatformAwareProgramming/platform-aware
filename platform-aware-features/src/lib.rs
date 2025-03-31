@@ -1,3 +1,7 @@
+mod platformfile;
+
+use platformfile::readplatform;
+
 use std::collections::HashMap;
 use std::hash::{DefaultHasher, Hash, Hasher};
 
@@ -381,7 +385,9 @@ impl Feature for AccCount<Between> {
 }
 
 
-
+impl Feature for Vec<T> {
+    
+}
 
 // TODO: automatic read of the platform file at the beginning of the execution
 //use lazy_static::lazy_static;
@@ -391,6 +397,15 @@ impl Feature for AccCount<Between> {
 // TODO: implement the read of the platform file
 pub fn readplatformfeatures() -> HashMap<PlatformParameters, &'static dyn Feature>
 {
+    let t = match readplatform() {
+        Ok(t) => t,
+        Err(_) => todo!(),
+    };
+
+    let v0 = t.processor.unwrap();
+    let v1 = v0.processor_simd.unwrap();
+    println!("ACCELERATOR {}", v1[0]);
+
     let mut m: HashMap<PlatformParameters, &dyn Feature> = HashMap::new();
 
     println!("readplatformfeatures at startup"); 
@@ -412,7 +427,6 @@ pub fn resolve(impls:Vec<HashMap<PlatformParameters, &dyn Feature>> ) -> i32
     let mut current_choice_index  = -1;
 
     loop {
-        println!("loop {lastimpl}");
         while lastimpl >= 0 && !(issubtypeof(&currentfeatures2, &impls[lastimpl as usize]) 
                                    && (current_choice.is_none() || 
                                        issubtypeof(&impls[lastimpl as usize], &current_choice.expect("unexpected condition")))) { 
