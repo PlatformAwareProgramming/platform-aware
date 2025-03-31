@@ -5,7 +5,6 @@ use platformfile::readplatform;
 use std::collections::HashMap;
 use std::hash::{DefaultHasher, Hash, Hasher};
 
-
 #[derive(Debug)]
 pub enum PlatformParameters {
     SIMD,
@@ -13,7 +12,6 @@ pub enum PlatformParameters {
     ACCBackend,
     ACCCount
 }
-
 
 const PLATFORM_PARAMETERS:&[PlatformParameters] = &[PlatformParameters::SIMD, 
                                                     PlatformParameters::ACCModel, 
@@ -39,7 +37,6 @@ impl std::hash::Hash for PlatformParameters {
 pub enum QuantifierType {
     AtLeast,
     AtMost,
-    Between,
     Value
 }
 
@@ -49,11 +46,6 @@ pub struct AtLeast {
 
 pub struct AtMost {
     pub val:i32
-}
-
-pub struct Between {
-    pub val0:i32,
-    pub val1:i32
 }
 
 pub trait Quantifier {
@@ -76,18 +68,12 @@ impl Quantifier for AtMost {
     fn val(self:&Self) -> i32 {self.val}
 }
 
-impl Quantifier for Between {
-    fn quantifier_type() -> QuantifierType { QuantifierType::Between }
-    fn val(self:&Self) -> i32 {self.val0}
-}
-
 
 // FEATURES
 
 pub enum FeatureType {
     Qualifier,
-    QuantifierUp,
-    QuantifierDown,
+    Quantifier,
 }
 
 pub trait Feature {
@@ -106,19 +92,7 @@ pub trait Feature {
 
     fn feature_type(self:&Self) -> FeatureType { FeatureType::Qualifier }
 
-    fn supertype(self:&Self) -> Option<Box<dyn Feature>> { 
-        match self.feature_type() {
-            FeatureType::Qualifier => None,
-            FeatureType::QuantifierUp => {   
-                let v = self.val().expect("unexpected error");        
-                Some(Box::new(AccCount { val:v+1 }) as Box<dyn Feature>)                         
-            },
-            FeatureType::QuantifierDown => {   
-                let v = self.val().expect("unexpected error");        
-                Some(Box::new(AccCount { val:v-1 }) as Box<dyn Feature>)                         
-            },
-        }
-    }
+    fn supertype(self:&Self) -> Option<Box<dyn Feature>> { None } 
 
     fn quantifier_type(self:&Self) -> Option<QuantifierType> { None } // only for quantifiers
     fn val(self:&Self) -> Option<i32> { None }                        // only for quantifiers
@@ -142,93 +116,29 @@ pub trait Feature {
                 };
                 s.is_some()
             },
-            FeatureType::QuantifierDown => {       
+            FeatureType::Quantifier => {       
 
                 let v1 = self.val().expect("unexpected error");
                 let v2 = other.val().expect("unexpected error");
 
                 let qt_self = self.quantifier_type().expect("quantifer expected");
                 let qt_other = other.quantifier_type().expect("quantifier expected");
+               
                 match qt_self {
                     QuantifierType::AtLeast => match qt_other {
                         QuantifierType::AtLeast => v1 <= v2,
                         QuantifierType::AtMost => false,
-                        QuantifierType::Between => false,
-                        QuantifierType::Value => v1 <= v2,
+                        QuantifierType::Value => { println!("{v1}>={v2}"); v1 <= v2 },
                     },
                     QuantifierType::AtMost => match qt_other {
                         QuantifierType::AtLeast => false,
                         QuantifierType::AtMost => v1 >= v2,
-                        QuantifierType::Between => false,
                         QuantifierType::Value => v1 >= v2,
-                    },
-                    QuantifierType::Between => match qt_other {
-                        QuantifierType::AtLeast => false,
-                        QuantifierType::AtMost => false,
-                        QuantifierType::Between => {
-                            let v1s = self.other_val().expect("interval upper limit expeted");
-                            let v2s = other.other_val().expect("interval upper limit expeted");
-                            v1 >= v2 && v1s <= v2s
-                        },
-                        QuantifierType::Value => {
-                            let v1s = self.other_val().expect("interval upper limit expeted");
-                            v2 >= v1 && v2<=v1s
-                        },
                     },
                     QuantifierType::Value => match qt_other {
-                        QuantifierType::AtLeast => v1 >= v2,
+                        QuantifierType::AtLeast => { println!("{v1}>={v2}"); v1 >= v2 },
                         QuantifierType::AtMost => v1 <= v2,
-                        QuantifierType::Between => {
-                            let v2s = other.other_val().expect("interval upper limit expeted");
-                            v1 >= v2 && v1<=v2s
-                        },
-                        QuantifierType::Value => v1 <= v2,
-                    },
-                }
-            },
-            FeatureType::QuantifierUp => {
-
-                let v1 = self.val().expect("unexpected error");
-                let v2 = other.val().expect("unexpected error");
-                println!("v1 = {v1}");
-                println!("v2 = {v2}");
-
-                let qt_self = self.quantifier_type().expect("quantifer expected");
-                let qt_other = other.quantifier_type().expect("quantifier expected");
-                match qt_self {
-                    QuantifierType::AtLeast => match qt_other {
-                        QuantifierType::AtLeast => v1 <= v2,
-                        QuantifierType::AtMost => false,
-                        QuantifierType::Between => false,
-                        QuantifierType::Value => v1 <= v2,
-                    },
-                    QuantifierType::AtMost => match qt_other {
-                        QuantifierType::AtLeast => false,
-                        QuantifierType::AtMost => v1 >= v2,
-                        QuantifierType::Between => false,
-                        QuantifierType::Value => v1 >= v2,
-                    },
-                    QuantifierType::Between => match qt_other {
-                        QuantifierType::AtLeast => false,
-                        QuantifierType::AtMost => false,
-                        QuantifierType::Between => {
-                            let v1s = self.other_val().expect("interval upper limit expeted");
-                            let v2s = other.other_val().expect("interval upper limit expeted");
-                            v1 >= v2 && v1s <= v2s
-                        },
-                        QuantifierType::Value => {
-                            let v1s = self.other_val().expect("interval upper limit expeted");
-                            v2 >= v1 && v2<=v1s
-                        },
-                    },
-                    QuantifierType::Value => match qt_other {
-                        QuantifierType::AtLeast => v1 >= v2,
-                        QuantifierType::AtMost => v1 <= v2,
-                        QuantifierType::Between => {
-                            let v2s = other.other_val().expect("interval upper limit expeted");
-                            v1 >= v2 && v1<=v2s
-                        },
-                        QuantifierType::Value => v1 >= v2,
+                        QuantifierType::Value => v1 == v2,
                     },
                 }
             },
@@ -259,11 +169,6 @@ pub struct CUDA8;
 
 pub struct CUDA10;
 
-// AccCount may be used with at-least, at-most, at-least and exact value (i32)
-// Other quantifier features may restrict their use according to their semantics
-pub struct AccCount<T:Quantifier>{
-    pub val:T
-}
 
 impl Feature for SIMD { 
     fn is_top(self:&Self) -> bool { true }
@@ -319,72 +224,54 @@ impl Feature for CUDA10 {
     fn feature_class(self:&Self) -> PlatformParameters { PlatformParameters::ACCBackend } 
 }
 
-impl Feature for AccCount<i32> {  
+
+
+impl Feature for AtLeast {  
     fn is_top(self:&Self) -> bool { 
-        let v = self.val().expect("a value is expected here");
+        let v = self.val;
         match self.feature_type() {
             FeatureType::Qualifier => false,
-            FeatureType::QuantifierUp => v==std::i32::MAX,
-            FeatureType::QuantifierDown => v==0,
+            FeatureType::Quantifier => v==std::i32::MAX,
         }                                
     }
-    fn string(self:&Self) -> String { "acc_count".to_string() } 
-    fn feature_type(self:&Self) -> FeatureType { FeatureType::QuantifierUp } 
+    fn string(self:&Self) -> String { "at least".to_string() } 
+    fn feature_type(self:&Self) -> FeatureType { FeatureType::Quantifier } 
     fn feature_class(self:&Self) -> PlatformParameters { PlatformParameters::ACCCount}
     fn val(self:&Self) -> Option<i32> { Some((*self).val) } 
-    fn quantifier_type(self:&Self) -> Option<QuantifierType> { Some(QuantifierType::Value) }
+    fn quantifier_type(self:&Self) -> Option<QuantifierType> { Some(QuantifierType::AtLeast) }    
+    fn supertype(self:&Self) -> Option<Box<dyn Feature>> {  Some(Box::new(AtLeast { val:self.val+1 }) as Box<dyn Feature>)  }
 }
 
-impl Feature for AccCount<AtLeast> {  
+impl Feature for AtMost {  
     fn is_top(self:&Self) -> bool { 
-        let v = self.val().expect("a value is expected here");
+        let v = self.val;
         match self.feature_type() {
             FeatureType::Qualifier => false,
-            FeatureType::QuantifierUp => v==std::i32::MAX,
-            FeatureType::QuantifierDown => v==0,
+            FeatureType::Quantifier => v==0,
         }                                
     }
-    fn string(self:&Self) -> String { "acc_count".to_string() } 
-    fn feature_type(self:&Self) -> FeatureType { FeatureType::QuantifierUp } 
+    fn string(self:&Self) -> String { "at most".to_string() } 
+    fn feature_type(self:&Self) -> FeatureType { FeatureType::Quantifier } 
     fn feature_class(self:&Self) -> PlatformParameters { PlatformParameters::ACCCount}
-    fn val(self:&Self) -> Option<i32> { Some((*self).val.val) } 
-    fn quantifier_type(self:&Self) -> Option<QuantifierType> { Some(QuantifierType::AtLeast) }
-}
-
-impl Feature for AccCount<AtMost> {  
-    fn is_top(self:&Self) -> bool { 
-        let v = self.val().expect("a value is expected here");
-        match self.feature_type() {
-            FeatureType::Qualifier => false,
-            FeatureType::QuantifierUp => v==std::i32::MAX,
-            FeatureType::QuantifierDown => v==0,
-        }                                
-    }
-    fn string(self:&Self) -> String { "acc_count".to_string() } 
-    fn feature_type(self:&Self) -> FeatureType { FeatureType::QuantifierUp } 
-    fn feature_class(self:&Self) -> PlatformParameters { PlatformParameters::ACCCount}
-    fn val(self:&Self) -> Option<i32> { Some((*self).val.val) } 
+    fn val(self:&Self) -> Option<i32> { Some((*self).val) } 
     fn quantifier_type(self:&Self) -> Option<QuantifierType> { Some(QuantifierType::AtMost) }
+    fn supertype(self:&Self) -> Option<Box<dyn Feature>> {  Some(Box::new(AtMost { val:self.val-1 }) as Box<dyn Feature>)  }
 }
 
-impl Feature for AccCount<Between> {  
+impl Feature for i32 {  
     fn is_top(self:&Self) -> bool { 
-        let v = self.val().expect("a value is expected here");
         match self.feature_type() {
             FeatureType::Qualifier => false,
-            FeatureType::QuantifierUp => v==std::i32::MAX,
-            FeatureType::QuantifierDown => v==0,
+            FeatureType::Quantifier => true,
         }                                
     }
-    fn string(self:&Self) -> String { "acc_count".to_string() } 
-    fn feature_type(self:&Self) -> FeatureType { FeatureType::QuantifierUp } 
+    fn string(self:&Self) -> String { "value".to_string() } 
+    fn feature_type(self:&Self) -> FeatureType { FeatureType::Quantifier } 
     fn feature_class(self:&Self) -> PlatformParameters { PlatformParameters::ACCCount}
-    fn val(self:&Self) -> Option<i32> { Some((*self).val.val0) } 
-    fn other_val(self:&Self) -> Option<i32> { Some((*self).val.val1) } 
-    fn quantifier_type(self:&Self) -> Option<QuantifierType> { Some(QuantifierType::Between) }
+    fn val(self:&Self) -> Option<i32> { Some(*self) } 
+    fn quantifier_type(self:&Self) -> Option<QuantifierType> { Some(QuantifierType::Value) }
+    fn supertype(self:&Self) -> Option<Box<dyn Feature>> { None  }
 }
-
-
 
 // TODO: automatic read of the platform file at the beginning of the execution
 //use lazy_static::lazy_static;
@@ -408,7 +295,7 @@ pub fn readplatformfeatures() -> HashMap<PlatformParameters, &'static dyn Featur
     println!("readplatformfeatures at startup"); 
 
     m.insert(PlatformParameters::ACCBackend, &CUDA8);
-    m.insert(PlatformParameters::ACCCount, &AccCount{ val:4 });
+    m.insert(PlatformParameters::ACCCount, &4 );
 
     return m;
 }
