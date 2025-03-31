@@ -11,7 +11,7 @@ use platform_aware_features::{Feature, AVX512, SIMD};
         lazy_static! { static ref V:i32 = { 
                     let features1:[(PlatformParameters, &dyn Feature); 1] = [(PlatformParameters::SIMD, &AVX512)];
                     let features2:[(PlatformParameters, &dyn Feature); 2] = [(PlatformParameters::ACCBackend, &CUDA8),
-                                                                             (PlatformParameters::ACCCount,&3)];
+                                                                             (PlatformParameters::ACCCount, &3)];
                     let features3:[(PlatformParameters, &dyn Feature); 1] = [(PlatformParameters::ACCBackend, &CUDA8)];
                     let features4:[(PlatformParameters, &dyn Feature); 2] = [(PlatformParameters::ACCBackend, &CUDA8),
                                                                              (PlatformParameters::ACCCount, &AtMost{val:5})];

@@ -88,7 +88,7 @@ pub trait Feature {
         s.finish()
     }
 
-    fn feature_class(self:&Self) -> PlatformParameters;
+    fn feature_class(self:&Self) -> Option<PlatformParameters>;
 
     fn feature_type(self:&Self) -> FeatureType { FeatureType::Qualifier }
 
@@ -173,58 +173,56 @@ pub struct CUDA10;
 impl Feature for SIMD { 
     fn is_top(self:&Self) -> bool { true }
     fn string(self:&Self) -> String { "simd".to_string() } 
-    fn feature_class(self:&Self) -> PlatformParameters { PlatformParameters::SIMD } 
+    fn feature_class(self:&Self) -> std::option::Option<PlatformParameters> { Some(PlatformParameters::SIMD) } 
 }
 
 impl Feature for AVX512 { 
     fn string(self:&Self) -> String { "avx512".to_string() } 
     fn supertype(self:&Self) -> Option<Box<dyn Feature>> { Some(Box::new(SIMD)) } 
-    fn feature_class(self:&Self) -> PlatformParameters { PlatformParameters::SIMD } 
+    fn feature_class(self:&Self) -> std::option::Option<PlatformParameters> { Some(PlatformParameters::SIMD) } 
 }
 
 impl Feature for AccModel { 
     fn is_top(self:&Self) -> bool { true }
     fn string(self:&Self) -> String { "acc_model".to_string() } 
-    fn feature_class(self:&Self) -> PlatformParameters { PlatformParameters::ACCModel } 
+    fn feature_class(self:&Self) -> std::option::Option<PlatformParameters> { Some(PlatformParameters::ACCModel) } 
 }
                             
 impl Feature for NVidiaH100 { 
     fn string(self:&Self) -> String { "nvidia_H100".to_string() } 
     fn supertype(self:&Self) -> Option<Box<dyn Feature>> { Some(Box::new(AccModel)) } 
-    fn feature_class(self:&Self) -> PlatformParameters { PlatformParameters::ACCModel } 
+    fn feature_class(self:&Self) -> std::option::Option<PlatformParameters> { Some(PlatformParameters::ACCModel) } 
 }
 
 impl Feature for AccBackend { 
     fn is_top(self:&Self) -> bool { true }
     fn string(self:&Self) -> String { "acc_backend".to_string() } 
-    fn feature_class(self:&Self) -> PlatformParameters { PlatformParameters::ACCBackend } 
+    fn feature_class(self:&Self) -> std::option::Option<PlatformParameters> { Some(PlatformParameters::ACCBackend) } 
 }
 
 impl Feature for CUDA4 { 
     fn string(self:&Self) -> String { "cuda4".to_string() } 
     fn supertype(self:&Self) -> Option<Box<dyn Feature>> { Some(Box::new(AccBackend)) } 
-    fn feature_class(self:&Self) -> PlatformParameters { PlatformParameters::ACCBackend } 
+    fn feature_class(self:&Self) -> std::option::Option<PlatformParameters> { Some(PlatformParameters::ACCBackend) } 
 }
 
 impl Feature for CUDA6 { 
     fn string(self:&Self) -> String { "cuda6".to_string() } 
     fn supertype(self:&Self) -> Option<Box<dyn Feature>> { Some(Box::new(CUDA4)) } 
-    fn feature_class(self:&Self) -> PlatformParameters { PlatformParameters::ACCBackend } 
+    fn feature_class(self:&Self) -> std::option::Option<PlatformParameters> { Some(PlatformParameters::ACCBackend) } 
 }
 
 impl Feature for CUDA8 { 
     fn string(self:&Self) -> String { "cuda8".to_string() } 
     fn supertype(self:&Self) -> Option<Box<dyn Feature>> { Some(Box::new(CUDA6)) } 
-    fn feature_class(self:&Self) -> PlatformParameters { PlatformParameters::ACCBackend } 
+    fn feature_class(self:&Self) -> std::option::Option<PlatformParameters> { Some(PlatformParameters::ACCBackend) } 
 }
 
 impl Feature for CUDA10 { 
     fn string(self:&Self) -> String { "cuda10".to_string() } 
     fn supertype(self:&Self) -> Option<Box<dyn Feature>> { Some(Box::new(CUDA8)) } 
-    fn feature_class(self:&Self) -> PlatformParameters { PlatformParameters::ACCBackend } 
+    fn feature_class(self:&Self) -> std::option::Option<PlatformParameters> { Some(PlatformParameters::ACCBackend) } 
 }
-
-
 
 impl Feature for AtLeast {  
     fn is_top(self:&Self) -> bool { 
@@ -234,9 +232,9 @@ impl Feature for AtLeast {
             FeatureType::Quantifier => v==std::i32::MAX,
         }                                
     }
-    fn string(self:&Self) -> String { "at least".to_string() } 
+    fn string(self:&Self) -> String { "atleast".to_string() } 
     fn feature_type(self:&Self) -> FeatureType { FeatureType::Quantifier } 
-    fn feature_class(self:&Self) -> PlatformParameters { PlatformParameters::ACCCount}
+    fn feature_class(self:&Self) -> std::option::Option<PlatformParameters> { None }
     fn val(self:&Self) -> Option<i32> { Some((*self).val) } 
     fn quantifier_type(self:&Self) -> Option<QuantifierType> { Some(QuantifierType::AtLeast) }    
     fn supertype(self:&Self) -> Option<Box<dyn Feature>> {  Some(Box::new(AtLeast { val:self.val+1 }) as Box<dyn Feature>)  }
@@ -250,9 +248,9 @@ impl Feature for AtMost {
             FeatureType::Quantifier => v==0,
         }                                
     }
-    fn string(self:&Self) -> String { "at most".to_string() } 
+    fn string(self:&Self) -> String { "atmost".to_string() } 
     fn feature_type(self:&Self) -> FeatureType { FeatureType::Quantifier } 
-    fn feature_class(self:&Self) -> PlatformParameters { PlatformParameters::ACCCount}
+    fn feature_class(self:&Self) -> std::option::Option<PlatformParameters> { None }
     fn val(self:&Self) -> Option<i32> { Some((*self).val) } 
     fn quantifier_type(self:&Self) -> Option<QuantifierType> { Some(QuantifierType::AtMost) }
     fn supertype(self:&Self) -> Option<Box<dyn Feature>> {  Some(Box::new(AtMost { val:self.val-1 }) as Box<dyn Feature>)  }
@@ -267,7 +265,7 @@ impl Feature for i32 {
     }
     fn string(self:&Self) -> String { "value".to_string() } 
     fn feature_type(self:&Self) -> FeatureType { FeatureType::Quantifier } 
-    fn feature_class(self:&Self) -> PlatformParameters { PlatformParameters::ACCCount}
+    fn feature_class(self:&Self) -> std::option::Option<PlatformParameters> { None }
     fn val(self:&Self) -> Option<i32> { Some(*self) } 
     fn quantifier_type(self:&Self) -> Option<QuantifierType> { Some(QuantifierType::Value) }
     fn supertype(self:&Self) -> Option<Box<dyn Feature>> { None  }
