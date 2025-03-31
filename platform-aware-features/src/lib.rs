@@ -385,9 +385,6 @@ impl Feature for AccCount<Between> {
 }
 
 
-impl Feature for Vec<T> {
-    
-}
 
 // TODO: automatic read of the platform file at the beginning of the execution
 //use lazy_static::lazy_static;
