@@ -2,9 +2,6 @@ use std::collections::HashMap;
 
 use crate::{readplatformfeatures, Feature, PlatformParameters, PLATFORM_PARAMETERS};
 
-
-
-
 // The glorious resolution algorithm
 pub fn resolve(impls:Vec<HashMap<PlatformParameters, &dyn Feature>> ) -> i32
 {
