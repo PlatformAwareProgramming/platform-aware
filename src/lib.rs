@@ -1,3 +1,13 @@
+
+
+
+
+
+
+
+
+
+
 // lib.rs
 extern crate proc_macro;
 use proc_macro::TokenStream;
@@ -40,7 +50,7 @@ pub fn platformaware(_attr: TokenStream, item: TokenStream) -> TokenStream {
 }
 
 #[proc_macro_attribute]
-pub fn kernelversion(attr: TokenStream, item: TokenStream) -> TokenStream {
+pub fn kernelversioFeaturen(attr: TokenStream, item: TokenStream) -> TokenStream {
     println!("Sou a função: {}", item);
     println!("atributo: {}", attr);
     println!();

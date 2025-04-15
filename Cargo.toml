@@ -2,7 +2,7 @@
 resolver="2"
 members = [
     "."
-, "platform-aware-features"]
+, "platform-aware-amd", "platform-aware-features", "platform-aware-intel", "platform-aware-nvidia"]
 
 [package]
 name = "platform-aware"
@@ -14,9 +14,15 @@ proc-macro = true
 
 [workspace.dependencies]
 platform-aware-features = {path="platform-aware-features"}
+platform-aware-nvidia = {path="platform-aware-nvidia"}
+platform-aware-intel = {path="platform-aware-intel"}
+platform-aware-amd = {path="platform-aware-amd"}
 
 [dependencies]
 quote = "1.0.38"
 syn = "2.0.98"
 platform-aware-features = {workspace=true}
 lazy_static = "1.5.0"
+platform-aware-nvidia = {workspace=true}
+platform-aware-intel = {workspace=true}
+platform-aware-amd = {workspace=true}
