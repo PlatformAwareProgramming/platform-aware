@@ -2,7 +2,7 @@
 resolver="2"
 members = [
     "."
-, "platform-aware-amd", "platform-aware-features", "platform-aware-intel", "platform-aware-nvidia"]
+, "platform-aware-amd", "platform-aware-features", "platform-aware-intel", "platform-aware-nvidia", "platform-aware-macros"]
 
 [package]
 name = "platform-aware"
