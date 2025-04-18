@@ -1,22 +1,8 @@
-//! NOTE: This crate is in early development. Please be aware that it currently 
-//! has very poor error handling, and using it in production environments is not
-//! recommended. Contributions and improvements are welcome.
+//! NOTE: This crate is in early development.
 
-#![allow(dead_code)]
-#![allow(unused_variables)]
-#![allow(unused_imports)]
-
-use platform_aware_features::*;
-use platform_aware_amd::*;
-use platform_aware_intel::*;
-use platform_aware_nvidia::*;
-
-use std::{collections::HashMap, fmt::Debug};
-
-use proc_macro::Punct;
 use proc_macro2::{Span, TokenStream};
 use quote::quote;
-use syn::{punctuated::Punctuated, token::Comma, *};
+use syn:: *;
 
 /// Represents a function declared in the module passsed 
 /// to the `platformaware` macro. Uses only the function's
@@ -54,6 +40,20 @@ impl FunctionData {
         )
     }
 
+    /// Returns a new function with the given parameters and body,
+    /// and a name that is the same as the given function name
+    /// plus the given number.
+    ///
+    /// The returned function is a valid Rust function declaration.
+    ///
+    /// # Parameters
+    ///
+    /// * `params`: The parameters to the new function. Each parameter
+    ///   is a `TokenStream` that represents the type and name of the
+    ///   parameter.
+    /// * `function_name`: The name of the new function. This will be
+    ///   the name of the function without the number appended to it.
+    /// * `n`: The number to append to the function name.
     fn build_function
         (&self, params: Vec<TokenStream>, mut function_name: Ident, n: i32) 
         -> TokenStream {
@@ -82,6 +82,9 @@ impl FunctionGroup {
         }
     }   
 
+    /// Creates match arms for the dispatch function of this group, based on
+    /// the given function name and parameters, and the number of variants.
+    /// The match arms are stored in the `match_arms` field of this struct.
     fn build_arms
         (&mut self, function_name: Ident, params_name: Vec<Ident>, n: i32) {
 
@@ -110,6 +113,9 @@ impl FunctionGroup {
         dispatch
     }
 
+    /// This function takes a `syn::ItemFn` as input and iterates over the
+    /// functions in the group, and for each function, it sets the `kernelv` field
+    /// to the kernel version extracted from the `ItemFn`.
     fn build_platforms(&mut self, item_fn: &ItemFn) {
         for f in &mut self.functions {
             f.kernelv = get_kernel_version_from_item_fn(item_fn);
@@ -209,11 +215,38 @@ impl FunctionSupergroup {
     }
 }
 
-/// This macro attribute is used to generate a dispatch function, which
-/// determines the correct function variant to call based on the platform
-/// assumptions. The macro takes a single argument, which is a comma-separated
-/// list of names of functions that should be generated as variants of the
-/// dispatch function.
+/// This macros should be used in a `mod` declaration. It takes as attributes
+/// the names of the functions declared in the module and builds a multiple
+/// dispatch for each one of them.
+/// 
+/// # Example
+/// ```
+/// use platform_aware_macros::platformaware;
+/// 
+/// #[platformaware(foo, bar)]
+/// mod mymodule {
+///     #[kernelversion]
+///     pub fn foo(x: i32, y: i32, z: i32) {
+///         println!("fallback foo");
+///     }
+///     #[kernelversion(CPUSIMD=AVX512, CPUSIMD=AVX512)]
+///     pub fn foo(x: i32, y: i32, z: i32) {
+///         println!("1 foo");
+///     }
+///     #[kernelversion(CPUSIMD=AVX512, ACCBackend=CUDA8)]
+///     pub fn foo(x: i32, y: i32, z: i32) {
+///         println!("2 foo");
+///     }
+///     #[kernelversion(CPUSIMD=AVX512, ACCBackend=CUDA10)]
+///     pub fn foo(x: i32, y: i32, z: i32) {
+///         println!("2 foo");
+///     }
+///     #[kernelversion]
+///     pub fn bar() {
+///         println!("fallback bar");
+///     }
+/// }
+/// ```
 #[proc_macro_attribute]
 pub fn platformaware
     (attr: proc_macro::TokenStream, item: proc_macro::TokenStream) 
@@ -251,7 +284,8 @@ pub fn platformaware
         }
     };
 
-    eprintln!("{}", proc_macro::TokenStream::from(expanded.clone()));
+    eprintln!("\x1b[93m@INFO | Generated the following module:\x1b[00m\n {}",
+     proc_macro::TokenStream::from(expanded.clone()));
 
     proc_macro::TokenStream::from(expanded)
 }
@@ -399,10 +433,6 @@ fn get_inputs_from_itemfn(item_fn: &ItemFn) -> Vec<TokenStream>{
     }
 
     inputs
-}
-
-fn get_name_from_itemfn(item_fn: &ItemFn) -> Ident {
-    item_fn.sig.ident.clone()
 }
 
 fn get_name_from_itemmod(item_mod: &ItemMod) -> Ident {
