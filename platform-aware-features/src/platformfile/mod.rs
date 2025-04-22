@@ -119,16 +119,16 @@ pub fn readplatformfeatures() -> HashMap<PlatformParameters, &'static dyn Featur
         Err(_) => todo!(),
     };
 
-    let v0 = t.processor.unwrap();
-    let v1 = v0.processor_simd.unwrap();
-    println!("ACCELERATOR {}", v1[0]);
+   // let v0 = t.processor.unwrap();
+   // let v1 = v0.processor_simd.unwrap();
+   // println!("ACCELERATOR {}", v1[0]);
 
     let mut m: HashMap<PlatformParameters, &dyn Feature> = HashMap::new();
 
     println!("readplatformfeatures at startup"); 
 
-    //m.insert(PlatformParameters::ACCBackend, &CUDA8);
-    m.insert(PlatformParameters::ACCCount, &4 );
+  //  m.insert(PlatformParameters::acc_backend, &CUDA8);
+    m.insert(PlatformParameters::acc_count, &4 );
 
     return m;
 }

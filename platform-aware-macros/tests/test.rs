@@ -24,17 +24,17 @@ mod uses {
                 println!("fallback foo");
             }
 
-            #[kernelversion(CPUSIMD=AVX512, CPUSIMD=AVX512)]
+            #[kernelversion(cpu_simd=AVX512)]
             pub fn foo(x: i32, y: i32, z: i32) {
                 println!("1 foo");
             }
 
-            #[kernelversion(CPUSIMD=AVX512, ACCBackend=CUDA8)]
+            #[kernelversion(cpu_simd=AVX512, acc_backend=CUDA8)]
             pub fn foo(x: i32, y: i32, z: i32) {
                 println!("2 foo");
             }
 
-            #[kernelversion(CPUSIMD=AVX512, ACCBackend=CUDA10)]
+            #[kernelversion(cpu_simd=AVX512, acc_backend=CUDA10)]
             pub fn foo(x: i32, y: i32, z: i32) {
                 println!("3 foo");
             }
@@ -74,22 +74,22 @@ mod uses {
                 println!("fallback foobar");
             }
 
-            #[kernelversion(CPUSIMD=AVX512)]
+            #[kernelversion(cpu_simd=AVX512)]
             pub fn foo(x: i32, y: i32, z: i32) {
                println!("foo 1");
             }
 
-            #[kernelversion(ACCBackend=CUDA10, ACCCount=2)]
+            #[kernelversion(acc_backend=CUDA10, acc_count=2)]
             pub fn bar(s: &str) {
                 println!("fallback bar");
             }
 
-            #[kernelversion(CPUSIMD=AVX512)]
+            #[kernelversion(cpu_simd=AVX512)]
             pub fn foobar() {
                 println!("foobar 1");
             }
 
-            #[kernelversion(ACCBackend=CUDA10)]
+            #[kernelversion(acc_backend=CUDA10)]
             pub fn buzz(a: &mut u8) {
                 println!("fallback buzz");
             }
