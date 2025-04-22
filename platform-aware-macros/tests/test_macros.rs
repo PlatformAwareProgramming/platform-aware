@@ -1,13 +1,4 @@
-
-
-mod imports {
-    #[test]
-    fn import_platformaware_macro(){
-        #[allow(unused_imports)]
-        use platform_aware_macros::platformaware;
-    }
-}
-
+#[cfg(test)]
 mod uses {
     use platform_aware_macros::platformaware;
 
@@ -127,5 +118,18 @@ mod uses {
         mymodule::foo(1,2,3);
         mymodule::bar("ok");
         mymodule::foobar();
+    }
+
+    #[should_panic(expected = "not yet implemented")]
+    #[test]
+    fn generics() {
+
+        #[platformaware(foo)]
+        mod mymodule {
+            #[kernelversion]
+            fn foo<T>(x: T) {
+                println!("fallback foo");
+            }
+        }
     }
 }
