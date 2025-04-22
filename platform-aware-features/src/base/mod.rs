@@ -1,124 +1,121 @@
 use std::hash::{DefaultHasher, Hash, Hasher};
 
 #[derive(Debug)]
+#[allow(non_camel_case_types)]
 pub enum PlatformParameters {
     /* accelerator features */
-    ACCManufacturer,
-    ACCMemoryType,
-    ACCCount,
-    ACCBackend,
-    ACCArchitecture,
-    ACCModel,
-    ACCProcessorCount,
-    ACCProcessor,
-    ACCMemorySize,
-    ACCTDP,
-    ACCType,
+    acc_manufacturer,
+    acc_memory_type,
+    acc_count,
+    acc_backend,
+    acc_architecture,
+    acc_model,
+    acc_processor_count,
+    acc_processor,
+    acc_memory_size,
+    acc_tdp,
+    acc_type,
 
     /* processor features */
-    CPUCoreCount,
-    CPUCount,
-    CPUCoreThreadsCount,
-    CPUL1Size,
-    CPUL2Size,
-    CPUL3Size,
-    CPUClock,
-    CPUManufacturer,
-    CPUISA,
-    CPUSIMD,
-    CPUTDP,
-    CPUModel,
-    CPUMicroarchtecture,
+    cpu_count,
+    cpu_core_count,
+    cpu_core_threads_count,
+    cpu_l1_size,
+    cpu_l2_size,
+    cpu_l3_size,
+    cpu_clock,
+    cpu_manufacturer,
+    cpu_isa,
+    cpu_simd,
+    cpu_tdp,
+    cpu_model,
+    cpu_microarchitecture,
 
     /* interconnection */
-    NETLatency,
-    NETType,
-    NETBandwidth,
-    NETStartupTime,
-    NETRDMA,
-    NETTopology,
+    net_latency,
+    net_type,
+    net_bandwidth,
+    net_startup_time,
+    net_rdma,
+    net_topology,
 
     /* storage */
-    STOBandwith,
-    STOType,
-    STOLatency,
-    STOSize,
-    STONetworkBandwith,
-    STOInterface,
+    sto_bandwidth,
+    sto_type,
+    sto_latency,
+    sto_size,
+    sto_network_bandwidth,
+    sto_interface,
 
     /* memory */
-    MEMType,
-    MEMSize,
-    MEMFrequency,
-    MEMLatency,
-    MEMBandwidth,
+    mem_type,
+    mem_size,
+    mem_frequency,
+    mem_latency,
+    mem_bandwidth,
 
     /* node (cloud) */
-    VMNDedicated,
-    VMNCount,
-    VMNVirtual,
-    VMNMachineType,
-    VMNThreadsCount,
-    VMNMachineFamily,
-    VMNProvider,
-    VMNVCPUSCount
+    vm_provider,
+    vm_dedicated,
+    vm_machinefamily,
+    vm_machinetype,
+    vm_vcpus_count,
+    vm_threads_count,
 }
 
 
 pub const PLATFORM_PARAMETERS:&[PlatformParameters] = &[
-                                                    PlatformParameters::CPUSIMD,
-                                                    PlatformParameters::ACCModel, 
-                                                    PlatformParameters::ACCBackend, 
-                                                    PlatformParameters::ACCCount,
-                                                    PlatformParameters::ACCManufacturer,
-                                                    PlatformParameters::ACCMemoryType,
-                                                    PlatformParameters::ACCCount,
-                                                    PlatformParameters::ACCBackend,
-                                                    PlatformParameters::ACCArchitecture,
-                                                    PlatformParameters::ACCModel,
-                                                    PlatformParameters::ACCProcessorCount,
-                                                    PlatformParameters::ACCProcessor,
-                                                    PlatformParameters::ACCMemorySize,
-                                                    PlatformParameters::ACCTDP,
-                                                    PlatformParameters::ACCType,                                                    
-                                                    PlatformParameters::CPUCoreCount,
-                                                    PlatformParameters::CPUCount,
-                                                    PlatformParameters::CPUCoreThreadsCount,
-                                                    PlatformParameters::CPUSIMD,
-                                                    PlatformParameters::CPUL1Size,
-                                                    PlatformParameters::CPUL2Size,
-                                                    PlatformParameters::CPUL3Size,
-                                                    PlatformParameters::CPUClock,
-                                                    PlatformParameters::CPUManufacturer,
-                                                    PlatformParameters::CPUISA,
-                                                    PlatformParameters::CPUTDP,
-                                                    PlatformParameters::CPUModel,
-                                                    PlatformParameters::CPUMicroarchtecture,
-                                                    PlatformParameters::NETLatency,
-                                                    PlatformParameters::NETType,
-                                                    PlatformParameters::NETBandwidth,
-                                                    PlatformParameters::NETStartupTime,
-                                                    PlatformParameters::NETRDMA,
-                                                    PlatformParameters::NETTopology,
-                                                    PlatformParameters::STOBandwith,
-                                                    PlatformParameters::STOType,
-                                                    PlatformParameters::STOLatency,
-                                                    PlatformParameters::STOSize,
-                                                    PlatformParameters::STONetworkBandwith,
-                                                    PlatformParameters::STOInterface,
-                                                    PlatformParameters::MEMType,
-                                                    PlatformParameters::MEMSize,
-                                                    PlatformParameters::MEMFrequency,
-                                                    PlatformParameters::MEMLatency,
-                                                    PlatformParameters::MEMBandwidth,
-                                                    PlatformParameters::VMNDedicated,
-                                                    PlatformParameters::VMNCount,
-                                                    PlatformParameters::VMNVirtual,
-                                                    PlatformParameters::VMNMachineType,
-                                                    PlatformParameters::VMNThreadsCount,
-                                                    PlatformParameters::VMNMachineFamily,
-                                                    PlatformParameters::VMNProvider,
-                                                    PlatformParameters::VMNVCPUSCount
+                                                    PlatformParameters::cpu_simd,
+                                                    PlatformParameters::acc_model, 
+                                                    PlatformParameters::acc_backend, 
+                                                    PlatformParameters::acc_count,
+                                                    PlatformParameters::acc_manufacturer,
+                                                    PlatformParameters::acc_memory_type,
+                                                    PlatformParameters::acc_count,
+                                                    PlatformParameters::acc_backend,
+                                                    PlatformParameters::acc_architecture,
+                                                    PlatformParameters::acc_model,
+                                                    PlatformParameters::acc_processor_count,
+                                                    PlatformParameters::acc_processor,
+                                                    PlatformParameters::acc_memory_size,
+                                                    PlatformParameters::acc_tdp,
+                                                    PlatformParameters::acc_type,                                                    
+                                                    PlatformParameters::cpu_core_count,
+                                                    PlatformParameters::cpu_count,
+                                                    PlatformParameters::cpu_core_threads_count,
+                                                    PlatformParameters::cpu_simd,
+                                                    PlatformParameters::cpu_l1_size,
+                                                    PlatformParameters::cpu_l2_size,
+                                                    PlatformParameters::cpu_l3_size,
+                                                    PlatformParameters::cpu_clock,
+                                                    PlatformParameters::cpu_manufacturer,
+                                                    PlatformParameters::cpu_isa,
+                                                    PlatformParameters::cpu_tdp,
+                                                    PlatformParameters::cpu_model,
+                                                    PlatformParameters::cpu_microarchitecture,
+                                                    PlatformParameters::net_latency,
+                                                    PlatformParameters::net_type,
+                                                    PlatformParameters::net_bandwidth,
+                                                    PlatformParameters::net_startup_time,
+                                                    PlatformParameters::net_rdma,
+                                                    PlatformParameters::net_topology,
+                                                    PlatformParameters::sto_bandwidth,
+                                                    PlatformParameters::sto_type,
+                                                    PlatformParameters::sto_latency,
+                                                    PlatformParameters::sto_size,
+                                                    PlatformParameters::sto_network_bandwidth,
+                                                    PlatformParameters::sto_interface,
+                                                    PlatformParameters::mem_type,
+                                                    PlatformParameters::mem_size,
+                                                    PlatformParameters::mem_frequency,
+                                                    PlatformParameters::mem_latency,
+                                                    PlatformParameters::mem_bandwidth,
+                                                    PlatformParameters::vm_dedicated,
+                                                    PlatformParameters::vm_machinetype,
+                                                    PlatformParameters::vm_threads_count,
+                                                    PlatformParameters::vm_machinefamily,
+                                                    PlatformParameters::vm_provider,
+                                                    PlatformParameters::vm_vcpus_count
                                                    ];
 
 impl PartialEq for PlatformParameters {
@@ -199,7 +196,7 @@ pub trait Feature {
                     QuantifierType::AtLeast => match qt_other {
                         QuantifierType::AtLeast => v1 <= v2,
                         QuantifierType::AtMost => false,
-                        QuantifierType::Value => { println!("{v1}>={v2}"); v1 <= v2 },
+                        QuantifierType::Value => { v1 <= v2 },
                     },
                     QuantifierType::AtMost => match qt_other {
                         QuantifierType::AtLeast => false,
@@ -207,7 +204,7 @@ pub trait Feature {
                         QuantifierType::Value => v1 >= v2,
                     },
                     QuantifierType::Value => match qt_other {
-                        QuantifierType::AtLeast => { println!("{v1}>={v2}"); v1 >= v2 },
+                        QuantifierType::AtLeast => { v1 >= v2 },
                         QuantifierType::AtMost => v1 <= v2,
                         QuantifierType::Value => v1 == v2,
                     },
@@ -240,20 +237,20 @@ pub struct AccBackend;
 impl Feature for SIMD { 
     fn is_top(self:&Self) -> bool { true }
     fn string(self:&Self) -> String { "simd".to_string() } 
-    fn feature_class(self:&Self) -> std::option::Option<PlatformParameters> { Some(PlatformParameters::CPUSIMD) } 
+    fn feature_class(self:&Self) -> std::option::Option<PlatformParameters> { Some(PlatformParameters::cpu_simd) } 
 }
 
 impl Feature for AccModel { 
     fn is_top(self:&Self) -> bool { true }
     fn string(self:&Self) -> String { "acc_model".to_string() } 
-    fn feature_class(self:&Self) -> std::option::Option<PlatformParameters> { Some(PlatformParameters::ACCModel) } 
+    fn feature_class(self:&Self) -> std::option::Option<PlatformParameters> { Some(PlatformParameters::acc_model) } 
 }
                             
 
 impl Feature for AccBackend { 
     fn is_top(self:&Self) -> bool { true }
     fn string(self:&Self) -> String { "acc_backend".to_string() } 
-    fn feature_class(self:&Self) -> std::option::Option<PlatformParameters> { Some(PlatformParameters::ACCBackend) } 
+    fn feature_class(self:&Self) -> std::option::Option<PlatformParameters> { Some(PlatformParameters::acc_backend) } 
 }
 
 
@@ -284,5 +281,6 @@ impl Feature for i32 {
     fn feature_class(self:&Self) -> std::option::Option<PlatformParameters> { None }
     fn val(self:&Self) -> Option<i32> { Some(*self) } 
     fn quantifier_type(self:&Self) -> Option<QuantifierType> { Some(QuantifierType::Value) }
-    fn supertype(self:&Self) -> Option<Box<dyn Feature>> { None  }
+    fn supertype(self:&Self) -> Option<Box<dyn Feature>> { None }
 }
+

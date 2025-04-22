@@ -230,15 +230,15 @@ impl FunctionSupergroup {
 ///     pub fn foo(x: i32, y: i32, z: i32) {
 ///         println!("fallback foo");
 ///     }
-///     #[kernelversion(CPUSIMD=AVX512, CPUSIMD=AVX512)]
+///     #[kernelversion(cpu_simd=AVX512, cpu_simd=AVX512)]
 ///     pub fn foo(x: i32, y: i32, z: i32) {
 ///         println!("1 foo");
 ///     }
-///     #[kernelversion(CPUSIMD=AVX512, ACCBackend=CUDA8)]
+///     #[kernelversion(cpu_simd=AVX512, acc_backend=CUDA8)]
 ///     pub fn foo(x: i32, y: i32, z: i32) {
 ///         println!("2 foo");
 ///     }
-///     #[kernelversion(CPUSIMD=AVX512, ACCBackend=CUDA10)]
+///     #[kernelversion(cpu_simd=AVX512, acc_backend=CUDA10)]
 ///     pub fn foo(x: i32, y: i32, z: i32) {
 ///         println!("2 foo");
 ///     }

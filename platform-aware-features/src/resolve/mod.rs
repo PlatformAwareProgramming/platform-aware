@@ -3,30 +3,30 @@ use std::collections::HashMap;
 use crate::{readplatformfeatures, Feature, PlatformParameters, PLATFORM_PARAMETERS};
 
 // The glorious resolution algorithm
-pub fn resolve(impls:Vec<HashMap<PlatformParameters, &dyn Feature>> ) -> i32
+pub fn resolve(featureset_list:Vec<HashMap<PlatformParameters, &dyn Feature>> ) -> i32
 {
-    let currentfeatures2: HashMap<PlatformParameters, &dyn Feature> = readplatformfeatures();
+    let actualplatformfeatures: HashMap<PlatformParameters, &dyn Feature> = readplatformfeatures();
 
-    let mut lastimpl: i32 = (impls.len()-1).try_into().unwrap();
+    let mut i: i32 = (featureset_list.len()-1).try_into().unwrap();
     let mut current_choice: Option<&HashMap<PlatformParameters, &dyn Feature>> = None;
     let mut current_choice_index  = -1;
 
     loop {
-        while lastimpl >= 0 && !(issubtypeof(&currentfeatures2, &impls[lastimpl as usize]) 
+        while i >= 0 && !(issubtypeof(&actualplatformfeatures, &featureset_list[i as usize]) 
                                    && (current_choice.is_none() || 
-                                       issubtypeof(&impls[lastimpl as usize], &current_choice.expect("unexpected condition")))) { 
-            lastimpl -= 1;
+                                       issubtypeof(&featureset_list[i as usize], &current_choice.expect("unexpected condition")))) { 
+            i -= 1;
         }
 
-        if lastimpl < 0 { break }
+        if i < 0 { break }
 
-        current_choice = Some(&impls[lastimpl as usize]);
-        current_choice_index = lastimpl;
-        lastimpl -= 1;
+        current_choice = Some(&featureset_list[i as usize]);
+        current_choice_index = i;
+        i -= 1;
     }
 
 
-    println!("loop finish {lastimpl}");
+    println!("loop finish {i}");
 
     current_choice_index + 1
 }
