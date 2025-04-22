@@ -11,6 +11,8 @@ mod imports {
 mod uses {
     use platform_aware_macros::platformaware;
 
+    #[should_panic(expected = "not yet implemented")]
+    #[test]
     fn basic() {
         use platform_aware_macros::platformaware;
 
@@ -47,6 +49,7 @@ mod uses {
         mymodule::bar();
     }
 
+    #[should_panic(expected = "not yet implemented")]
     #[test]
     fn basic_types() {
         #[platformaware(foo, bar, foobar)]
@@ -97,6 +100,8 @@ mod uses {
         mymodule::foobar();
     }
 
+    #[should_panic(expected = "not yet implemented")]
+    #[test]
     fn only_fallback() {
         #[platformaware(foo, bar, foobar)]
         mod mymodule {

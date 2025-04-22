@@ -2,7 +2,7 @@
 
 use proc_macro2::{Span, TokenStream};
 use quote::quote;
-use syn:: *;
+use syn::{punctuated::Punctuated,  *};
 
 /// Represents a function declared in the module passsed 
 /// to the `platformaware` macro. Uses only the function's
@@ -17,7 +17,7 @@ struct FunctionData {
 /// to the `platformaware` macro.
 struct FunctionGroup {
     ident: Ident,
-    params: Vec<TokenStream>,
+    params: Punctuated<FnArg, Token![,]>,
     functions: Vec<FunctionData>,
     match_arms: Vec<TokenStream>,
 }
@@ -55,23 +55,24 @@ impl FunctionData {
     ///   the name of the function without the number appended to it.
     /// * `n`: The number to append to the function name.
     fn build_function
-        (&self, params: Vec<TokenStream>, mut function_name: Ident, n: i32) 
+        (&self, params: Punctuated<FnArg, Token![,]>, mut function_name: Ident, n: i32) 
         -> TokenStream {
 
         let block_ = &self.block;
+        let params_ = params.clone().into_iter();
 
         function_name = Ident::new(
             &format!("{}{}", function_name, n), Span::call_site().into());
 
         quote! {
-            fn #function_name (#(#params),*) #block_
+            fn #function_name (#(#params_),*) #block_
         }
     }
 }
 
 impl FunctionGroup {
     fn new
-        (ident: Ident, params: Vec<TokenStream>, functions: Vec<FunctionData>, 
+        (ident: Ident, params: Punctuated<FnArg, Token![,]>, functions: Vec<FunctionData>, 
         match_arms: Vec<TokenStream>) -> FunctionGroup {
 
         FunctionGroup { 
@@ -99,7 +100,7 @@ impl FunctionGroup {
     /// parameters.
     fn build_group_dispatch(&self) -> TokenStream {
         let ident_ = &self.ident;
-        let params_ = &self.params;
+        let params_ = self.params.clone().into_iter();
         let arms_ = &self.match_arms;
 
         let dispatch = quote! {
@@ -138,9 +139,9 @@ impl FunctionSupergroup {
         for ident in idents {
             let ident_ = ident.clone();
             let mut fg = FunctionGroup::new(
-                ident, Vec::new(), Vec::new(), Vec::new());
+                ident, Punctuated::new(), Vec::new(), Vec::new());
             let mut params_names: Vec<Ident> = Vec::new();
-
+            
             if let Some(tuple) = &item_mod.content {
                 let content_array = tuple.clone().1;
                 
@@ -393,46 +394,8 @@ fn get_block_from_item_fn(item_fn: &ItemFn) -> Block {
     *item_fn.block.clone()
 }
 
-fn get_inputs_from_itemfn(item_fn: &ItemFn) -> Vec<TokenStream>{
-    let list = item_fn.sig.inputs.clone();
-    let mut inputs: Vec<TokenStream> = Vec::new();
-
-    for (i, _) in list.iter().enumerate()
-    {
-        let pat = if let FnArg::Typed(pat) = list.get(i).unwrap() {
-            *pat.clone().pat
-        } else {
-            continue
-        };
-
-        let function_param = if let Pat::Ident(ident) = pat {
-            ident.ident
-        } else {
-            continue
-        };
-
-        let param_type = {
-            let typepath = if let FnArg::Typed(pattype) = list.get(i).unwrap() {
-                *pattype.clone().ty
-            } else {
-                continue
-            };
-
-            let param_type = if let Type::Path(path) = typepath {
-                path.path.segments[0].ident.clone()
-            } else {
-                continue
-            };
-
-            param_type
-        };
-
-        inputs.push(quote! {
-            #function_param : #param_type
-        });
-    }
-
-    inputs
+fn get_inputs_from_itemfn(item_fn: &ItemFn) -> Punctuated<FnArg, Token![,]>{
+    item_fn.sig.inputs.clone()
 }
 
 fn get_name_from_itemmod(item_mod: &ItemMod) -> Ident {
