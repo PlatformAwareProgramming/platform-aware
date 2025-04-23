@@ -26,4 +26,4 @@ Cargo.lock
 
 # For testing purposes
 main.rs
-.saida
+saida.txt

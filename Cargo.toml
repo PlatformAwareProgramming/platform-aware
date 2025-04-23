@@ -9,9 +9,6 @@ name = "platform-aware"
 version = "0.1.0"
 edition = "2021"
 
-[lib]
-proc-macro = true
-
 [workspace.dependencies]
 platform-aware-features = {path="platform-aware-features"}
 platform-aware-macros = {path="platform-aware-macros"}
