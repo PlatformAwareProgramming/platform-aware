@@ -158,7 +158,6 @@ impl FunctionSupergroup {
                                 FunctionData::new_from_itemfn(item_fn.clone()));
                             fg.params = get_inputs_from_itemfn(&item_fn); 
                             params_names = get_params_name_from_itemfn(&item_fn);
-                            fg.build_platforms(&item_fn);
                         },
                         _ => {},
                     }
@@ -271,9 +270,6 @@ pub fn platformaware
     let platforms_list = fsg.get_all_platforms();
     let contents = get_contents_from_itemmod(&item_mod);
 
-    // eprintln!("\x1b[93m@INFO | Contents:\x1b[00m\n {:#?}",
-    //     contents);
-
     let expanded = quote! {       
         mod #mod_name {
             use platform_aware_features::*;
@@ -322,34 +318,25 @@ fn get_kernel_version_from_item_fn(item_fn: &ItemFn) -> Option<TokenStream> {
         return None;
     };
 
-    let mut is_new = true;
-    let mut is_punct = false;
-    let mut is_sep = false;
-
     //(Platform, Feature)
     let mut kernv: Vec<(TokenStream, TokenStream)> = Vec::new(); 
-    let mut platform: TokenStream = TokenStream::new();
-    let mut feature: TokenStream = TokenStream::new();
+    let mut iter = tokens.into_iter();
 
-    // not the most efficient way of doing it... but works
-    tokens.into_iter().for_each(|token| {
-        if is_sep { 
-            is_sep = false;
-        }
-        else if is_new {
-            platform = token.into();
-            is_punct = true;
-            is_new = false;
-        } else if is_punct {
-            is_punct = false;
+    while let Some(platform_token) = iter.next() {
+        let platform: TokenStream = platform_token.into();
+    
+        let _punct = iter.next();
+    
+        if let Some(feature_token) = iter.next() {
+            let feature: TokenStream = feature_token.into();
+            println!("\x1b[93m@INFO | \x1b[00m feature: {:?}\n", quote! { #feature });
+            kernv.push((platform, feature));
         } else {
-            feature = token.into();
-            is_new = true;
-            kernv.push((platform.clone(), feature.clone()));
-            is_punct = false;
-            is_sep = true;
+            break;
         }
-    });
+    
+        let _sep = iter.next();
+    }
 
     if kernv.len() == 0 {
         return None;

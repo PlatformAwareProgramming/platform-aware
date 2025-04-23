@@ -123,5 +123,7 @@ mod uses {
             //     println!("fallback foo");
             // }
         }
+
+        todo!()
     }
 }
