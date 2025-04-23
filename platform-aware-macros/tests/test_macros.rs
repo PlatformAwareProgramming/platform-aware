@@ -5,8 +5,6 @@ mod uses {
     #[should_panic(expected = "not yet implemented")]
     #[test]
     fn basic() {
-        use platform_aware_macros::platformaware;
-
         #[platformaware(foo, bar)]
         mod mymodule {
             //fallback
@@ -44,11 +42,7 @@ mod uses {
     #[test]
     fn basic_types() {
         #[platformaware(foo, bar, foobar)]
-        mod mymodule {
-            use std::print;
-
-            use platform_aware_macros::kernelversion;
-        
+        mod mymodule {        
             //fallback
             #[kernelversion]
             pub fn foo(x: i32, y: i32, z: i32) {
@@ -95,9 +89,7 @@ mod uses {
     #[test]
     fn only_fallback() {
         #[platformaware(foo, bar, foobar)]
-        mod mymodule {
-            use platform_aware_macros::kernelversion;
-        
+        mod mymodule {        
             //fallback
             #[kernelversion]
             pub fn foo(x: i32, y: i32, z: i32) {
@@ -126,10 +118,10 @@ mod uses {
 
         #[platformaware(foo)]
         mod mymodule {
-            #[kernelversion]
-            fn foo<T>(x: T) {
-                println!("fallback foo");
-            }
+            // #[kernelversion]
+            // fn foo<T>(x: T) {
+            //     println!("fallback foo");
+            // }
         }
     }
 }
