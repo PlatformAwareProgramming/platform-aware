@@ -1,21 +1,10 @@
-
-
-mod imports {
-    #[test]
-    fn import_platformaware_macro(){
-        #[allow(unused_imports)]
-        use platform_aware_macros::platformaware;
-    }
-}
-
+#[cfg(test)]
 mod uses {
     use platform_aware_macros::platformaware;
 
     #[should_panic(expected = "not yet implemented")]
     #[test]
     fn basic() {
-        use platform_aware_macros::platformaware;
-
         #[platformaware(foo, bar)]
         mod mymodule {
             //fallback
@@ -53,11 +42,7 @@ mod uses {
     #[test]
     fn basic_types() {
         #[platformaware(foo, bar, foobar)]
-        mod mymodule {
-            use std::print;
-
-            use platform_aware_macros::kernelversion;
-        
+        mod mymodule {        
             //fallback
             #[kernelversion]
             pub fn foo(x: i32, y: i32, z: i32) {
@@ -104,9 +89,7 @@ mod uses {
     #[test]
     fn only_fallback() {
         #[platformaware(foo, bar, foobar)]
-        mod mymodule {
-            use platform_aware_macros::kernelversion;
-        
+        mod mymodule {        
             //fallback
             #[kernelversion]
             pub fn foo(x: i32, y: i32, z: i32) {
@@ -127,5 +110,20 @@ mod uses {
         mymodule::foo(1,2,3);
         mymodule::bar("ok");
         mymodule::foobar();
+    }
+
+    #[should_panic(expected = "not yet implemented")]
+    #[test]
+    fn generics() {
+
+        #[platformaware(foo)]
+        mod mymodule {
+            // #[kernelversion]
+            // fn foo<T>(x: T) {
+            //     println!("fallback foo");
+            // }
+        }
+
+        todo!()
     }
 }

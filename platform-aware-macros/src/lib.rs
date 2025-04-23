@@ -1,8 +1,14 @@
 //! NOTE: This crate is in early development.
 
-use proc_macro2::{Span, TokenStream};
 use quote::quote;
-use syn::{punctuated::Punctuated,  *};
+use proc_macro2::{
+    Span, TokenStream, TokenTree
+};
+use syn::{
+    parse_macro_input, punctuated::Punctuated,
+    Block, FnArg, Ident, Item, ItemFn, ItemMod,
+    Meta, Pat, Token
+};
 
 /// Represents a function declared in the module passsed 
 /// to the `platformaware` macro. Uses only the function's
@@ -152,7 +158,6 @@ impl FunctionSupergroup {
                                 FunctionData::new_from_itemfn(item_fn.clone()));
                             fg.params = get_inputs_from_itemfn(&item_fn); 
                             params_names = get_params_name_from_itemfn(&item_fn);
-                            fg.build_platforms(&item_fn);
                         },
                         _ => {},
                     }
@@ -216,7 +221,7 @@ impl FunctionSupergroup {
     }
 }
 
-/// This macros should be used in a `mod` declaration. It takes as attributes
+/// This macro should be used in a `mod` declaration. It takes as attributes
 /// the names of the functions declared in the module and builds a multiple
 /// dispatch for each one of them.
 /// 
@@ -263,6 +268,7 @@ pub fn platformaware
     let dispatches = fsg.build_all_match_arms();
     let functions = fsg.build_all_functions();
     let platforms_list = fsg.get_all_platforms();
+    let contents = get_contents_from_itemmod(&item_mod);
 
     let expanded = quote! {       
         mod #mod_name {
@@ -272,6 +278,8 @@ pub fn platformaware
             use platform_aware_nvidia::*;
             use std::collections::HashMap;
             use lazy_static::lazy_static;
+
+            #(#contents)*
     
             lazy_static! {
                 static ref V: i32 = {
@@ -286,7 +294,7 @@ pub fn platformaware
     };
 
     eprintln!("\x1b[93m@INFO | Generated the following module:\x1b[00m\n {}",
-     proc_macro::TokenStream::from(expanded.clone()));
+        proc_macro::TokenStream::from(expanded.clone()));
 
     proc_macro::TokenStream::from(expanded)
 }
@@ -310,34 +318,25 @@ fn get_kernel_version_from_item_fn(item_fn: &ItemFn) -> Option<TokenStream> {
         return None;
     };
 
-    let mut is_new = true;
-    let mut is_punct = false;
-    let mut is_sep = false;
-
     //(Platform, Feature)
     let mut kernv: Vec<(TokenStream, TokenStream)> = Vec::new(); 
-    let mut platform: TokenStream = TokenStream::new();
-    let mut feature: TokenStream = TokenStream::new();
+    let mut iter = tokens.into_iter();
 
-    // not the most efficient way of doing it... but works
-    tokens.into_iter().for_each(|token| {
-        if is_sep { 
-            is_sep = false;
-        }
-        else if is_new {
-            platform = token.into();
-            is_punct = true;
-            is_new = false;
-        } else if is_punct {
-            is_punct = false;
+    while let Some(platform_token) = iter.next() {
+        let platform: TokenStream = platform_token.into();
+    
+        let _punct = iter.next();
+    
+        if let Some(feature_token) = iter.next() {
+            let feature: TokenStream = feature_token.into();
+            println!("\x1b[93m@INFO | \x1b[00m feature: {:?}\n", quote! { #feature });
+            kernv.push((platform, feature));
         } else {
-            feature = token.into();
-            is_new = true;
-            kernv.push((platform.clone(), feature.clone()));
-            is_punct = false;
-            is_sep = true;
+            break;
         }
-    });
+    
+        let _sep = iter.next();
+    }
 
     if kernv.len() == 0 {
         return None;
@@ -388,6 +387,70 @@ fn create_arms(function_name: Ident,
     arms.push(expr);
 
     arms
+}
+
+fn get_contents_from_itemmod(item_mod: &ItemMod) -> Vec<TokenStream> {
+    let mut contents: Vec<TokenStream> = Vec::new();
+    let item = quote! { #item_mod };
+
+    for it in item.into_iter() {
+        if let TokenTree::Group(ctn) = it {
+            for (i, token) in ctn.stream().into_iter().enumerate() {
+                let next = match ctn.clone().stream().into_iter().nth(i + 1) {
+                    Some(t) => t,
+                    None => {
+                        contents.push(token.into());
+                        continue;
+                    },
+                };
+
+                if let TokenTree::Punct(punct) = &token {
+                    if punct.as_char() == '#' {
+                        if let TokenTree::Group(group) = next {
+                            let ident = group.stream().into_iter().nth(0).unwrap();
+                            if let TokenTree::Ident(ident_) = ident {
+                                if ident_.to_string() == "kernelversion" {
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+
+                contents.push(token.into());
+            }
+            // let next = match item.clone().into_iter().nth(i + 1) {
+            //     Some(t) => t,
+            //     None => {
+            //         contents.push(token.into());
+            //         continue;
+            //     },
+            // };
+
+            // println!("{}", token.to_string());
+
+            // if let TokenTree::Punct(punct) = &token {
+            // println!("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n!!!!!");
+            // println!("punct: {}", punct.as_char());
+            //     if punct.as_char() == '#' {
+            //         if let TokenTree::Group(group) = next {
+            //             let ident = group.stream().into_iter().nth(0).unwrap();
+            //             println!("ident: {}", ident.to_string());
+            //             if let TokenTree::Ident(ident_) = ident {
+            //                 println!("ident: {}", ident_.to_string());
+            //                 if ident_.to_string() == "kernelversion" {
+            //                     break;
+            //                 }
+            //             }
+            //         }
+            //     }
+            // }
+
+            // contents.push(token.into());
+        }
+    }
+
+    contents
 }
 
 fn get_block_from_item_fn(item_fn: &ItemFn) -> Block {
