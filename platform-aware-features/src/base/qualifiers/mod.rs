@@ -1,7 +1,7 @@
 
 mod cpu;
 mod accelerator;
-mod memory;
+mod memory; 
 mod storage;
 mod network;
 mod virtualmachine;

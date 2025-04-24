@@ -1,7 +1,4 @@
-
-
-use super::feature::*;
-use super::parameters::*;
+use crate::{FeatureType, Feature, PlatformParameters};
 
 pub enum QuantifierType {
     AtLeast,

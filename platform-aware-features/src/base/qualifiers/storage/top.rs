@@ -1,4 +1,3 @@
-
 use crate::{Feature, PlatformParameters};
 
 pub struct StoType;

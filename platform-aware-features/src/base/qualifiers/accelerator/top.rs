@@ -2,12 +2,23 @@ use crate::{Feature, PlatformParameters};
 
 pub struct AccManufacturer;
 pub struct AccMemoryType;
-pub struct AccBackend;
 pub struct AccArchitecture;
 pub struct AccModel;
 pub struct AccProcessor;
-pub struct AccType;
+pub struct AccInterconnect;
+pub struct AccBackend;
 
+impl Feature for AccBackend { 
+    fn is_top(self:&Self) -> bool { true }
+    fn string(self:&Self) -> String { "AccBackend".to_string() } 
+    fn feature_class(self:&Self) -> std::option::Option<PlatformParameters> { Some(PlatformParameters::acc_backend) } 
+}
+
+impl Feature for AccInterconnect { 
+    fn is_top(self:&Self) -> bool { true }
+    fn string(self:&Self) -> String { "AccInterconnect".to_string() } 
+    fn feature_class(self:&Self) -> std::option::Option<PlatformParameters> { Some(PlatformParameters::acc_interconnect) } 
+}
 
 impl Feature for AccManufacturer { 
     fn is_top(self:&Self) -> bool { true }
@@ -19,12 +30,6 @@ impl Feature for AccMemoryType {
     fn is_top(self:&Self) -> bool { true }
     fn string(self:&Self) -> String { "AccMemoryType".to_string() } 
     fn feature_class(self:&Self) -> std::option::Option<PlatformParameters> { Some(PlatformParameters::acc_memory_type) } 
-}
-
-impl Feature for AccBackend { 
-    fn is_top(self:&Self) -> bool { true }
-    fn string(self:&Self) -> String { "AccBackend".to_string() } 
-    fn feature_class(self:&Self) -> std::option::Option<PlatformParameters> { Some(PlatformParameters::acc_architecture) } 
 }
 
 impl Feature for AccArchitecture { 
@@ -45,9 +50,6 @@ impl Feature for AccProcessor {
     fn feature_class(self:&Self) -> std::option::Option<PlatformParameters> { Some(PlatformParameters::acc_processor) } 
 }
 
-impl Feature for AccType { 
-    fn is_top(self:&Self) -> bool { true }
-    fn string(self:&Self) -> String { "AccType".to_string() } 
-    fn feature_class(self:&Self) -> std::option::Option<PlatformParameters> { Some(PlatformParameters::acc_type) } 
-}
+
+
 

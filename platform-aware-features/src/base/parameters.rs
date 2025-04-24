@@ -14,6 +14,7 @@ pub enum PlatformParameters {
     acc_memory_size,
     acc_tdp,
     acc_type,
+    acc_interconnect,
 
     /* processor features */
     cpu_count,
@@ -79,6 +80,7 @@ pub const PLATFORM_PARAMETERS:&[PlatformParameters] = &[
                                                     PlatformParameters::acc_memory_size,
                                                     PlatformParameters::acc_tdp,
                                                     PlatformParameters::acc_type,                                                    
+                                                    PlatformParameters::acc_interconnect,                                                    
                                                     PlatformParameters::cpu_core_count,
                                                     PlatformParameters::cpu_count,
                                                     PlatformParameters::cpu_core_threads_count,

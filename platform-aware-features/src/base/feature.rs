@@ -1,8 +1,7 @@
 //mod quantifier;
 
 
-use super::quantifiers::{QuantifierType};
-use super::parameters::PlatformParameters;
+use crate::{PlatformParameters, QuantifierType};
 
 use std::hash::{DefaultHasher, Hash, Hasher};
 
