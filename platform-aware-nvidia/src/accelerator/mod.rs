@@ -1,6 +1,8 @@
-mod backend;
-mod model;
+mod acc_backend;
+mod acc_model; 
+mod acc_interconnect;
 
-pub use model::*;
-pub use backend::*;
+pub use acc_model::*;
+pub use acc_backend::*;
+pub use acc_interconnect::*;
 
