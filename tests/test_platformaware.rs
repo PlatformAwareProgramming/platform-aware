@@ -23,7 +23,7 @@ use platform_aware_features::{Feature, CPUSIMD, AVX512};
             };
         }
 
-        pub fn f(x:i64, y:i64, z:i64) {
+        pub fn f(x:i64, y:i64, z:i64) -> i64 {
             match *V{
                 1 => f1(x,y,z),
                 2 => f2(x,y,z),
@@ -34,24 +34,29 @@ use platform_aware_features::{Feature, CPUSIMD, AVX512};
         }
     
         // fall-back
-        fn f0(x:i64, y:i64, z:i64) {
-            println!("fall-back actions")
+        fn f0(x:i64, y:i64, z:i64) -> i64{
+            println!("fall-back actions");
+            1i64
         }
     
-        fn f1(x:i64, y:i64, z:i64) {
-            println!("first version actions")
+        fn f1(x:i64, y:i64, z:i64) -> i64 {
+            println!("first version actions");
+            2i64
         }
     
-        fn f2(x:i64, y:i64, z:i64) {
-            println!("second version actions")        
+        fn f2(x:i64, y:i64, z:i64) -> i64 {
+            println!("second version actions");
+            3i64
         }
     
-        fn f3(x:i64, y:i64, z:i64) {
-            println!("third version actions")        
+        fn f3(x:i64, y:i64, z:i64) -> i64 {
+            println!("third version actions");
+            4i64
         }
 
-        fn f4(x:i64, y:i64, z:i64) {
-            println!("fourth version actions")        
+        fn f4(x:i64, y:i64, z:i64) -> i64 {
+            println!("fourth version actions");
+            5i64
         }
     }    
 
@@ -63,28 +68,33 @@ use platform_aware_features::{Feature, CPUSIMD, AVX512};
     
        // default version (fallback)
        #[kernelversion]
-       fn f(x:i64, y:i64, z:i64) {
-         println!("fall-back actions x={x} y={y} z={z}") 
+       fn f(x:i64, y:i64, z:i64) -> i64{
+         println!("fall-back actions x={x} y={y} z={z}");
+         1i64
        }
     
        #[kernelversion(cpu_simd=AVX512)]
-       fn f(x:i64, y:i64, z:i64) {
-         println!("first version actions x={x} y={y} z={z}") 
+       fn f(x:i64, y:i64, z:i64)  -> i64{
+         println!("first version actions x={x} y={y} z={z}");
+         2i64
        }
     
        #[kernelversion(acc_model=NVidiaH100)]
-       fn f(x:i64, y:i64, z:i64) {
-         println!("second version actions x={x} y={y} z={z}") 
+       fn f(x:i64, y:i64, z:i64) -> i64{
+         println!("second version actions x={x} y={y} z={z}");
+         3i64
        }
     
        #[kernelversion(acc_count=2, acc_backend=CUDA10)]
-       fn f(x:i64, y:i64, z:i64) {
-         println!("third version actions x={x} y={y} z={z}") 
+       fn f(x:i64, y:i64, z:i64) -> i64 {
+         println!("third version actions x={x} y={y} z={z}");
+         4i64
        }
     
        #[kernelversion(acc_count=4)]
-       fn f(x:i64, y:i64, z:i64) {
-         println!("fourth version actions x={x} y={y} z={z}") 
+       fn f(x:i64, y:i64, z:i64) -> i64 {
+         println!("fourth version actions x={x} y={y} z={z}");
+         5i64
        }
    
     }
