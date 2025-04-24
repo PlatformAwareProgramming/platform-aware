@@ -1,12 +1,10 @@
-use platform_aware_features::{Feature, CPUSIMD};
-use platform_aware_intel::AVX512;
+use platform_aware_features::{Feature, CPUSIMD, AVX512};
 
 
     #[allow(unused_variables)]
     mod mymodule {
 
-        use platform_aware_features::{resolve, AtMost, Feature, PlatformParameters};
-        use platform_aware_intel::AVX512;
+        use platform_aware_features::{resolve, AtMost, Feature, PlatformParameters,AVX512};
         use platform_aware_nvidia::CUDA8;
         use std::collections::HashMap;
         use lazy_static::lazy_static;
