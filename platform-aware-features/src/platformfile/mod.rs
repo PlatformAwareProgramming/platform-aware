@@ -18,75 +18,75 @@ pub struct Platform {
 
 #[derive(Deserialize)]
 pub struct PlatformAccelerator {
-    pub accelerator_manufacturer:Option<String>,
-    pub accelerator_memory_type:Option<String>,
-    pub accelerator_count:Option<i32>,
-    pub accelerator_api:Option<Array>,
-    pub accelerator_architecture:Option<String>,
-    pub accelerator:Option<String>,
-    pub accelerator_processor_count:Option<i32>,
-    pub accelerator_processor:Option<String>,
-    pub accelerator_memory_size:Option<i32>,
-    pub accelerator_tdp:Option<i32>,
-    pub accelerator_type:Option<String>,
+    pub acc_manufacturer:Option<String>,
+    pub acc_memory_type:Option<String>,
+    pub acc_count:Option<i32>,
+    pub acc_api:Option<Array>,
+    pub acc_architecture:Option<String>,
+    pub acc_model:Option<String>,
+    pub acc_processor_count:Option<i32>,
+    pub acc_processor:Option<String>,
+    pub acc_memory_size:Option<i32>,
+    pub acc_tdp:Option<i32>,
+    pub acc_type:Option<String>,
 }
 
 #[derive(Deserialize)]
 pub struct PlatformProcessor {
-    pub processor_core_count:Option<i32>,
-    pub processor_count:Option<i32>,
-    pub processor_core_threads_count:Option<i32>,
-    pub processor_simd:Option<Array>,
-    pub processor_core_L2_size:Option<i32>,
-    pub processor_L3_size:Option<i32>,
-    pub processor_core_L1_size:Option<i32>,
-    pub processor_core_clock:Option<i32>,
-    pub processor_manufacturer:Option<String>,
-    pub processor_isa:Option<String>,
-    pub processor_tdp:Option<i32>,
-    pub processor:Option<String>,
-    pub processor_microarchitecture:Option<String>,
+    pub cpu_core_count:Option<i32>,
+    pub cpu_count:Option<i32>,
+    pub cpu_core_threads_count:Option<i32>,
+    pub cpu_simd:Option<Array>,
+    pub cpu_L2_size:Option<i32>,
+    pub cpu_L3_size:Option<i32>,
+    pub cpu_L1_size:Option<i32>,
+    pub cpu_core_clock:Option<i32>,
+    pub cpu_manufacturer:Option<String>,
+    pub cpu_isa:Option<String>,
+    pub cpu_tdp:Option<i32>,
+    pub cpu_model:Option<String>,
+    pub cpu_microarchitecture:Option<String>,
 }
 
 #[derive(Deserialize)]
 pub struct PlatformInterconnection {
-    pub interconnection_latency:Option<i32>,
-    pub interconnection:Option<String>,
-    pub interconnection_bandwidth:Option<i32>,
-    pub interconnection_startuptime:Option<i32>,
-    pub interconnection_RDMA:Option<String>,
-    pub interconnection_topology:Option<String>,    
+    pub net_latency:Option<i32>,
+    pub net_model:Option<String>,
+    pub net_bandwidth:Option<i32>,
+    pub net_startuptime:Option<i32>,
+    pub net_RDMA:Option<String>,
+    pub net_topology:Option<String>,    
 }
 
 #[derive(Deserialize)]
 pub struct PlatformStorage {
-    pub storage_bandwidth:Option<i32>,
-    pub storage_type:Option<String>,
-    pub storage_latency:Option<i32>,
-    pub storage_size:Option<i32>,
-    pub storage_networkbandwidth:Option<i32>,
-    pub storage_interface:Option<String>,
+    pub sto_bandwidth:Option<i32>,
+    pub sto_type:Option<String>,
+    pub sto_latency:Option<i32>,
+    pub sto_size:Option<i32>,
+    pub sto_networkbandwidth:Option<i32>,
+    pub sto_interface:Option<String>,
 }
 
 #[derive(Deserialize)]
 pub struct PlatformMemory {
-    pub node_memory_frequency:Option<i32>,
-    pub node_memory_size:Option<i32>,
-    pub node_memory_latency:Option<i32>,
-    pub node_memory_type:Option<String>,
-    pub node_memory_bandwidth:Option<i32>
+    pub mem_frequency:Option<i32>,
+    pub mem_size:Option<i32>,
+    pub mem_latency:Option<i32>,
+    pub mem_type:Option<String>,
+    pub mem_bandwidth:Option<i32>
 }    
 
 #[derive(Deserialize)]
 pub struct PlatformNode {
-    pub node_dedicated:Option<bool>,
-    pub node_count:Option<i32>,
-    pub node_virtual:Option<bool>,
-    pub node_machinetype:Option<String>,
-    pub node_threads_count:Option<i32>,
-    pub node_machinefamily:Option<String>,
-    pub node_provider:Option<String>,
-    pub node_vcpus_count:Option<i32>,
+    pub vm_dedicated:Option<bool>,
+    pub vm_count:Option<i32>,
+    pub vm_virtual:Option<bool>,
+    pub vm_machinetype:Option<String>,
+    pub vm_threads_count:Option<i32>,
+    pub vm_machinefamily:Option<String>,
+    pub vm_provider:Option<String>,
+    pub vm_vcpus_count:Option<i32>,
 }
 
 pub fn readplatform() -> Result<Platform,Box<dyn Error>> {
@@ -120,7 +120,7 @@ pub fn readplatformfeatures() -> HashMap<PlatformParameters, &'static dyn Featur
     };
 
    // let v0 = t.processor.unwrap();
-   // let v1 = v0.processor_simd.unwrap();
+   // let v1 = v0.cpu_simd.unwrap();
    // println!("ACCELERATOR {}", v1[0]);
 
     let mut m: HashMap<PlatformParameters, &dyn Feature> = HashMap::new();

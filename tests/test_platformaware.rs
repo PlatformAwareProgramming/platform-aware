@@ -1,4 +1,4 @@
-use platform_aware_features::{Feature, SIMD};
+use platform_aware_features::{Feature, CPUSIMD};
 use platform_aware_intel::AVX512;
 
 
@@ -59,7 +59,7 @@ use platform_aware_intel::AVX512;
 
     use platform_aware_macros::platformaware;
 
-    #[allow(unused_imports)]
+//    #[allow(unused_imports)]
     #[platformaware(f)]
     mod mymodule2 {
     
