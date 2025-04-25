@@ -5,30 +5,22 @@ use proc_macro2::{
     Span, TokenStream, TokenTree
 };
 use syn::{
-    parse_macro_input, punctuated::Punctuated,
-    Block, FnArg, Ident, Item, ItemFn, ItemMod,
-    Meta, Pat, Token
+    parse_macro_input, punctuated::Punctuated, Block, FnArg, Ident, Item, ItemFn, ItemMod, Meta, Pat, ReturnType, Token, Type
 };
 
-/// Represents a function declared in the module passsed 
-/// to the `platformaware` macro. Uses only the function's
-/// body (block) and the platforms/features it supports.
-/// Isn't meant to be used directly. Always in a supergroup.
 struct FunctionData {
     block: Block,
     kernelv: Option<TokenStream>,
 }
 
-/// A group of functions with the same name, passed as attr
-/// to the `platformaware` macro.
 struct FunctionGroup {
     ident: Ident,
     params: Punctuated<FnArg, Token![,]>,
     functions: Vec<FunctionData>,
     match_arms: Vec<TokenStream>,
+    return_type: ReturnType,
 }
 
-/// All functions passed to the `platformaware` macro.
 struct FunctionSupergroup(Vec<FunctionGroup>);
 
 impl FunctionData {
@@ -46,22 +38,9 @@ impl FunctionData {
         )
     }
 
-    /// Returns a new function with the given parameters and body,
-    /// and a name that is the same as the given function name
-    /// plus the given number.
-    ///
-    /// The returned function is a valid Rust function declaration.
-    ///
-    /// # Parameters
-    ///
-    /// * `params`: The parameters to the new function. Each parameter
-    ///   is a `TokenStream` that represents the type and name of the
-    ///   parameter.
-    /// * `function_name`: The name of the new function. This will be
-    ///   the name of the function without the number appended to it.
-    /// * `n`: The number to append to the function name.
     fn build_function
-        (&self, params: Punctuated<FnArg, Token![,]>, mut function_name: Ident, n: i32) 
+        (&self, params: Punctuated<FnArg, Token![,]>, mut function_name: Ident, n: i32,
+        return_type: ReturnType) 
         -> TokenStream {
 
         let block_ = &self.block;
@@ -71,7 +50,7 @@ impl FunctionData {
             &format!("{}{}", function_name, n), Span::call_site().into());
 
         quote! {
-            fn #function_name (#(#params_),*) #block_
+            fn #function_name (#(#params_),*) #return_type #block_
         }
     }
 }
@@ -79,38 +58,31 @@ impl FunctionData {
 impl FunctionGroup {
     fn new
         (ident: Ident, params: Punctuated<FnArg, Token![,]>, functions: Vec<FunctionData>, 
-        match_arms: Vec<TokenStream>) -> FunctionGroup {
+        match_arms: Vec<TokenStream>, return_type: ReturnType) -> FunctionGroup {
 
         FunctionGroup { 
             ident,
             params,
             functions,
             match_arms,
+            return_type,
         }
     }   
 
-    /// Creates match arms for the dispatch function of this group, based on
-    /// the given function name and parameters, and the number of variants.
-    /// The match arms are stored in the `match_arms` field of this struct.
     fn build_arms
         (&mut self, function_name: Ident, params_name: Vec<Ident>, n: i32) {
 
         self.match_arms = create_arms(function_name, params_name, n);
     }
 
-    /// Generates a dispatch function for the group, which matches against a 
-    /// resolved platform value `V` and executes the appropriate function 
-    /// variant based on the match arms. Each match arm corresponds to a 
-    /// specific implementation of the function identified by `ident`,
-    /// and the function is called with the specified 
-    /// parameters.
     fn build_group_dispatch(&self) -> TokenStream {
         let ident_ = &self.ident;
         let params_ = self.params.clone().into_iter();
         let arms_ = &self.match_arms;
+        let return_type_ = &self.return_type;
 
         let dispatch = quote! {
-            pub fn #ident_ (#(#params_),*) {
+            pub fn #ident_ (#(#params_),*) #return_type_ {
                 match *V {
                     #(#arms_),*
                 }
@@ -119,24 +91,9 @@ impl FunctionGroup {
 
         dispatch
     }
-
-    /// This function takes a `syn::ItemFn` as input and iterates over the
-    /// functions in the group, and for each function, it sets the `kernelv` field
-    /// to the kernel version extracted from the `ItemFn`.
-    fn build_platforms(&mut self, item_fn: &ItemFn) {
-        for f in &mut self.functions {
-            f.kernelv = get_kernel_version_from_item_fn(item_fn);
-        }
-    }
 }
 
 impl FunctionSupergroup {
-    /// This function takes a `syn::ItemMod` and a vector of `syn::Ident`s as 
-    /// input. It then iterates over the vector of `syn::Ident`s and creates a
-    /// `FunctionGroup` for each one by iterating over the content of the
-    /// `syn::ItemMod` and finding all the functions with the same name as the
-    /// syn::Ident`. It then builds the arms for each `FunctionGroup` and adds
-    /// it to the `FunctionSupergroup`.
     fn build_supergroup(item_mod: &ItemMod, idents: Vec<Ident>) 
         -> FunctionSupergroup {
 
@@ -145,7 +102,8 @@ impl FunctionSupergroup {
         for ident in idents {
             let ident_ = ident.clone();
             let mut fg = FunctionGroup::new(
-                ident, Punctuated::new(), Vec::new(), Vec::new());
+                ident, Punctuated::new(), Vec::new(), Vec::new(),
+                ReturnType::Default);
             let mut params_names: Vec<Ident> = Vec::new();
             
             if let Some(tuple) = &item_mod.content {
@@ -158,6 +116,7 @@ impl FunctionSupergroup {
                                 FunctionData::new_from_itemfn(item_fn.clone()));
                             fg.params = get_inputs_from_itemfn(&item_fn); 
                             params_names = get_params_name_from_itemfn(&item_fn);
+                            fg.return_type = get_return_type_from_itemfn(&item_fn);
                         },
                         _ => {},
                     }
@@ -196,7 +155,8 @@ impl FunctionSupergroup {
             for (i, f) in fg.functions.iter().enumerate() {
                 functions.push(
                     f.build_function(
-                        fg.params.clone(), fg.ident.clone(), i as i32));
+                        fg.params.clone(), fg.ident.clone(), i as i32,
+                        fg.return_type.clone()));
             }
         }
 
@@ -223,35 +183,42 @@ impl FunctionSupergroup {
 
 /// This macro should be used in a `mod` declaration. It takes as attributes
 /// the names of the functions declared in the module and builds a multiple
-/// dispatch for each one of them.
+/// dispatch for each one of them based on the specified platform features.
 /// 
 /// # Example
+/// ## Declaration
 /// ```
-/// use platform_aware_macros::platformaware;
-/// 
-/// #[platformaware(foo, bar)]
-/// mod mymodule {
+/// #[platformaware(add, multiply)]
+/// mod math_operations {
 ///     #[kernelversion]
-///     pub fn foo(x: i32, y: i32, z: i32) {
-///         println!("fallback foo");
+///     pub fn add(a: i32, b: i32) -> i32 {
+///         println!("Using fallback add");
+///         a + b
 ///     }
-///     #[kernelversion(cpu_simd=AVX512, cpu_simd=AVX512)]
-///     pub fn foo(x: i32, y: i32, z: i32) {
-///         println!("1 foo");
+///
+///     #[kernelversion(cpu_simd=AVX512)]
+///     pub fn add(a: i32, b: i32) -> i32 {
+///         println!("Using AVX512 optimized add");
+///         a + b
 ///     }
-///     #[kernelversion(cpu_simd=AVX512, acc_backend=CUDA8)]
-///     pub fn foo(x: i32, y: i32, z: i32) {
-///         println!("2 foo");
-///     }
-///     #[kernelversion(cpu_simd=AVX512, acc_backend=CUDA10)]
-///     pub fn foo(x: i32, y: i32, z: i32) {
-///         println!("2 foo");
-///     }
+///
 ///     #[kernelversion]
-///     pub fn bar() {
-///         println!("fallback bar");
+///     pub fn multiply(a: i32, b: i32) -> i32 {
+///         println!("Using fallback multiply");
+///         a * b
+///     }
+///
+///     #[kernelversion(acc_backend=CUDA10)]
+///     pub fn multiply(a: i32, b: i32) -> i32 {
+///         println!("Using CUDA10 optimized multiply");
+///         a * b
 ///     }
 /// }
+/// ```
+/// ## Calling
+/// ```
+/// let sum = math_operations::add(5, 10);
+/// let product = math_operations::multiply(5, 10);
 /// ```
 #[proc_macro_attribute]
 pub fn platformaware
@@ -299,6 +266,10 @@ pub fn platformaware
     proc_macro::TokenStream::from(expanded)
 }
 
+fn get_return_type_from_itemfn(item_fn: &ItemFn) -> ReturnType {
+    item_fn.sig.output.clone()
+}
+
 fn get_function_ids_from_attr(attr: proc_macro::TokenStream) -> Vec<Ident> {
     let mut ids: Vec<Ident> = Vec::new();
     
@@ -329,7 +300,6 @@ fn get_kernel_version_from_item_fn(item_fn: &ItemFn) -> Option<TokenStream> {
     
         if let Some(feature_token) = iter.next() {
             let feature: TokenStream = feature_token.into();
-            println!("\x1b[93m@INFO | \x1b[00m feature: {:?}\n", quote! { #feature });
             kernv.push((platform, feature));
         } else {
             break;
@@ -419,34 +389,6 @@ fn get_contents_from_itemmod(item_mod: &ItemMod) -> Vec<TokenStream> {
 
                 contents.push(token.into());
             }
-            // let next = match item.clone().into_iter().nth(i + 1) {
-            //     Some(t) => t,
-            //     None => {
-            //         contents.push(token.into());
-            //         continue;
-            //     },
-            // };
-
-            // println!("{}", token.to_string());
-
-            // if let TokenTree::Punct(punct) = &token {
-            // println!("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n!!!!!");
-            // println!("punct: {}", punct.as_char());
-            //     if punct.as_char() == '#' {
-            //         if let TokenTree::Group(group) = next {
-            //             let ident = group.stream().into_iter().nth(0).unwrap();
-            //             println!("ident: {}", ident.to_string());
-            //             if let TokenTree::Ident(ident_) = ident {
-            //                 println!("ident: {}", ident_.to_string());
-            //                 if ident_.to_string() == "kernelversion" {
-            //                     break;
-            //                 }
-            //             }
-            //         }
-            //     }
-            // }
-
-            // contents.push(token.into());
         }
     }
 
