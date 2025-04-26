@@ -32,3 +32,14 @@ impl Feature for DirectX_11_2 {
     fn supertype(self:&Self) -> Option<Box<dyn Feature>> { Some(Box::new(DirectX_11_1)) }
 }
 
+use std::sync::Arc;
+use ctor::ctor;
+use crate::insert_feature;
+
+#[ctor]
+fn module_initializer() {
+    insert_feature(Arc::new(DirectX));
+    insert_feature(Arc::new(DirectX_11_0));
+    insert_feature(Arc::new(DirectX_11_1));
+    insert_feature(Arc::new(DirectX_11_2));
+}

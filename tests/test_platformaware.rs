@@ -25,7 +25,7 @@ use platform_aware_features::{Feature, CPUSIMD, AVX512};
 
         lazy_static! { static ref Vg:i32 = { 
             let features1:[(PlatformParameters, Arc<dyn Feature + Send + Sync>); 1] = [(PlatformParameters::cpu_simd, Arc::new(AVX512))];
-            let features2:[(PlatformParameters, Arc<dyn Feature + Send + Sync>)    ; 2] = [(PlatformParameters::acc_backend, Arc::new(CUDA8)),
+            let features2:[(PlatformParameters, Arc<dyn Feature + Send + Sync>); 2] = [(PlatformParameters::acc_backend, Arc::new(CUDA8)),
                                                                                            (PlatformParameters::acc_count, Arc::new(3))];
             let features3:[(PlatformParameters, Arc<dyn Feature + Send + Sync>); 1] = [(PlatformParameters::acc_backend, Arc::new(CUDA8))];
             let features4:[(PlatformParameters, Arc<dyn Feature + Send + Sync>); 2] = [(PlatformParameters::acc_backend, Arc::new(CUDA8)),

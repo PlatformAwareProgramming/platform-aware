@@ -104,7 +104,7 @@ pub fn readplatform() -> Result<Platform,Box<dyn Error>> {
 use std::collections::HashMap;
 
 
-use crate::{lookup_feature, AtLeast};
+use crate::{lookup_feature, AtLeast, FeatureType, QuantifierType};
 
 use super::{Feature, PlatformParameters};
 
@@ -220,6 +220,10 @@ pub fn readplatformfeatures() -> HashMap<PlatformParameters, Arc<dyn Feature + S
             //match u.vm_virtual { Some(v) => { add_quantifier(&mut m, PlatformParameters::vm_virtual, v); }, None => {} }
         },
         None => {},
+    }
+
+    for (k,v) in &m {
+        println!("{:?}: {:?}", k, match v.feature_type() { FeatureType::Quantifier => v.val().unwrap(), FeatureType::Qualifier => 0 });
     }
 
 
