@@ -3,7 +3,7 @@ use crate::{Feature, PlatformParameters, AccBackend};
 pub struct DirectX;  // <: AcceleratorBackend
 
 impl Feature for DirectX { 
-    fn string(self:&Self) -> String { "DirectX".to_string() } 
+     fn string(self:&Self) -> &'static str { "DirectX" } 
     fn feature_class(self:&Self) -> std::option::Option<PlatformParameters> { Some(PlatformParameters::acc_backend) } 
     fn supertype(self:&Self) -> Option<Box<dyn Feature>> { Some(Box::new(AccBackend)) }
 }
@@ -11,7 +11,7 @@ impl Feature for DirectX {
 pub struct DirectX_11_0;  // <: DirectX
 
 impl Feature for DirectX_11_0 { 
-    fn string(self:&Self) -> String { "DirectX_11_0".to_string() } 
+     fn string(self:&Self) -> &'static str { "DirectX_11_0" } 
     fn feature_class(self:&Self) -> std::option::Option<PlatformParameters> { Some(PlatformParameters::acc_backend) } 
     fn supertype(self:&Self) -> Option<Box<dyn Feature>> { Some(Box::new(DirectX)) }
 }
@@ -19,7 +19,7 @@ impl Feature for DirectX_11_0 {
 pub struct DirectX_11_1;  // <: DirectX_1_1  
 
 impl Feature for DirectX_11_1 { 
-    fn string(self:&Self) -> String { "DirectX_11_1".to_string() } 
+     fn string(self:&Self) -> &'static str { "DirectX_11_1" } 
     fn feature_class(self:&Self) -> std::option::Option<PlatformParameters> { Some(PlatformParameters::acc_backend) } 
     fn supertype(self:&Self) -> Option<Box<dyn Feature>> { Some(Box::new(DirectX_11_0)) }
 }
@@ -27,7 +27,8 @@ impl Feature for DirectX_11_1 {
 pub struct DirectX_11_2;  // <: DirectX_1_2
 
 impl Feature for DirectX_11_2 { 
-    fn string(self:&Self) -> String { "DirectX_11_2".to_string() } 
+     fn string(self:&Self) -> &'static str { "DirectX_11_2" } 
     fn feature_class(self:&Self) -> std::option::Option<PlatformParameters> { Some(PlatformParameters::acc_backend) } 
     fn supertype(self:&Self) -> Option<Box<dyn Feature>> { Some(Box::new(DirectX_11_1)) }
 }
+

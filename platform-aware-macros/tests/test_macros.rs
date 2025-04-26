@@ -7,6 +7,8 @@ mod uses {
     fn basic() {
         #[platformaware(foo, bar)]
         mod mymodule {
+            use platform_aware_nvidia::{CUDA8, CUDA10};
+
             //fallback
             #[kernelversion]
             pub fn foo(x: i32, y: i32, z: i32) {
@@ -43,6 +45,7 @@ mod uses {
     fn basic_types() {
         #[platformaware(foo, bar, foobar)]
         mod mymodule {        
+            use platform_aware_nvidia::{CUDA8, CUDA10};
             //fallback
             #[kernelversion]
             pub fn foo(x: i32, y: i32, z: i32) {

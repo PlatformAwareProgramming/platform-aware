@@ -4,7 +4,7 @@ use platform_aware_features::{AccInterconnect, Feature, PlatformParameters};
 pub struct NVLink; // <: AccInterconnect
 
 impl Feature for NVLink { 
-    fn string(self:&Self) -> String { "NVLink".to_string() } 
+     fn string(self:&Self) -> &'static str { "NVLink" } 
     fn feature_class(self:&Self) -> std::option::Option<PlatformParameters> { Some(PlatformParameters::acc_interconnect) } 
     fn supertype(self:&Self) -> Option<Box<dyn Feature>> { Some(Box::new(AccInterconnect)) }
 }
@@ -12,7 +12,7 @@ impl Feature for NVLink {
 pub struct NVLink_v1; // <: NVLink
 
 impl Feature for NVLink_v1 { 
-    fn string(self:&Self) -> String { "NVLink_v1".to_string() } 
+     fn string(self:&Self) -> &'static str { "NVLink_v1" } 
     fn feature_class(self:&Self) -> std::option::Option<PlatformParameters> { Some(PlatformParameters::acc_interconnect) } 
     fn supertype(self:&Self) -> Option<Box<dyn Feature>> { Some(Box::new(NVLink)) }
 }
@@ -20,7 +20,7 @@ impl Feature for NVLink_v1 {
 pub struct NVLink_v2; // <: NVLink
 
 impl Feature for NVLink_v2 { 
-    fn string(self:&Self) -> String { "NVLink_v2".to_string() } 
+     fn string(self:&Self) -> &'static str { "NVLink_v2" } 
     fn feature_class(self:&Self) -> std::option::Option<PlatformParameters> { Some(PlatformParameters::acc_interconnect) } 
     fn supertype(self:&Self) -> Option<Box<dyn Feature>> { Some(Box::new(NVLink)) }
 }
@@ -28,7 +28,7 @@ impl Feature for NVLink_v2 {
 pub struct NVLink_v3; // <: NVLink
 
 impl Feature for NVLink_v3 { 
-    fn string(self:&Self) -> String { "NVLink_v3".to_string() } 
+     fn string(self:&Self) -> &'static str { "NVLink_v3" } 
     fn feature_class(self:&Self) -> std::option::Option<PlatformParameters> { Some(PlatformParameters::acc_interconnect) } 
     fn supertype(self:&Self) -> Option<Box<dyn Feature>> { Some(Box::new(NVLink)) }
 }
@@ -36,7 +36,7 @@ impl Feature for NVLink_v3 {
 pub struct NVLink_v4; // <: NVLink
 
 impl Feature for NVLink_v4 { 
-    fn string(self:&Self) -> String { "NVLink_v4".to_string() } 
+     fn string(self:&Self) -> &'static str { "NVLink_v4" } 
     fn feature_class(self:&Self) -> std::option::Option<PlatformParameters> { Some(PlatformParameters::acc_interconnect) } 
     fn supertype(self:&Self) -> Option<Box<dyn Feature>> { Some(Box::new(NVLink)) }
 }
@@ -44,7 +44,7 @@ impl Feature for NVLink_v4 {
 pub struct NVLink_v5; // <: NVLink
 
 impl Feature for NVLink_v5 { 
-    fn string(self:&Self) -> String { "NVLink_v5".to_string() } 
+     fn string(self:&Self) -> &'static str { "NVLink_v5" } 
     fn feature_class(self:&Self) -> std::option::Option<PlatformParameters> { Some(PlatformParameters::acc_interconnect) } 
     fn supertype(self:&Self) -> Option<Box<dyn Feature>> { Some(Box::new(NVLink)) }
 }
@@ -52,7 +52,7 @@ impl Feature for NVLink_v5 {
 pub struct NVSwitch; // <: NVLink
 
 impl Feature for NVSwitch { 
-    fn string(self:&Self) -> String { "NVSwitch".to_string() } 
+     fn string(self:&Self) -> &'static str { "NVSwitch" } 
     fn feature_class(self:&Self) -> std::option::Option<PlatformParameters> { Some(PlatformParameters::acc_interconnect) } 
     fn supertype(self:&Self) -> Option<Box<dyn Feature>> { Some(Box::new(NVLink)) }
 }

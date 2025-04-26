@@ -181,45 +181,7 @@ impl FunctionSupergroup {
     }
 }
 
-/// This macro should be used in a `mod` declaration. It takes as attributes
-/// the names of the functions declared in the module and builds a multiple
-/// dispatch for each one of them based on the specified platform features.
-/// 
-/// # Example
-/// ## Declaration
-/// ```
-/// #[platformaware(add, multiply)]
-/// mod math_operations {
-///     #[kernelversion]
-///     pub fn add(a: i32, b: i32) -> i32 {
-///         println!("Using fallback add");
-///         a + b
-///     }
-///
-///     #[kernelversion(cpu_simd=AVX512)]
-///     pub fn add(a: i32, b: i32) -> i32 {
-///         println!("Using AVX512 optimized add");
-///         a + b
-///     }
-///
-///     #[kernelversion]
-///     pub fn multiply(a: i32, b: i32) -> i32 {
-///         println!("Using fallback multiply");
-///         a * b
-///     }
-///
-///     #[kernelversion(acc_backend=CUDA10)]
-///     pub fn multiply(a: i32, b: i32) -> i32 {
-///         println!("Using CUDA10 optimized multiply");
-///         a * b
-///     }
-/// }
-/// ```
-/// ## Calling
-/// ```
-/// let sum = math_operations::add(5, 10);
-/// let product = math_operations::multiply(5, 10);
-/// ```
+
 #[proc_macro_attribute]
 pub fn platformaware
     (attr: proc_macro::TokenStream, item: proc_macro::TokenStream) 
@@ -240,11 +202,11 @@ pub fn platformaware
     let expanded = quote! {       
         mod #mod_name {
             use platform_aware_features::*;
-            use platform_aware_amd::*;
-            use platform_aware_intel::*;
-            use platform_aware_nvidia::*;
-            use std::collections::HashMap;
+//            use platform_aware_amd::*;
+//            use platform_aware_intel::*;
+//            use platform_aware_nvidia::*;
             use lazy_static::lazy_static;
+            use std::{collections::HashMap, sync::Arc};
 
             #(#contents)*
     
@@ -317,11 +279,13 @@ fn get_kernel_version_from_item_fn(item_fn: &ItemFn) -> Option<TokenStream> {
     for (platform, feature) in kernv {
         if tokens_len == 1 {
             tokens.extend(quote! {
-                (PlatformParameters::#platform, &#feature as &dyn Feature)
-            });
+//                (PlatformParameters::#platform, &#feature as &dyn Feature)
+                (PlatformParameters::#platform, Arc::new(#feature) as Arc<dyn Feature + Send + Sync>)
+});
         } else {
             tokens.extend(quote! {
-                (PlatformParameters::#platform, &#feature as &dyn Feature),
+//                (PlatformParameters::#platform, &#feature as &dyn Feature),
+                (PlatformParameters::#platform, Arc::new(#feature) as Arc<dyn Feature + Send + Sync>),
             })
         }
 

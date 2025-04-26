@@ -25,3 +25,5 @@ platform-aware-macros = {workspace=true}
 platform-aware-nvidia = {workspace=true}
 platform-aware-intel = {workspace=true}
 platform-aware-amd = {workspace=true}
+dashmap = "6.1.0"
+ctor = "0.4.2"
