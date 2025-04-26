@@ -15,8 +15,8 @@ pub struct AtMost {
 }
 
 impl Feature for AtLeast {  
-    fn is_top(self:&Self) -> bool { self.val==std::i32::MAX }
-    fn string(self:&Self) -> String { "atleast".to_string() } 
+    fn is_top(self:&Self) -> bool { self.val==0 }
+     fn string(self:&Self) -> &'static str { "atleast" } 
     fn feature_type(self:&Self) -> FeatureType { FeatureType::Quantifier } 
     fn feature_class(self:&Self) -> std::option::Option<PlatformParameters> { None }
     fn val(self:&Self) -> Option<i32> { Some((*self).val) } 
@@ -25,8 +25,8 @@ impl Feature for AtLeast {
 }
 
 impl Feature for AtMost {  
-    fn is_top(self:&Self) -> bool { self.val==0 }
-    fn string(self:&Self) -> String { "atmost".to_string() } 
+    fn is_top(self:&Self) -> bool { self.val==std::i32::MAX }
+     fn string(self:&Self) -> &'static str { "atmost" } 
     fn feature_type(self:&Self) -> FeatureType { FeatureType::Quantifier } 
     fn feature_class(self:&Self) -> std::option::Option<PlatformParameters> { None }
     fn val(self:&Self) -> Option<i32> { Some((*self).val) } 
@@ -35,8 +35,8 @@ impl Feature for AtMost {
 }
 
 impl Feature for i32 {  
-    fn is_top(self:&Self) -> bool { true }
-    fn string(self:&Self) -> String { "value".to_string() } 
+    fn is_top(self:&Self) -> bool { false }   // ???
+    fn string(self:&Self) -> &'static str { "value" } 
     fn feature_type(self:&Self) -> FeatureType { FeatureType::Quantifier } 
     fn feature_class(self:&Self) -> std::option::Option<PlatformParameters> { None }
     fn val(self:&Self) -> Option<i32> { Some(*self) } 

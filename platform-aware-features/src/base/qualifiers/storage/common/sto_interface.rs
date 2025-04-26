@@ -4,7 +4,7 @@ use crate::{Feature, PlatformParameters, StoInterface};
 pub struct SATA;  // <:StorageInterface
 
 impl Feature for SATA { 
-    fn string(self:&Self) -> String { "SATA".to_string() } 
+     fn string(self:&Self) -> &'static str { "SATA" } 
     fn feature_class(self:&Self) -> std::option::Option<PlatformParameters> { Some(PlatformParameters::acc_backend) } 
     fn supertype(self:&Self) -> Option<Box<dyn Feature>> { Some(Box::new(StoInterface)) }
 }
@@ -12,7 +12,7 @@ impl Feature for SATA {
 pub struct IDE;  // <:StorageInterface
 
 impl Feature for IDE { 
-    fn string(self:&Self) -> String { "IDE".to_string() } 
+     fn string(self:&Self) -> &'static str { "IDE" } 
     fn feature_class(self:&Self) -> std::option::Option<PlatformParameters> { Some(PlatformParameters::acc_backend) } 
     fn supertype(self:&Self) -> Option<Box<dyn Feature>> { Some(Box::new(StoInterface)) }
 }
@@ -20,7 +20,7 @@ impl Feature for IDE {
 pub struct SAS;  // <:StorageInterface
 
 impl Feature for SAS { 
-    fn string(self:&Self) -> String { "SAS".to_string() } 
+     fn string(self:&Self) -> &'static str { "SAS" } 
     fn feature_class(self:&Self) -> std::option::Option<PlatformParameters> { Some(PlatformParameters::acc_backend) } 
     fn supertype(self:&Self) -> Option<Box<dyn Feature>> { Some(Box::new(StoInterface)) }
 }
@@ -28,7 +28,7 @@ impl Feature for SAS {
 pub struct SCSI;  // <:StorageInterface
 
 impl Feature for SCSI { 
-    fn string(self:&Self) -> String { "SCSI".to_string() } 
+     fn string(self:&Self) -> &'static str { "SCSI" } 
     fn feature_class(self:&Self) -> std::option::Option<PlatformParameters> { Some(PlatformParameters::acc_backend) } 
     fn supertype(self:&Self) -> Option<Box<dyn Feature>> { Some(Box::new(StoInterface)) }
 }
@@ -36,7 +36,20 @@ impl Feature for SCSI {
 pub struct FC;  // <:StorageInterface
 
 impl Feature for FC { 
-    fn string(self:&Self) -> String { "FC".to_string() } 
+     fn string(self:&Self) -> &'static str { "FC" } 
     fn feature_class(self:&Self) -> std::option::Option<PlatformParameters> { Some(PlatformParameters::acc_backend) } 
     fn supertype(self:&Self) -> Option<Box<dyn Feature>> { Some(Box::new(StoInterface)) }
+}
+
+use crate::insert_feature;
+use std::sync::Arc;
+use ctor::ctor;
+
+#[ctor]
+fn module_initializer() {
+    insert_feature(Arc::new(SATA));
+    insert_feature(Arc::new(IDE));
+    insert_feature(Arc::new(SAS));
+    insert_feature(Arc::new(SCSI));
+    insert_feature(Arc::new(FC));
 }

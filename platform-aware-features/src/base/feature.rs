@@ -3,7 +3,7 @@
 
 use crate::{PlatformParameters, QuantifierType};
 
-use std::hash::{DefaultHasher, Hash, Hasher};
+use std::{hash::{DefaultHasher, Hash, Hasher}, sync::Arc};
 
 pub enum FeatureType {
     Qualifier,
@@ -14,7 +14,7 @@ pub trait Feature {
 
     fn is_top(self:&Self) -> bool { false }
 
-    fn string(self:&Self) -> String;
+    fn string(self:&Self) -> &'static str;
 
     fn hash_code(self:&Self) -> u64 {
         let mut s = DefaultHasher::new();
@@ -33,7 +33,7 @@ pub trait Feature {
     fn other_val(self:&Self) -> Option<i32> { None }                  // only for quantifiers
 
     // Subtype relation betwenn qualifier and quantifier features
-    fn subtypeof(self:&Self, other:&dyn Feature) -> bool {
+    fn subtypeof(self:&Self, other:Arc<dyn Feature + Send + Sync>) -> bool {
         if self.feature_class() != other.feature_class() { return false };
         match self.feature_type() {
             FeatureType::Qualifier => {
@@ -52,27 +52,27 @@ pub trait Feature {
             },
             FeatureType::Quantifier => {       
 
-                let v1 = self.val().expect("unexpected error");
-                let v2 = other.val().expect("unexpected error");
+                let v_self = self.val().expect("unexpected error");
+                let v_other = other.val().expect("unexpected error");
 
                 let qt_self = self.quantifier_type().expect("quantifer expected");
                 let qt_other = other.quantifier_type().expect("quantifier expected");
                
                 match qt_self {
                     QuantifierType::AtLeast => match qt_other {
-                        QuantifierType::AtLeast => v1 <= v2,
+                        QuantifierType::AtLeast => v_self >= v_other,
                         QuantifierType::AtMost => false,
-                        QuantifierType::Value => { v1 <= v2 },
+                        QuantifierType::Value => v_self >= v_other ,
                     },
                     QuantifierType::AtMost => match qt_other {
                         QuantifierType::AtLeast => false,
-                        QuantifierType::AtMost => v1 >= v2,
-                        QuantifierType::Value => v1 >= v2,
+                        QuantifierType::AtMost => v_self <= v_other,
+                        QuantifierType::Value => v_self <= v_other,
                     },
                     QuantifierType::Value => match qt_other {
-                        QuantifierType::AtLeast => { v1 >= v2 },
-                        QuantifierType::AtMost => v1 <= v2,
-                        QuantifierType::Value => v1 == v2,
+                        QuantifierType::AtLeast => v_self >= v_other ,
+                        QuantifierType::AtMost => v_self <= v_other,
+                        QuantifierType::Value => v_self == v_other,
                     },
                 }
             },

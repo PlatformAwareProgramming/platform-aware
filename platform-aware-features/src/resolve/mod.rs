@@ -1,20 +1,20 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, sync::Arc};
 
 use crate::{readplatformfeatures, Feature, PlatformParameters, PLATFORM_PARAMETERS};
 
 // The glorious resolution algorithm
-pub fn resolve(featureset_list:Vec<HashMap<PlatformParameters, &dyn Feature>> ) -> i32
+pub fn resolve(featureset_list:Vec<HashMap<PlatformParameters, Arc<dyn Feature + Send + Sync>>> ) -> i32
 {
-    let actualplatformfeatures: HashMap<PlatformParameters, &dyn Feature> = readplatformfeatures();
+    let actualplatformfeatures: HashMap<PlatformParameters,Arc<dyn Feature + Send + Sync>> = readplatformfeatures();
 
     let mut i: i32 = (featureset_list.len()-1).try_into().unwrap();
-    let mut current_choice: Option<&HashMap<PlatformParameters, &dyn Feature>> = None;
+    let mut current_choice: Option<&HashMap<PlatformParameters,Arc<dyn Feature + Send + Sync>>> = None;
     let mut current_choice_index  = -1;
 
     loop {
         while i >= 0 && !(issubtypeof(&actualplatformfeatures, &featureset_list[i as usize]) 
                                    && (current_choice.is_none() || 
-                                       issubtypeof(&featureset_list[i as usize], &current_choice.expect("unexpected condition")))) { 
+                                       issubtypeof(&featureset_list[i as usize], &current_choice.unwrap()))) { 
             i -= 1;
         }
 
@@ -33,7 +33,7 @@ pub fn resolve(featureset_list:Vec<HashMap<PlatformParameters, &dyn Feature>> ) 
     
 
 // check whether the left set of features is a subtype of the right set of features (compatibilty relation)
-pub fn issubtypeof(lhs: &HashMap<PlatformParameters, &dyn Feature>, rhs: &HashMap<PlatformParameters, &dyn Feature>) -> bool {
+pub fn issubtypeof(lhs: &HashMap<PlatformParameters, Arc<dyn Feature + Send + Sync>>, rhs: &HashMap<PlatformParameters, Arc<dyn Feature + Send + Sync>>) -> bool {
 
     println!("subtype test"); // DEBUG
 
@@ -62,7 +62,7 @@ pub fn issubtypeof(lhs: &HashMap<PlatformParameters, &dyn Feature>, rhs: &HashMa
                                     None => true,
                                 }
                                 Some(vlt) => match vr {
-                                    Some(vrt) => vlt.subtypeof(*vrt),
+                                    Some(vrt) => vlt.subtypeof(vrt.clone()),
                                     None => true, 
                                 }
                               };

@@ -1,3 +1,9 @@
+use std::{collections::HashMap, sync::{Arc, Mutex}};
+
+use once_cell::sync::Lazy;
+
+use super::{AccArchitecture, AccBackend, AccInterconnect, AccManufacturer, AccModel, AccProcessor, AccType, AtLeast, AtMost, CPUManufacturer, CPUMicroarchitecture, CPUModel, Feature, MemoryType, NETType, NetTopology, StoInterface, StoType, CPUISA, CPUSIMD};
+
 
 #[derive(Debug)]
 #[allow(non_camel_case_types)]
@@ -118,6 +124,61 @@ pub const PLATFORM_PARAMETERS:&[PlatformParameters] = &[
                                                     PlatformParameters::vm_provider,
                                                     PlatformParameters::vm_vcpus_count
                                                    ];
+
+
+pub static FEATURE_TOP: Lazy<Mutex<HashMap<PlatformParameters, Arc<dyn Feature + Send + Sync>>>> = Lazy::new(|| {
+    let mut map: HashMap<PlatformParameters, Arc<dyn Feature + Send + Sync>> = HashMap::new();
+
+    map.insert(PlatformParameters::acc_manufacturer, Arc::new(AccManufacturer));
+    map.insert(PlatformParameters::acc_memory_type, Arc::new(MemoryType));
+    map.insert(PlatformParameters::acc_count, Arc::new(AtLeast{val:0}));
+    map.insert(PlatformParameters::acc_backend, Arc::new(AccBackend));
+    map.insert(PlatformParameters::acc_architecture, Arc::new(AccArchitecture));
+    map.insert(PlatformParameters::acc_model, Arc::new(AccModel));
+    map.insert(PlatformParameters::acc_processor_count, Arc::new(AtLeast{val:1}));
+    map.insert(PlatformParameters::acc_processor, Arc::new(AccProcessor));
+    map.insert(PlatformParameters::acc_memory_size, Arc::new(AtLeast{val:0}));
+    map.insert(PlatformParameters::acc_tdp, Arc::new(AtMost{val:i32::MAX}));
+    map.insert(PlatformParameters::acc_type, Arc::new(AccType));
+    map.insert(PlatformParameters::acc_interconnect, Arc::new(AccInterconnect));
+    map.insert(PlatformParameters::cpu_count, Arc::new(AtLeast{val:1}));
+    map.insert(PlatformParameters::cpu_core_count, Arc::new(AtLeast{val:1}));
+    map.insert(PlatformParameters::cpu_core_threads_count, Arc::new(AtLeast{val:1}));
+    map.insert(PlatformParameters::cpu_l1_size, Arc::new(AtLeast{val:0}));
+    map.insert(PlatformParameters::cpu_l2_size, Arc::new(AtLeast{val:0}));
+    map.insert(PlatformParameters::cpu_l3_size, Arc::new(AtLeast{val:0}));
+    map.insert(PlatformParameters::cpu_manufacturer, Arc::new(CPUManufacturer));
+    map.insert(PlatformParameters::cpu_isa, Arc::new(CPUISA));
+    map.insert(PlatformParameters::cpu_simd, Arc::new(CPUSIMD));
+    map.insert(PlatformParameters::cpu_model, Arc::new(CPUModel));
+    map.insert(PlatformParameters::cpu_microarchitecture, Arc::new(CPUMicroarchitecture));
+    map.insert(PlatformParameters::net_latency, Arc::new(AtMost{val:0}));
+    map.insert(PlatformParameters::net_type, Arc::new(NETType));
+    map.insert(PlatformParameters::net_bandwidth, Arc::new(AtLeast{val:0}));
+    map.insert(PlatformParameters::net_startup_time, Arc::new(AtLeast{val:1}));
+    map.insert(PlatformParameters::net_rdma, Arc::new(AtLeast{val:1}));
+    map.insert(PlatformParameters::net_topology, Arc::new(NetTopology));
+    map.insert(PlatformParameters::sto_bandwidth, Arc::new(AtLeast{val:1}));
+    map.insert(PlatformParameters::sto_type, Arc::new(StoType));
+    map.insert(PlatformParameters::sto_latency, Arc::new(AtLeast{val:1}));
+    map.insert(PlatformParameters::sto_size, Arc::new(AtLeast{val:0}));
+    map.insert(PlatformParameters::sto_network_bandwidth, Arc::new(AtLeast{val:1}));
+    map.insert(PlatformParameters::sto_interface, Arc::new(StoInterface));
+    map.insert(PlatformParameters::mem_type, Arc::new(MemoryType));
+    map.insert(PlatformParameters::mem_size, Arc::new(AtLeast{val:1}));
+    map.insert(PlatformParameters::mem_frequency, Arc::new(AtLeast{val:1}));
+    map.insert(PlatformParameters::mem_latency, Arc::new(AtLeast{val:1}));
+    map.insert(PlatformParameters::mem_bandwidth, Arc::new(AtLeast{val:1}));
+//    map.insert(PlatformParameters::vm_provider, Arc::new(CPUSIMD));
+//    map.insert(PlatformParameters::vm_dedicated, Arc::new(CPUSIMD));
+//    map.insert(PlatformParameters::vm_machinefamily, Arc::new(CPUSIMD));
+//    map.insert(PlatformParameters::vm_machinetype, Arc::new(CPUSIMD));
+//    map.insert(PlatformParameters::vm_vcpus_count, Arc::new(CPUSIMD));
+//    map.insert(PlatformParameters::vm_threads_count, Arc::new(CPUSIMD));
+    
+    Mutex::new(map)
+});
+
 
 impl PartialEq for PlatformParameters {
     fn eq(&self, other: &Self) -> bool {
