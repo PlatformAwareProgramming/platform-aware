@@ -1,13 +1,14 @@
-mod quantifiers;
-mod qualifiers;
 mod parameters;
 mod feature;
+mod quantifiers;
+mod qualifiers;
+mod featurevector;
 
-pub use qualifiers::*;
-pub use quantifiers::*;
 pub use parameters::*;
 pub use feature::*;
-
+pub use qualifiers::*;
+pub use quantifiers::*;
+pub use featurevector::*;
 
 
 

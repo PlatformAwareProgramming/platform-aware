@@ -132,7 +132,22 @@ pub fn readplatformfeatures() -> HashMap<PlatformParameters, Arc<dyn Feature + S
 
     match t.accelerator {
         Some(u) => {
-            //match u.acc_backend { Some(v) => add_qualifier(&mut m, PlatformParameters::acc_backend, v), None => {} }
+            match u.acc_backend { Some(v ) => { 
+
+                let mut fvec = Vec::new();
+                for fv in v {
+                    let fs = fv.as_str().unwrap();
+                    let static_fs: &'static str = Box::leak(fs.to_string().into_boxed_str());
+                    match  lookup_feature(static_fs) {
+                        Some(f) =>  fvec.push(f),
+                        None => { println!("qualifier {} not found and ignored", static_fs) },
+                    }; 
+                   
+                }
+
+              m.insert(PlatformParameters::acc_backend, Arc::new(fvec));
+
+            }, None => {} }
             match u.acc_architecture { Some(v) => add_qualifier(&mut m, PlatformParameters::acc_architecture, v), None => {} }
             match u.acc_memory_type { Some(v) => add_qualifier(&mut m, PlatformParameters::acc_memory_type, v), None => {} }
             match u.acc_manufacturer { Some(v) => add_qualifier(&mut m, PlatformParameters::acc_manufacturer, v), None => {} }
@@ -223,7 +238,7 @@ pub fn readplatformfeatures() -> HashMap<PlatformParameters, Arc<dyn Feature + S
     }
 
     for (k,v) in &m {
-        println!("{:?}: {:?}", k, match v.feature_type() { FeatureType::Quantifier => v.val().unwrap(), FeatureType::Qualifier => 0 });
+        println!("---> {:?}: {:?}", k, match v.feature_type() { FeatureType::Quantifier => v.string(), FeatureType::Qualifier => v.string() });
     }
 
 
