@@ -30,7 +30,6 @@ pub trait Feature {
 
     fn quantifier_type(self:&Self) -> Option<QuantifierType> { None } // only for quantifiers
     fn val(self:&Self) -> Option<i32> { None }                        // only for quantifiers
-    fn other_val(self:&Self) -> Option<i32> { None }                  // only for quantifiers
 
     // Subtype relation betwenn qualifier and quantifier features
     fn subtypeof(self:&Self, other:Arc<dyn Feature + Send + Sync>) -> bool {

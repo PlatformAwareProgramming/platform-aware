@@ -36,7 +36,7 @@ impl Feature for AtMost {
 
 impl Feature for i32 {  
     fn is_top(self:&Self) -> bool { false }   // ???
-    fn string(self:&Self) -> &'static str { "value" } 
+    fn string(self:&Self) -> &'static str { /*self.val().unwrap().to_string().as_str() */ "exact value"} 
     fn feature_type(self:&Self) -> FeatureType { FeatureType::Quantifier } 
     fn feature_class(self:&Self) -> std::option::Option<PlatformParameters> { None }
     fn val(self:&Self) -> Option<i32> { Some(*self) } 
