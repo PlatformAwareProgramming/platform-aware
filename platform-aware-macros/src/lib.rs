@@ -224,7 +224,45 @@ impl FunctionSupergroup {
     }
 }
 
-
+/// This macro should be used in a `mod` declaration. It takes as attributes
+/// the names of the functions declared in the module and builds a multiple
+/// dispatch for each one of them based on the specified platform features.
+/// 
+/// # Example
+/// ## Declaration
+/// ```
+/// #[platformaware(add, multiply)]
+/// mod math_operations {
+///     #[kernelversion]
+///     pub fn add(a: i32, b: i32) -> i32 {
+///         println!("Using fallback add");
+///         a + b
+///     }
+///
+///     #[kernelversion(cpu_simd=AVX512)]
+///     pub fn add(a: i32, b: i32) -> i32 {
+///         println!("Using AVX512 optimized add");
+///         a + b
+///     }
+///
+///     #[kernelversion]
+///     pub fn multiply(a: i32, b: i32) -> i32 {
+///         println!("Using fallback multiply");
+///         a * b
+///     }
+///
+///     #[kernelversion(acc_backend=CUDA10)]
+///     pub fn multiply(a: i32, b: i32) -> i32 {
+///         println!("Using CUDA10 optimized multiply");
+///         a * b
+///     }
+/// }
+/// ```
+/// ## Calling
+/// ```
+/// let sum = math_operations::add(5, 10);
+/// let product = math_operations::multiply(5, 10);
+/// ```
 #[proc_macro_attribute]
 pub fn platformaware
     (attr: proc_macro::TokenStream, item: proc_macro::TokenStream) 
