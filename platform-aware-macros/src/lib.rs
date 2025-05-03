@@ -5,7 +5,8 @@ use proc_macro2::{
     Span, TokenStream, TokenTree
 };
 use syn::{
-    parse_macro_input, punctuated::Punctuated, Block, FnArg, Ident, Item, ItemFn, ItemMod, Meta, Pat, ReturnType, Token, Type
+    parse_macro_input, punctuated::Punctuated, Block, FnArg, Ident, Item,
+    ItemFn, ItemMod, Meta, Pat, ReturnType, Token, Type
 };
 
 struct FunctionData {
@@ -19,6 +20,7 @@ struct FunctionGroup {
     functions: Vec<FunctionData>,
     match_arms: Vec<TokenStream>,
     return_type: ReturnType,
+    lazy: String,
 }
 
 struct FunctionSupergroup(Vec<FunctionGroup>);
@@ -61,6 +63,7 @@ impl FunctionGroup {
         match_arms: Vec<TokenStream>, return_type: ReturnType) -> FunctionGroup {
 
         FunctionGroup { 
+            lazy: format!("{}_lazy_ref", &ident.to_string()),
             ident,
             params,
             functions,
@@ -80,16 +83,46 @@ impl FunctionGroup {
         let params_ = self.params.clone().into_iter();
         let arms_ = &self.match_arms;
         let return_type_ = &self.return_type;
+        let lazy_ = Ident::new(&self.lazy, Span::call_site().into());
 
         let dispatch = quote! {
             pub fn #ident_ (#(#params_),*) #return_type_ {
-                match *V {
+                match *#lazy_ {
                     #(#arms_),*
                 }
             }
         };
 
         dispatch
+    }
+
+    fn build_resolve(&self) -> TokenStream {
+        let lazy_ = Ident::new(&self.lazy, Span::call_site().into());
+
+        let platforms_list: Vec<TokenStream> = {
+            let mut platforms: Vec<TokenStream> = Vec::new();
+
+            for f in &self.functions {
+                match &f.kernelv {
+                    None => continue,
+                    Some(kv) => {
+                        platforms.push(kv.clone());
+                    },
+                }
+            }
+
+            platforms
+        };
+        
+        let resolve = quote! {
+            lazy_static! {
+                static ref #lazy_ : i32 = {
+                    resolve(vec![#(#platforms_list),*])
+                };
+            }
+        };
+
+        resolve
     }
 }
 
@@ -179,6 +212,16 @@ impl FunctionSupergroup {
 
         platforms
     }
+
+    fn build_all_resolves(&self) -> Vec<TokenStream> {
+        let mut resolves: Vec<TokenStream> = Vec::new();
+
+        for fg in &self.0 {
+            resolves.push(fg.build_resolve());
+        }
+
+        resolves
+    }
 }
 
 
@@ -196,25 +239,19 @@ pub fn platformaware
 
     let dispatches = fsg.build_all_match_arms();
     let functions = fsg.build_all_functions();
-    let platforms_list = fsg.get_all_platforms();
+    let resolves = fsg.build_all_resolves();
+
     let contents = get_contents_from_itemmod(&item_mod);
 
     let expanded = quote! {       
         mod #mod_name {
             use platform_aware_features::*;
-//            use platform_aware_amd::*;
-//            use platform_aware_intel::*;
-//            use platform_aware_nvidia::*;
             use lazy_static::lazy_static;
             use std::{collections::HashMap, sync::Arc};
 
             #(#contents)*
     
-            lazy_static! {
-                static ref V: i32 = {
-                    resolve(vec![#(#platforms_list),*])
-                };
-            }
+            #(#resolves)*
     
             #(#dispatches)*
     
@@ -222,8 +259,11 @@ pub fn platformaware
         }
     };
 
-    eprintln!("\x1b[93m@INFO | Generated the following module:\x1b[00m\n {}",
+    eprintln!("\x1b[93m@INFO | Generated the following module:\x1b[00m\n {:#?}",
         proc_macro::TokenStream::from(expanded.clone()));
+    // std::fs::write(
+    //     "output.rs", proc_macro::TokenStream::from(expanded.clone()).to_string())
+    //     .unwrap();
 
     proc_macro::TokenStream::from(expanded)
 }
