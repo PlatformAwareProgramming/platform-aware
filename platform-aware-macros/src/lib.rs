@@ -1,12 +1,11 @@
 //! NOTE: This crate is in early development.
 
-use quote::quote;
+use quote::{quote, ToTokens};
 use proc_macro2::{
     Span, TokenStream, TokenTree
 };
 use syn::{
-    parse_macro_input, punctuated::Punctuated, Block, FnArg, Ident, Item,
-    ItemFn, ItemMod, Meta, Pat, ReturnType, Token, PatType, PatIdent
+    parse_macro_input, punctuated::Punctuated, Attribute, Block, FnArg, Ident, Item, ItemFn, ItemMod, Meta, Pat, PatIdent, PatType, ReturnType, Token
 };
 
 struct FunctionData {
@@ -317,43 +316,26 @@ fn get_function_ids_from_attr(attr: proc_macro::TokenStream) -> Vec<Ident> {
 }
 
 fn get_contents_from_itemmod(item_mod: &ItemMod) -> Vec<TokenStream> {
-    let full_stream = quote! { #item_mod };
-
-    let wrapped_inner_tokens = full_stream.into_iter().find_map(|tt| {
-        if let TokenTree::Group(group) = tt {
-            Some(group.stream().into_iter().collect::<Vec<_>>())
-        } else {
-            None
-        }
-    });
-    let mut inner_tokens = match wrapped_inner_tokens {
-        Some(tokens) => tokens,
-        None => return Vec::new(),
-    };
-
-    let mut contents = Vec::new();
-    let mut iter = inner_tokens.drain(..).peekable();
-
-    while let Some(token) = iter.next() {
-
-        // look for the 1st #[kernelversion]
-        if let TokenTree::Punct(p) = &token {
-            if p.as_char() == '#' {
-                if let Some(TokenTree::Group(inner)) = iter.peek() {
-                    let next = inner.stream().into_iter().next();
-                    if let Some(TokenTree::Ident(id)) = next {
-                        if id == "kernelversion" {
-                            break;
-                        }
-                    }
-                }
-            }
-        }
-
-        contents.push(TokenStream::from(token));
+    fn is_kernelversion(attr: &Attribute) -> bool {
+        attr.path().is_ident("kernelversion")
     }
 
-    contents
+    let items = if let Some((_, items)) = &item_mod.content {
+        items
+    } else {
+        return Vec::new();
+    };
+
+    items
+        .iter()
+        .filter(|item| match item {
+            Item::Fn(item_fn) => {
+                !item_fn.attrs.iter().any(|attr| is_kernelversion(attr))
+            }
+            _ => true,
+        })
+        .map(|item| item.to_token_stream())
+        .collect()
 }
 
 fn get_block_from_item_fn(item_fn: &ItemFn) -> Block {
@@ -442,9 +424,9 @@ pub fn platformaware(
     eprintln!("\x1b[93m@INFO | Generated the following module:\x1b[00m\n {}",
         proc_macro::TokenStream::from(expanded.clone()));
 
-    // std::fs::write(
-    //     "output.rs", proc_macro::TokenStream::from(expanded.clone()).to_string())
-    //     .unwrap();
+    std::fs::write(
+        "output.rs", proc_macro::TokenStream::from(expanded.clone()).to_string())
+        .unwrap();
 
     proc_macro::TokenStream::from(expanded)
 }
