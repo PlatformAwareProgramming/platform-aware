@@ -26,7 +26,7 @@ pub fn resolve(featureset_list:Vec<HashMap<PlatformParameters, Arc<dyn Feature +
     }
 
 
-    println!("loop finish {i}");
+  //  println!("loop finish {i}");
 
     current_choice_index + 1
 }
@@ -35,25 +35,25 @@ pub fn resolve(featureset_list:Vec<HashMap<PlatformParameters, Arc<dyn Feature +
 // check whether the left set of features is a subtype of the right set of features (compatibilty relation)
 pub fn issubtypeof(lhs: &HashMap<PlatformParameters, Arc<dyn Feature + Send + Sync>>, rhs: &HashMap<PlatformParameters, Arc<dyn Feature + Send + Sync>>) -> bool {
 
-    println!("subtype test"); // DEBUG
+  //  println!("subtype test"); // DEBUG
 
     for p in PLATFORM_PARAMETERS  {
 
-        print!("subtype test - parameter {:?}", p); // DEBUG
+   //     print!("subtype test - parameter {:?}", p); // DEBUG
         
         let vl = lhs.get(p);
         let vr = rhs.get(p);
 
         // begin DEBUG
-        match vl {
-            Some(s) => print!(" {}", s.string()),
-            None => print!(" {}", "no"),
-        };
+   //     match vl {
+   //         Some(s) => print!(" {}", s.string()),
+   //         None => print!(" {}", "no"),
+   //     };
 
-        match vr {
-            Some(s) => print!(" {}", s.string()),
-            None => print!(" {}", "no"),
-        };
+    //    match vr {
+    //        Some(s) => print!(" {}", s.string()),
+    //        None => print!(" {}", "no"),
+    //    };
         // end DEBUG
 
         let issubtype = match vl {
@@ -66,7 +66,7 @@ pub fn issubtypeof(lhs: &HashMap<PlatformParameters, Arc<dyn Feature + Send + Sy
                                     None => true, 
                                 }
                               };
-        println!(" {}", issubtype); // DEBUG
+      //  println!(" {}", issubtype); // DEBUG
         if !issubtype { return false; }
     } 
 
