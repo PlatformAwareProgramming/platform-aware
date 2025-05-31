@@ -18,7 +18,7 @@ impl Feature for CUDA {
 
 
 impl Feature for CUDA4 { 
-     fn string(self:&Self) -> &'static str { "CUDA4" } 
+    fn string(self:&Self) -> &'static str { "CUDA4" } 
     fn supertype(self:&Self) -> Option<Box<dyn Feature>> { Some(Box::new(CUDA)) } 
     fn feature_class(self:&Self) -> std::option::Option<PlatformParameters> { Some(PlatformParameters::acc_backend) } 
 }

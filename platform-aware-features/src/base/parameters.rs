@@ -5,7 +5,8 @@ use once_cell::sync::Lazy;
 use super::{AccArchitecture, AccBackend, AccInterconnect, AccManufacturer, AccModel, AccProcessor, AccType, AtLeast, AtMost, CPUManufacturer, CPUMicroarchitecture, CPUModel, Feature, MemoryType, NETType, NetTopology, StoInterface, StoType, CPUISA, CPUSIMD};
 
 
-#[derive(Debug)]
+//#[derive(Debug)]
+#[derive(Clone, Debug)]
 #[allow(non_camel_case_types)]
 pub enum PlatformParameters {
     /* accelerator features */

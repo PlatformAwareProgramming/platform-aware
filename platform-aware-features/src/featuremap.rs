@@ -19,7 +19,7 @@ pub fn insert_feature(fvalue: Arc<dyn Feature + Send + Sync>) {
 
 pub fn lookup_feature(fname: &'static str) -> Option<Arc<dyn Feature + Send + Sync>> {
     let dict = FEATURE_MAP.lock().unwrap();
-    println!("{fname}");
+ //   println!("{fname}");
 
     match dict.get(fname) {
         Some(v) => Some(v.clone()),

@@ -114,7 +114,6 @@ use super::{Feature, PlatformParameters};
 //use std::sync::Mutex;
 // lazy_static! { static ref currentfeatures: Mutex<HashMap<PlatformParameters, &'static dyn Feature>> = Mutex::new(readplatformfeatures()); }
 
-// TODO: implement the read of the platform file
 pub fn readplatformfeatures() -> HashMap<PlatformParameters, Arc<dyn Feature + Send + Sync>>
 {
     let t = match readplatform() {
@@ -128,7 +127,7 @@ pub fn readplatformfeatures() -> HashMap<PlatformParameters, Arc<dyn Feature + S
 
     let mut m: HashMap<PlatformParameters, Arc<dyn Feature + Send + Sync>> = HashMap::new();
 
-    println!("readplatformfeatures at startup"); 
+   // println!("readplatformfeatures at startup"); 
 
     match t.accelerator {
         Some(u) => {
@@ -151,7 +150,7 @@ pub fn readplatformfeatures() -> HashMap<PlatformParameters, Arc<dyn Feature + S
             match u.acc_architecture { Some(v) => add_qualifier(&mut m, PlatformParameters::acc_architecture, v), None => {} }
             match u.acc_memory_type { Some(v) => add_qualifier(&mut m, PlatformParameters::acc_memory_type, v), None => {} }
             match u.acc_manufacturer { Some(v) => add_qualifier(&mut m, PlatformParameters::acc_manufacturer, v), None => {} }
-            match u.acc_model { Some(v) => add_qualifier(&mut m, PlatformParameters::acc_model, v), None => {} }
+            match u.acc_model { Some(v) =>  add_qualifier(&mut m, PlatformParameters::acc_model, v), None => {} }
             match u.acc_processor { Some(v) => add_qualifier(&mut m, PlatformParameters::acc_processor, v), None => {} }
             match u.acc_type { Some(v) => add_qualifier(&mut m, PlatformParameters::acc_type, v), None => {} }
             match u.acc_count { Some(v) => { add_quantifier(&mut m, PlatformParameters::acc_count, v); }, None => {} }
@@ -230,9 +229,9 @@ pub fn readplatformfeatures() -> HashMap<PlatformParameters, Arc<dyn Feature + S
         None => {},
     }
 
-    for (k,v) in &m {
-        println!("---> {:?}: {:?}", k, match v.feature_type() { FeatureType::Quantifier => v.string(), FeatureType::Qualifier => v.string() });
-    }
+   // for (k,v) in &m {
+   //     println!("---> {:?}: {:?}", k, match v.feature_type() { FeatureType::Quantifier => v.string(), FeatureType::Qualifier => v.string() });
+   // }
 
 
   //  m.insert(PlatformParameters::acc_backend, &CUDA8);

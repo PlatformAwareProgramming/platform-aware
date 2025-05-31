@@ -2,10 +2,36 @@ use std::{collections::HashMap, sync::Arc};
 
 use crate::{readplatformfeatures, Feature, PlatformParameters, PLATFORM_PARAMETERS};
 
+
+use lazy_static::lazy_static;
+use std::sync::Mutex;
+
+// Presumo que esses tipos existem
+// use crate::your_module::{PlatformParameters, Feature, read_platform_features};
+
+/*lazy_static! {
+    static ref CURRENT_FEATURES: Mutex<HashMap<PlatformParameters, &'static dyn Feature>> = 
+        Mutex::new(read_platform_features());
+}*/
+
+
+// Presumo que esses tipos estão definidos
+// use crate::your_module::{PlatformParameters, Feature, readplatformfeatures};
+
+lazy_static! {
+    static ref CURRENT_FEATURES: Mutex<HashMap<PlatformParameters, Arc<dyn Feature + Send + Sync>>> = 
+        Mutex::new(readplatformfeatures());
+}
+
 // The glorious resolution algorithm
 pub fn resolve(featureset_list:Vec<HashMap<PlatformParameters, Arc<dyn Feature + Send + Sync>>> ) -> i32
 {
-    let actualplatformfeatures: HashMap<PlatformParameters,Arc<dyn Feature + Send + Sync>> = readplatformfeatures();
+   // println!("ENTER RESOLVE");
+
+    let actualplatformfeatures: HashMap<PlatformParameters, Arc<dyn Feature + Send + Sync>> = {
+        let guard = CURRENT_FEATURES.lock().unwrap();
+        guard.clone()
+    };
 
     let mut i: i32 = (featureset_list.len()-1).try_into().unwrap();
     let mut current_choice: Option<&HashMap<PlatformParameters,Arc<dyn Feature + Send + Sync>>> = None;
@@ -26,7 +52,7 @@ pub fn resolve(featureset_list:Vec<HashMap<PlatformParameters, Arc<dyn Feature +
     }
 
 
-  //  println!("loop finish {i}");
+    // println!("EXIT RESOLVE {}", current_choice_index + 1);
 
     current_choice_index + 1
 }
@@ -35,25 +61,25 @@ pub fn resolve(featureset_list:Vec<HashMap<PlatformParameters, Arc<dyn Feature +
 // check whether the left set of features is a subtype of the right set of features (compatibilty relation)
 pub fn issubtypeof(lhs: &HashMap<PlatformParameters, Arc<dyn Feature + Send + Sync>>, rhs: &HashMap<PlatformParameters, Arc<dyn Feature + Send + Sync>>) -> bool {
 
-  //  println!("subtype test"); // DEBUG
+    //println!("subtype test"); // DEBUG
 
     for p in PLATFORM_PARAMETERS  {
 
-   //     print!("subtype test - parameter {:?}", p); // DEBUG
+      //  print!("subtype test - parameter {:?}", p); // DEBUG
         
         let vl = lhs.get(p);
         let vr = rhs.get(p);
 
         // begin DEBUG
-   //     match vl {
-   //         Some(s) => print!(" {}", s.string()),
-   //         None => print!(" {}", "no"),
-   //     };
+       /*  match vl {
+            Some(s) => print!(" {}", s.string()),
+            None => print!(" {}", "no"),
+        };
 
-    //    match vr {
-    //        Some(s) => print!(" {}", s.string()),
-    //        None => print!(" {}", "no"),
-    //    };
+        match vr {
+            Some(s) => print!(" {}", s.string()),
+            None => print!(" {}", "no"),
+        }; */ 
         // end DEBUG
 
         let issubtype = match vl {
@@ -66,7 +92,7 @@ pub fn issubtypeof(lhs: &HashMap<PlatformParameters, Arc<dyn Feature + Send + Sy
                                     None => true, 
                                 }
                               };
-      //  println!(" {}", issubtype); // DEBUG
+        //println!(" {}", issubtype); // DEBUG
         if !issubtype { return false; }
     } 
 
