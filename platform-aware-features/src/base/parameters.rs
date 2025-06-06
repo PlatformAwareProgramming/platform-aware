@@ -14,6 +14,7 @@ pub enum PlatformParameters {
     acc_memory_type,
     acc_count,
     acc_backend,
+    acc_computecapability,
     acc_architecture,
     acc_model,
     acc_processor_count,
@@ -75,13 +76,12 @@ pub const PLATFORM_PARAMETERS:&[PlatformParameters] = &[
                                                     PlatformParameters::cpu_simd,
                                                     PlatformParameters::acc_model, 
                                                     PlatformParameters::acc_backend, 
+                                                    PlatformParameters::acc_computecapability, 
                                                     PlatformParameters::acc_count,
                                                     PlatformParameters::acc_manufacturer,
                                                     PlatformParameters::acc_memory_type,
                                                     PlatformParameters::acc_count,
-                                                    PlatformParameters::acc_backend,
                                                     PlatformParameters::acc_architecture,
-                                                    PlatformParameters::acc_model,
                                                     PlatformParameters::acc_processor_count,
                                                     PlatformParameters::acc_processor,
                                                     PlatformParameters::acc_memory_size,
@@ -134,6 +134,7 @@ pub static FEATURE_TOP: Lazy<Mutex<HashMap<PlatformParameters, Arc<dyn Feature +
     map.insert(PlatformParameters::acc_memory_type, Arc::new(MemoryType));
     map.insert(PlatformParameters::acc_count, Arc::new(AtLeast{val:0}));
     map.insert(PlatformParameters::acc_backend, Arc::new(AccBackend));
+    map.insert(PlatformParameters::acc_computecapability, Arc::new(AtLeast{val:10}));
     map.insert(PlatformParameters::acc_architecture, Arc::new(AccArchitecture));
     map.insert(PlatformParameters::acc_model, Arc::new(AccModel));
     map.insert(PlatformParameters::acc_processor_count, Arc::new(AtLeast{val:1}));

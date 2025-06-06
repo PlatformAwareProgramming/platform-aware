@@ -23,6 +23,7 @@ pub struct PlatformAccelerator {
     pub acc_memory_type:Option<String>,
     pub acc_count:Option<i32>,
     pub acc_backend:Option<Array>,
+    pub acc_computecapability:Option<i32>,
     pub acc_architecture:Option<String>,
     pub acc_model:Option<String>,
     pub acc_processor_count:Option<i32>,
@@ -147,6 +148,7 @@ pub fn readplatformfeatures() -> HashMap<PlatformParameters, Arc<dyn Feature + S
               m.insert(PlatformParameters::acc_backend, Arc::new(fvec));
 
             }, None => {} }
+            match u.acc_computecapability { Some(v) => { add_quantifier(&mut m, PlatformParameters::acc_computecapability, v); }, None => {} }
             match u.acc_architecture { Some(v) => add_qualifier(&mut m, PlatformParameters::acc_architecture, v), None => {} }
             match u.acc_memory_type { Some(v) => add_qualifier(&mut m, PlatformParameters::acc_memory_type, v), None => {} }
             match u.acc_manufacturer { Some(v) => add_qualifier(&mut m, PlatformParameters::acc_manufacturer, v), None => {} }
