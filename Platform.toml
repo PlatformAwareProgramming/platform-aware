@@ -7,7 +7,7 @@ acc_architecture = "Maxwell"
 acc_model = "NVIDIAGeForce_940MX"
 acc_cpu_count = 1
 acc_processor = "GM108M"
-acc_memory_size = 4
+acc_memorysize = 4
 acc_tdp = 23
 acc_type = "GPU"
 

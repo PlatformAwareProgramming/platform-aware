@@ -23,12 +23,14 @@ pub struct PlatformAccelerator {
     pub acc_memory_type:Option<String>,
     pub acc_count:Option<i32>,
     pub acc_backend:Option<Array>,
-    pub acc_computecapability:Option<i32>,
+    pub acc_cudacc:Option<i32>,
+    pub acc_cudatoolkit:Option<i32>,
+    pub acc_cudadriver:Option<i32>,
     pub acc_architecture:Option<String>,
     pub acc_model:Option<String>,
     pub acc_processor_count:Option<i32>,
     pub acc_processor:Option<String>,
-    pub acc_memory_size:Option<i32>,
+    pub acc_memorysize:Option<i32>,
     pub acc_tdp:Option<i32>,
     pub acc_type:Option<String>,
 }
@@ -148,7 +150,9 @@ pub fn readplatformfeatures() -> HashMap<PlatformParameters, Arc<dyn Feature + S
               m.insert(PlatformParameters::acc_backend, Arc::new(fvec));
 
             }, None => {} }
-            match u.acc_computecapability { Some(v) => { add_quantifier(&mut m, PlatformParameters::acc_computecapability, v); }, None => {} }
+            match u.acc_cudacc { Some(v) => { add_quantifier(&mut m, PlatformParameters::acc_cudacc, v); }, None => {} }
+            match u.acc_cudatoolkit { Some(v) => { add_quantifier(&mut m, PlatformParameters::acc_cudatoolkit, v); }, None => {} }
+            match u.acc_cudadriver { Some(v) => { add_quantifier(&mut m, PlatformParameters::acc_cudadriver, v); }, None => {} }
             match u.acc_architecture { Some(v) => add_qualifier(&mut m, PlatformParameters::acc_architecture, v), None => {} }
             match u.acc_memory_type { Some(v) => add_qualifier(&mut m, PlatformParameters::acc_memory_type, v), None => {} }
             match u.acc_manufacturer { Some(v) => add_qualifier(&mut m, PlatformParameters::acc_manufacturer, v), None => {} }
@@ -156,7 +160,7 @@ pub fn readplatformfeatures() -> HashMap<PlatformParameters, Arc<dyn Feature + S
             match u.acc_processor { Some(v) => add_qualifier(&mut m, PlatformParameters::acc_processor, v), None => {} }
             match u.acc_type { Some(v) => add_qualifier(&mut m, PlatformParameters::acc_type, v), None => {} }
             match u.acc_count { Some(v) => { add_quantifier(&mut m, PlatformParameters::acc_count, v); }, None => {} }
-            match u.acc_memory_size { Some(v) => { add_quantifier(&mut m, PlatformParameters::acc_architecture, v); }, None => {} }
+            match u.acc_memorysize { Some(v) => { add_quantifier(&mut m, PlatformParameters::acc_architecture, v); }, None => {} }
             match u.acc_processor_count { Some(v) => { add_quantifier(&mut m, PlatformParameters::acc_processor_count, v); }, None => {} }
             match u.acc_tdp { Some(v) => { add_quantifier(&mut m, PlatformParameters::acc_tdp, v); }, None => {} }
         },
