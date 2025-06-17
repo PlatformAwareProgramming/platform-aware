@@ -5,7 +5,8 @@ use once_cell::sync::Lazy;
 use super::{AccArchitecture, AccBackend, AccInterconnect, AccManufacturer, AccModel, AccProcessor, AccType, AtLeast, AtMost, CPUManufacturer, CPUMicroarchitecture, CPUModel, Feature, MemoryType, NETType, NetTopology, StoInterface, StoType, CPUISA, CPUSIMD};
 
 
-#[derive(Debug)]
+//#[derive(Debug)]
+#[derive(Clone, Debug)]
 #[allow(non_camel_case_types)]
 pub enum PlatformParameters {
     /* accelerator features */
@@ -13,11 +14,14 @@ pub enum PlatformParameters {
     acc_memory_type,
     acc_count,
     acc_backend,
+    acc_cudacc,
+    acc_cudatoolkit,
+    acc_cudadriver,
     acc_architecture,
     acc_model,
     acc_processor_count,
     acc_processor,
-    acc_memory_size,
+    acc_memorysize,
     acc_tdp,
     acc_type,
     acc_interconnect,
@@ -74,16 +78,17 @@ pub const PLATFORM_PARAMETERS:&[PlatformParameters] = &[
                                                     PlatformParameters::cpu_simd,
                                                     PlatformParameters::acc_model, 
                                                     PlatformParameters::acc_backend, 
+                                                    PlatformParameters::acc_cudacc, 
+                                                    PlatformParameters::acc_cudatoolkit,
+                                                    PlatformParameters::acc_cudadriver,
                                                     PlatformParameters::acc_count,
                                                     PlatformParameters::acc_manufacturer,
                                                     PlatformParameters::acc_memory_type,
                                                     PlatformParameters::acc_count,
-                                                    PlatformParameters::acc_backend,
                                                     PlatformParameters::acc_architecture,
-                                                    PlatformParameters::acc_model,
                                                     PlatformParameters::acc_processor_count,
                                                     PlatformParameters::acc_processor,
-                                                    PlatformParameters::acc_memory_size,
+                                                    PlatformParameters::acc_memorysize,
                                                     PlatformParameters::acc_tdp,
                                                     PlatformParameters::acc_type,                                                    
                                                     PlatformParameters::acc_interconnect,                                                    
@@ -133,11 +138,14 @@ pub static FEATURE_TOP: Lazy<Mutex<HashMap<PlatformParameters, Arc<dyn Feature +
     map.insert(PlatformParameters::acc_memory_type, Arc::new(MemoryType));
     map.insert(PlatformParameters::acc_count, Arc::new(AtLeast{val:0}));
     map.insert(PlatformParameters::acc_backend, Arc::new(AccBackend));
+    map.insert(PlatformParameters::acc_cudacc, Arc::new(AtLeast{val:10}));
+    map.insert(PlatformParameters::acc_cudatoolkit, Arc::new(AtLeast{val:10}));
+    map.insert(PlatformParameters::acc_cudadriver, Arc::new(AtLeast{val:100}));
     map.insert(PlatformParameters::acc_architecture, Arc::new(AccArchitecture));
     map.insert(PlatformParameters::acc_model, Arc::new(AccModel));
     map.insert(PlatformParameters::acc_processor_count, Arc::new(AtLeast{val:1}));
     map.insert(PlatformParameters::acc_processor, Arc::new(AccProcessor));
-    map.insert(PlatformParameters::acc_memory_size, Arc::new(AtLeast{val:0}));
+    map.insert(PlatformParameters::acc_memorysize, Arc::new(AtLeast{val:0}));
     map.insert(PlatformParameters::acc_tdp, Arc::new(AtMost{val:i32::MAX}));
     map.insert(PlatformParameters::acc_type, Arc::new(AccType));
     map.insert(PlatformParameters::acc_interconnect, Arc::new(AccInterconnect));
