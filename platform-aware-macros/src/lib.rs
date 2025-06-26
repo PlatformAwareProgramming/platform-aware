@@ -424,9 +424,5 @@ pub fn platformaware(
     eprintln!("\x1b[93m@INFO | Generated the following module:\x1b[00m\n {}",
         proc_macro::TokenStream::from(expanded.clone()));
 
-    std::fs::write(
-        "output.rs", proc_macro::TokenStream::from(expanded.clone()).to_string())
-        .unwrap();
-
     proc_macro::TokenStream::from(expanded)
 }
