@@ -97,8 +97,14 @@ pub fn readplatform() -> Result<Platform,Box<dyn Error>> {
 
     let platform_path = match env::var("PLATFORM_DESCRIPTION") {
         Ok(var) => var,
-        Err(_) => env::var("PWD")?
+        Err(_) => {
+            eprintln!("PLATFORM_DESCRIPTION var not found");
+
+            env::var("PWD")?
+        }
     };
+
+    println!("{:?}", Path::new(&platform_path).join("Platform.toml"));
 
     let contents: String = fs::read_to_string(Path::new(&platform_path).join("Platform.toml"))?;
 
@@ -111,153 +117,208 @@ use crate::{lookup_feature, AtLeast, FeatureType, QuantifierType};
 
 use super::{Feature, PlatformParameters};
 
+pub mod __private {
+    macro_rules! process_features {
+        ($struct:expr, $map:expr, {
+            $( $field:ident => ($param:path, $func:ident) ),*
+            $(,)?
+        }) => {
+            let u = $struct;
+            $(
+                if let Some(v) = u.$field {
+                    $func($map, $param, v);
+                }
+            )*
+        };
+    }
+
+    pub(crate) use process_features;
+}
 
 // TODO: automatic read of the platform file at the beginning of the execution
 //use lazy_static::lazy_static;
 //use std::sync::Mutex;
 // lazy_static! { static ref currentfeatures: Mutex<HashMap<PlatformParameters, &'static dyn Feature>> = Mutex::new(readplatformfeatures()); }
 
-pub fn readplatformfeatures() -> HashMap<PlatformParameters, Arc<dyn Feature + Send + Sync>>
-{
-    let t = match readplatform() {
-        Ok(t) => t,
-        Err(_) => todo!(),
+#[macro_export]
+macro_rules! readplatformfeatures {
+    ($platform:expr) => { 
+        todo!("not implemented for extern platform crates yet")
     };
+    // default impl
+    () => {{
+        type PlatformFeatures = HashMap<PlatformParameters, Arc<dyn Feature + Send + Sync>>;
 
-   // let v0 = t.processor.unwrap();
-   // let v1 = v0.cpu_simd.unwrap();
-   // println!("ACCELERATOR {}", v1[0]);
+        fn add_qualifier(m: &mut PlatformFeatures, par:PlatformParameters, v:String) { 
+            let f = $crate::lookup_feature(Box::leak(v.into_boxed_str()));
+            match f {
+                Some(f) => { m.insert(par, f); },
+                None => {},
+            }
+        }
 
-    let mut m: HashMap<PlatformParameters, Arc<dyn Feature + Send + Sync>> = HashMap::new();
+        fn add_quantifier(m: &mut PlatformFeatures, par:PlatformParameters, v:i32) { 
+            m.insert(par, Arc::new(v));
+        }
 
-   // println!("readplatformfeatures at startup"); 
+        let platform =
+            match $crate::platformfile::readplatform() {
+                Ok(t) => t,
+                Err(_) => todo!(
+                    "error while trying to read Platform.toml or PWD var wasnt found"
+                ),
+            };
 
-    match t.accelerator {
-        Some(u) => {
-            match u.acc_backend { Some(v ) => { 
 
+        // let v0 = t.processor.unwrap();
+        // let v1 = v0.cpu_simd.unwrap();
+        // println!("ACCELERATOR {}", v1[0]);
+
+        let mut m: PlatformFeatures = ::std::collections::HashMap::new();
+
+        // println!("readplatformfeatures at startup"); 
+
+        if let Some(mut feature) = platform.accelerator {
+            if let Some(v) = feature.acc_backend.take() {
                 let mut fvec = Vec::new();
+
                 for fv in v {
                     let fs = fv.as_str().unwrap();
-                    let static_fs: &'static str = Box::leak(fs.to_string().into_boxed_str());
-                    match  lookup_feature(static_fs) {
+                    let static_fs: &'static str = Box::leak(
+                        fs.to_string().into_boxed_str()
+                    );
+
+                    match $crate::lookup_feature(static_fs) {
                         Some(f) =>  fvec.push(f),
                         None => { println!("qualifier {} not found and ignored", static_fs) },
                     }; 
-                   
                 }
 
-              m.insert(PlatformParameters::acc_backend, Arc::new(fvec));
+                m.insert(crate::PlatformParameters::acc_backend, std::sync::Arc::new(fvec));
+            }
 
-            }, None => {} }
-            match u.acc_cudacc { Some(v) => { add_quantifier(&mut m, PlatformParameters::acc_cudacc, v); }, None => {} }
-            match u.acc_cudatoolkit { Some(v) => { add_quantifier(&mut m, PlatformParameters::acc_cudatoolkit, v); }, None => {} }
-            match u.acc_cudadriver { Some(v) => { add_quantifier(&mut m, PlatformParameters::acc_cudadriver, v); }, None => {} }
-            match u.acc_architecture { Some(v) => add_qualifier(&mut m, PlatformParameters::acc_architecture, v), None => {} }
-            match u.acc_memory_type { Some(v) => add_qualifier(&mut m, PlatformParameters::acc_memory_type, v), None => {} }
-            match u.acc_manufacturer { Some(v) => add_qualifier(&mut m, PlatformParameters::acc_manufacturer, v), None => {} }
-            match u.acc_model { Some(v) =>  add_qualifier(&mut m, PlatformParameters::acc_model, v), None => {} }
-            match u.acc_processor { Some(v) => add_qualifier(&mut m, PlatformParameters::acc_processor, v), None => {} }
-            match u.acc_type { Some(v) => add_qualifier(&mut m, PlatformParameters::acc_type, v), None => {} }
-            match u.acc_count { Some(v) => { add_quantifier(&mut m, PlatformParameters::acc_count, v); }, None => {} }
-            match u.acc_memorysize { Some(v) => { add_quantifier(&mut m, PlatformParameters::acc_architecture, v); }, None => {} }
-            match u.acc_processor_count { Some(v) => { add_quantifier(&mut m, PlatformParameters::acc_processor_count, v); }, None => {} }
-            match u.acc_tdp { Some(v) => { add_quantifier(&mut m, PlatformParameters::acc_tdp, v); }, None => {} }
-        },
-        None => {},
-    }
+            $crate::__private::process_features!(feature, &mut m, {
+                acc_cudacc => ($crate::PlatformParameters::acc_cudacc, add_quantifier),
+                acc_cudatoolkit => ($crate::PlatformParameters::acc_cudatoolkit, add_quantifier),
+                acc_cudadriver => ($crate::PlatformParameters::acc_cudadriver, add_quantifier),
+                acc_architecture => ($crate::PlatformParameters::acc_architecture, add_qualifier),
+                acc_memory_type => ($crate::PlatformParameters::acc_memory_type, add_qualifier),
+                acc_manufacturer => ($crate::PlatformParameters::acc_manufacturer, add_qualifier),
+                acc_model => ($crate::PlatformParameters::acc_model, add_qualifier),
+                acc_processor => ($crate::PlatformParameters::acc_processor, add_qualifier),
+                acc_type => ($crate::PlatformParameters::acc_type, add_qualifier),
+                acc_count => ($crate::PlatformParameters::acc_count, add_quantifier),
+                acc_memorysize => ($crate::PlatformParameters::acc_memorysize, add_quantifier),
+                acc_processor_count => ($crate::PlatformParameters::acc_processor_count, add_quantifier),
+                acc_tdp => ($crate::PlatformParameters::acc_tdp, add_quantifier),
+            });
+        }
 
-    match t.processor {
-        Some(u) => {
-            match u.cpu_isa { Some(v) => add_qualifier(&mut m, PlatformParameters::cpu_isa, v), None => {} }
-            match u.cpu_manufacturer { Some(v) => add_qualifier(&mut m, PlatformParameters::cpu_manufacturer, v), None => {} }
-            match u.cpu_microarchitecture { Some(v) => add_qualifier(&mut m, PlatformParameters::cpu_microarchitecture, v), None => {} }
-            match u.cpu_model { Some(v) => add_qualifier(&mut m, PlatformParameters::cpu_model, v), None => {} }
-            //match u.cpu_simd { Some(v) => add_qualifier(&mut m, PlatformParameters::cpu_simd, v), None => {} }
-            match u.cpu_L1_size { Some(v) => { add_quantifier(&mut m, PlatformParameters::cpu_l1_size, v); }, None => {} }
-            match u.cpu_L2_size { Some(v) => { add_quantifier(&mut m, PlatformParameters::cpu_l2_size, v); }, None => {} }
-            match u.cpu_L3_size { Some(v) => { add_quantifier(&mut m, PlatformParameters::cpu_l3_size, v); }, None => {} }
-            match u.cpu_core_clock { Some(v) => { add_quantifier(&mut m, PlatformParameters::cpu_clock, v); }, None => {} }
-            match u.cpu_core_count { Some(v) => { add_quantifier(&mut m, PlatformParameters::cpu_core_count, v); }, None => {} }
-            match u.cpu_core_threads_count { Some(v) => { add_quantifier(&mut m, PlatformParameters::cpu_core_threads_count, v); }, None => {} }
-            match u.cpu_count { Some(v) => { add_quantifier(&mut m, PlatformParameters::cpu_count, v); }, None => {} }
-            match u.cpu_tdp { Some(v) => { add_quantifier(&mut m, PlatformParameters::cpu_tdp, v); }, None => {} }
-        },
-        None => {},
-    }
+        if let Some(u) = platform.processor {
+            $crate::__private::process_features!(u, &mut m, {
+                cpu_isa => ($crate::PlatformParameters::cpu_isa, add_qualifier),
+                cpu_manufacturer => ($crate::PlatformParameters::cpu_manufacturer, add_qualifier),
+                cpu_microarchitecture => ($crate::PlatformParameters::cpu_microarchitecture, add_qualifier),
+                cpu_model => ($crate::PlatformParameters::cpu_model, add_qualifier),
+                // cpu_simd => (PlatformParameters::cpu_simd, add_qualifier),
+                cpu_L1_size => ($crate::PlatformParameters::cpu_l1_size, add_quantifier),
+                cpu_L2_size => ($crate::PlatformParameters::cpu_l2_size, add_quantifier),
+                cpu_L3_size => ($crate::PlatformParameters::cpu_l3_size, add_quantifier),
+                cpu_core_clock => ($crate::PlatformParameters::cpu_clock, add_quantifier),
+                cpu_core_count => ($crate::PlatformParameters::cpu_core_count, add_quantifier),
+                cpu_core_threads_count => ($crate::PlatformParameters::cpu_core_threads_count, add_quantifier),
+                cpu_count => ($crate::PlatformParameters::cpu_count, add_quantifier),
+                cpu_tdp => ($crate::PlatformParameters::cpu_tdp, add_quantifier),
+            });
+        }
 
-    match t.memory {
-        Some(u) => {
-            match u.mem_type { Some(v) => add_qualifier(&mut m, PlatformParameters::mem_type, v), None => {} }
-            match u.mem_bandwidth { Some(v) => { add_quantifier(&mut m, PlatformParameters::mem_bandwidth, v); }, None => {} }
-            match u.mem_frequency { Some(v) => { add_quantifier(&mut m, PlatformParameters::mem_frequency, v); }, None => {} }
-            match u.mem_latency { Some(v) => { add_quantifier(&mut m, PlatformParameters::mem_latency, v); }, None => {} }
-            match u.mem_size { Some(v) => { add_quantifier(&mut m, PlatformParameters::mem_size, v); }, None => {} }
-        },
-        None => {},
-    }
+        if let Some(u) = platform.memory {
+            $crate::__private::process_features!(u, &mut m, {
+                mem_type => ($crate::PlatformParameters::mem_type, add_qualifier),
+                mem_bandwidth => ($crate::PlatformParameters::mem_bandwidth, add_quantifier),
+                mem_frequency => ($crate::PlatformParameters::mem_frequency, add_quantifier),
+                mem_latency  => ($crate::PlatformParameters::mem_latency, add_quantifier),
+                mem_size  => ($crate::PlatformParameters::mem_size, add_quantifier),
+            });
+        }
 
-    match t.interconnection {
-        Some(u) => {
-            match u.net_RDMA { Some(v) => add_qualifier(&mut m, PlatformParameters::net_rdma, v), None => {} }
-            match u.net_type { Some(v) => add_qualifier(&mut m, PlatformParameters::net_type, v), None => {} }
-            match u.net_topology { Some(v) => add_qualifier(&mut m, PlatformParameters::net_topology, v), None => {} }
-            match u.net_bandwidth { Some(v) => { add_quantifier(&mut m, PlatformParameters::net_bandwidth, v); }, None => {} }
-            match u.net_latency { Some(v) => { add_quantifier(&mut m, PlatformParameters::net_latency, v); }, None => {} }
-            match u.net_startuptime { Some(v) => { add_quantifier(&mut m, PlatformParameters::net_startup_time, v); }, None => {} }
-        },
-        None => {},
-    }
+        if let Some(u) = platform.interconnection {
+            $crate::__private::process_features!(u, &mut m, {
+                net_RDMA => ($crate::PlatformParameters::net_rdma, add_qualifier),
+                net_type=> ($crate::PlatformParameters::net_type, add_qualifier),
+                net_topology => ($crate::PlatformParameters::net_topology, add_qualifier),
+                net_bandwidth => ($crate::PlatformParameters::net_bandwidth, add_quantifier),
+                net_latency => ($crate::PlatformParameters::net_latency, add_quantifier),
+                net_startuptime=> ($crate::PlatformParameters::net_startup_time, add_quantifier),
+            });
+        }
 
-    match t.storage {
-        Some(u) => {
-            match u.sto_interface { Some(v) => add_qualifier(&mut m, PlatformParameters::sto_interface, v), None => {} }
-            match u.sto_type { Some(v) => add_qualifier(&mut m, PlatformParameters::sto_type, v), None => {} }
-            match u.sto_bandwidth { Some(v) => { add_quantifier(&mut m, PlatformParameters::sto_bandwidth, v); }, None => {} }
-            match u.sto_latency { Some(v) => { add_quantifier(&mut m, PlatformParameters::sto_latency, v); }, None => {} }
-            match u.sto_networkbandwidth { Some(v) => { add_quantifier(&mut m, PlatformParameters::sto_network_bandwidth, v); }, None => {} }
-            match u.sto_size { Some(v) => { add_quantifier(&mut m, PlatformParameters::sto_size, v); }, None => {} }
-        },
-        None => {},
-    }
+        if let Some(u) = platform.storage {
+            $crate::__private::process_features!(u, &mut m, {
+                sto_interface => ($crate::PlatformParameters::sto_interface, add_qualifier),
+                sto_type => ($crate::PlatformParameters::sto_type, add_qualifier),
+                sto_bandwidth => ($crate::PlatformParameters::sto_bandwidth, add_quantifier),
+                sto_latency => ($crate::PlatformParameters::sto_latency, add_quantifier),
+                sto_networkbandwidth => ($crate::PlatformParameters::sto_network_bandwidth, add_quantifier),
+                sto_size=> ($crate::PlatformParameters::sto_size, add_quantifier),
+            });
+        }
 
-    match t.node {
-        Some(u) => {
-            match u.vm_machinefamily { Some(v) => add_qualifier(&mut m, PlatformParameters::vm_machinefamily, v), None => {} }
-            match u.vm_machinetype { Some(v) => add_qualifier(&mut m, PlatformParameters::vm_machinetype, v), None => {} }
-            match u.vm_provider { Some(v) => add_qualifier(&mut m, PlatformParameters::vm_provider, v), None => {} }
-            //match u.vm_count { Some(v) => { add_quantifier(&mut m, PlatformParameters::vm_count, v); }, None => {} }
-            match u.vm_threads_count { Some(v) => { add_quantifier(&mut m, PlatformParameters::vm_threads_count, v); }, None => {} }
-            match u.vm_vcpus_count { Some(v) => { add_quantifier(&mut m, PlatformParameters::vm_vcpus_count, v); }, None => {} }
-            //match u.vm_dedicated { Some(v) => { add_quantifier(&mut m, PlatformParameters::vm_dedicated, v); }, None => {} }
-            //match u.vm_virtual { Some(v) => { add_quantifier(&mut m, PlatformParameters::vm_virtual, v); }, None => {} }
-        },
-        None => {},
-    }
+        if let Some(u) = platform.node {
+            $crate::__private::process_features!(u, &mut m, {
+                vm_machinefamily => ($crate::PlatformParameters::vm_machinefamily, add_qualifier),
+                vm_machinetype => ($crate::PlatformParameters::vm_machinetype, add_qualifier),
+                vm_provider => ($crate::PlatformParameters::vm_provider, add_qualifier),
+                //vm_count => (PlatformParameters::vm_count, add_quantifier),
+                vm_threads_count=> ($crate::PlatformParameters::vm_threads_count, add_quantifier),
+                vm_vcpus_count => ($crate::PlatformParameters::vm_vcpus_count, add_quantifier),
+                //vm_dedicated => Some(v) => { add_quantifier(&mut m, PlatformParameters::vm_dedicated, v); }, None => {} }
+                //vm_virtual => Some(v) => { add_quantifier(&mut m, PlatformParameters::vm_virtual, v); }, None => {} }
+            });
+        }
 
-   // for (k,v) in &m {
-   //     println!("---> {:?}: {:?}", k, match v.feature_type() { FeatureType::Quantifier => v.string(), FeatureType::Qualifier => v.string() });
-   // }
+        // for (k,v) in &m {
+        //     println!("---> {:?}: {:?}", k, match v.feature_type() { FeatureType::Quantifier => v.string(), FeatureType::Qualifier => v.string() });
+        // }
 
 
-  //  m.insert(PlatformParameters::acc_backend, &CUDA8);
-  //  m.insert(PlatformParameters::acc_count, Arc::new(AtLeast{val: 5} ));
-  //  m.insert(PlatformParameters::cpu_core_count, Arc::new(12 ));
+        //  m.insert(PlatformParameters::acc_backend, &CUDA8);
+        //  m.insert(PlatformParameters::acc_count, Arc::new(AtLeast{val: 5} ));
+        //  m.insert(PlatformParameters::cpu_core_count, Arc::new(12 ));
 
-   // let f = lookup_feature("AVX512");
-   // m.insert(PlatformParameters::cpu_simd, f);
+        // let f = lookup_feature("AVX512");
+        // m.insert(PlatformParameters::cpu_simd, f);
 
-    return m;
+        m
+    }};
 }
 
-fn add_qualifier(m: &mut HashMap<PlatformParameters, Arc<dyn Feature + Send + Sync>>, par:PlatformParameters, v:String) { 
-    let f = lookup_feature(Box::leak(v.into_boxed_str()));
-    match f {
-        Some(f) => { m.insert(par, f); },
-        None => {},
-    }
-}
+#[cfg(test)]
+mod tests {
+    use super::*;
 
-fn add_quantifier(m: &mut HashMap<PlatformParameters, Arc<dyn Feature + Send + Sync>>, par:PlatformParameters, v:i32) { 
-    m.insert(par, Arc::new(v));
+    #[test]
+    fn readplatformfeatures_hashmap_shouldnt_be_empty() {
+        // hardcoded for now but would be nice to use dotenvy for tests
+        env::set_var("PLATFORM_DESCRIPTION", "D:/coding/platform-aware/");
+
+        assert!(!readplatformfeatures!().is_empty());
+    }
+
+    #[ignore]
+    #[test]
+    fn readplatformfeatures_by_value() {
+        todo!()
+    }
+
+    #[test]
+    fn readplatformfeatures_print_params() {
+        env::set_var("PLATFORM_DESCRIPTION", "D:/coding/platform-aware/");
+
+        let plat = readplatformfeatures!();
+
+        for i in plat.keys().into_iter() {
+            println!("{:?}", i);
+        }
+    }
 }

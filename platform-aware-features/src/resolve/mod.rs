@@ -20,7 +20,7 @@ use std::sync::Mutex;
 
 lazy_static! {
     static ref CURRENT_FEATURES: Mutex<HashMap<PlatformParameters, Arc<dyn Feature + Send + Sync>>> = 
-        Mutex::new(readplatformfeatures());
+        Mutex::new(readplatformfeatures!());
 }
 
 // The glorious resolution algorithm
