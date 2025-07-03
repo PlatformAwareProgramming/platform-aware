@@ -194,7 +194,7 @@ macro_rules! readplatformfeatures {
                     }; 
                 }
 
-                m.insert(crate::PlatformParameters::acc_backend, std::sync::Arc::new(fvec));
+                m.insert($crate::PlatformParameters::acc_backend, std::sync::Arc::new(fvec));
             }
 
             $crate::__private::process_features!(feature, &mut m, {
