@@ -1,8 +1,15 @@
-
+// all unused imports are used inside the readplatformfeatures macro
 use std::path::Path;
+#[allow(unused_imports)]
 use std::sync::Arc;
 use std::{env, fs};
 use std::error::Error;
+#[allow(unused_imports)]
+use std::collections::HashMap;
+#[allow(unused_imports)]
+use crate::{lookup_feature, AtLeast, FeatureType, QuantifierType};
+#[allow(unused_imports)]
+use super::{Feature, PlatformParameters};
 
 use serde::Deserialize;
 use toml::value::Array;
@@ -35,6 +42,7 @@ pub struct PlatformAccelerator {
     pub acc_type:Option<String>,
 }
 
+#[allow(non_snake_case)]
 #[derive(Deserialize)]
 pub struct PlatformProcessor {
     pub cpu_core_count:Option<i32>,
@@ -52,6 +60,7 @@ pub struct PlatformProcessor {
     pub cpu_microarchitecture:Option<String>,
 }
 
+#[allow(non_snake_case)]
 #[derive(Deserialize)]
 pub struct PlatformInterconnection {
     pub net_latency:Option<i32>,
@@ -104,41 +113,27 @@ pub fn readplatform() -> Result<Platform,Box<dyn Error>> {
         }
     };
 
-    println!("{:?}", Path::new(&platform_path).join("Platform.toml"));
+    // println!("{:?}", Path::new(&platform_path).join("Platform.toml"));
 
     let contents: String = fs::read_to_string(Path::new(&platform_path).join("Platform.toml"))?;
 
     Ok(toml::from_str(&contents).unwrap())
 }
-use std::collections::HashMap;
 
-
-use crate::{lookup_feature, AtLeast, FeatureType, QuantifierType};
-
-use super::{Feature, PlatformParameters};
-
-pub mod __private {
-    macro_rules! process_features {
-        ($struct:expr, $map:expr, {
-            $( $field:ident => ($param:path, $func:ident) ),*
-            $(,)?
-        }) => {
-            let u = $struct;
-            $(
-                if let Some(v) = u.$field {
-                    $func($map, $param, v);
-                }
-            )*
-        };
-    }
-
-    pub(crate) use process_features;
+#[macro_export]
+macro_rules! process_features {
+    ($struct:expr, $map:expr, {
+        $( $field:ident => ($param:path, $func:ident) ),*
+        $(,)?
+    }) => {
+        let u = $struct;
+        $(
+            if let Some(v) = u.$field {
+                $func($map, $param, v);
+            }
+        )*
+    };
 }
-
-// TODO: automatic read of the platform file at the beginning of the execution
-//use lazy_static::lazy_static;
-//use std::sync::Mutex;
-// lazy_static! { static ref currentfeatures: Mutex<HashMap<PlatformParameters, &'static dyn Feature>> = Mutex::new(readplatformfeatures()); }
 
 #[macro_export]
 macro_rules! readplatformfeatures {
@@ -197,7 +192,7 @@ macro_rules! readplatformfeatures {
                 m.insert($crate::PlatformParameters::acc_backend, std::sync::Arc::new(fvec));
             }
 
-            $crate::__private::process_features!(feature, &mut m, {
+            $crate::process_features!(feature, &mut m, {
                 acc_cudacc => ($crate::PlatformParameters::acc_cudacc, add_quantifier),
                 acc_cudatoolkit => ($crate::PlatformParameters::acc_cudatoolkit, add_quantifier),
                 acc_cudadriver => ($crate::PlatformParameters::acc_cudadriver, add_quantifier),
@@ -215,7 +210,7 @@ macro_rules! readplatformfeatures {
         }
 
         if let Some(u) = platform.processor {
-            $crate::__private::process_features!(u, &mut m, {
+            $crate::process_features!(u, &mut m, {
                 cpu_isa => ($crate::PlatformParameters::cpu_isa, add_qualifier),
                 cpu_manufacturer => ($crate::PlatformParameters::cpu_manufacturer, add_qualifier),
                 cpu_microarchitecture => ($crate::PlatformParameters::cpu_microarchitecture, add_qualifier),
@@ -233,7 +228,7 @@ macro_rules! readplatformfeatures {
         }
 
         if let Some(u) = platform.memory {
-            $crate::__private::process_features!(u, &mut m, {
+            $crate::process_features!(u, &mut m, {
                 mem_type => ($crate::PlatformParameters::mem_type, add_qualifier),
                 mem_bandwidth => ($crate::PlatformParameters::mem_bandwidth, add_quantifier),
                 mem_frequency => ($crate::PlatformParameters::mem_frequency, add_quantifier),
@@ -243,7 +238,7 @@ macro_rules! readplatformfeatures {
         }
 
         if let Some(u) = platform.interconnection {
-            $crate::__private::process_features!(u, &mut m, {
+            $crate::process_features!(u, &mut m, {
                 net_RDMA => ($crate::PlatformParameters::net_rdma, add_qualifier),
                 net_type=> ($crate::PlatformParameters::net_type, add_qualifier),
                 net_topology => ($crate::PlatformParameters::net_topology, add_qualifier),
@@ -254,7 +249,7 @@ macro_rules! readplatformfeatures {
         }
 
         if let Some(u) = platform.storage {
-            $crate::__private::process_features!(u, &mut m, {
+            $crate::process_features!(u, &mut m, {
                 sto_interface => ($crate::PlatformParameters::sto_interface, add_qualifier),
                 sto_type => ($crate::PlatformParameters::sto_type, add_qualifier),
                 sto_bandwidth => ($crate::PlatformParameters::sto_bandwidth, add_quantifier),
@@ -265,7 +260,7 @@ macro_rules! readplatformfeatures {
         }
 
         if let Some(u) = platform.node {
-            $crate::__private::process_features!(u, &mut m, {
+            $crate::process_features!(u, &mut m, {
                 vm_machinefamily => ($crate::PlatformParameters::vm_machinefamily, add_qualifier),
                 vm_machinetype => ($crate::PlatformParameters::vm_machinetype, add_qualifier),
                 vm_provider => ($crate::PlatformParameters::vm_provider, add_qualifier),
@@ -313,7 +308,9 @@ mod tests {
 
     #[test]
     fn readplatformfeatures_print_params() {
-        env::set_var("PLATFORM_DESCRIPTION", "D:/coding/platform-aware/");
+        env::set_var(
+            "PLATFORM_DESCRIPTION", "/home/mykael/coding/platformaware/platform-aware"
+        );
 
         let plat = readplatformfeatures!();
 

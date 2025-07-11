@@ -5,16 +5,16 @@ use platform_aware_features::{Feature, CPUSIMD, AVX512};
     mod mymodule {
 
         use platform_aware_features::{resolve, AtMost, Feature, PlatformParameters,AVX512};
-        use platform_aware_nvidia::CUDA8;
+        use platform_aware_nvidia::CUDA;
         use std::{collections::HashMap, sync::Arc};
         use lazy_static::lazy_static;
                 
         lazy_static! { static ref Vf:i32 = { 
                     let features1:[(PlatformParameters, Arc<dyn Feature + Send + Sync>); 1] = [(PlatformParameters::cpu_simd, Arc::new(AVX512))];
-                    let features2:[(PlatformParameters, Arc<dyn Feature + Send + Sync>); 2] = [(PlatformParameters::acc_backend, Arc::new(CUDA8)),
+                    let features2:[(PlatformParameters, Arc<dyn Feature + Send + Sync>); 2] = [(PlatformParameters::acc_backend, Arc::new(CUDA)),
                                                                                                (PlatformParameters::acc_count, Arc::new(3))];
-                    let features3:[(PlatformParameters, Arc<dyn Feature + Send + Sync>); 1] = [(PlatformParameters::acc_backend, Arc::new(CUDA8))];
-                    let features4:[(PlatformParameters, Arc<dyn Feature + Send + Sync>); 2] = [(PlatformParameters::acc_backend, Arc::new(CUDA8)),
+                    let features3:[(PlatformParameters, Arc<dyn Feature + Send + Sync>); 1] = [(PlatformParameters::acc_backend, Arc::new(CUDA))];
+                    let features4:[(PlatformParameters, Arc<dyn Feature + Send + Sync>); 2] = [(PlatformParameters::acc_backend, Arc::new(CUDA)),
                                                                              (PlatformParameters::acc_count, Arc::new(AtMost{val:5}))];
                     resolve(vec![HashMap::from(features1), 
                                  HashMap::from(features2), 
@@ -25,10 +25,10 @@ use platform_aware_features::{Feature, CPUSIMD, AVX512};
 
         lazy_static! { static ref Vg:i32 = { 
             let features1:[(PlatformParameters, Arc<dyn Feature + Send + Sync>); 1] = [(PlatformParameters::cpu_simd, Arc::new(AVX512))];
-            let features2:[(PlatformParameters, Arc<dyn Feature + Send + Sync>); 2] = [(PlatformParameters::acc_backend, Arc::new(CUDA8)),
+            let features2:[(PlatformParameters, Arc<dyn Feature + Send + Sync>); 2] = [(PlatformParameters::acc_backend, Arc::new(CUDA)),
                                                                                            (PlatformParameters::acc_count, Arc::new(3))];
-            let features3:[(PlatformParameters, Arc<dyn Feature + Send + Sync>); 1] = [(PlatformParameters::acc_backend, Arc::new(CUDA8))];
-            let features4:[(PlatformParameters, Arc<dyn Feature + Send + Sync>); 2] = [(PlatformParameters::acc_backend, Arc::new(CUDA8)),
+            let features3:[(PlatformParameters, Arc<dyn Feature + Send + Sync>); 1] = [(PlatformParameters::acc_backend, Arc::new(CUDA))];
+            let features4:[(PlatformParameters, Arc<dyn Feature + Send + Sync>); 2] = [(PlatformParameters::acc_backend, Arc::new(CUDA)),
                                                                                        (PlatformParameters::acc_count, Arc::new(AtMost{val:5}))];
             resolve(vec![HashMap::from(features1), 
                          HashMap::from(features2), 
