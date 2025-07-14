@@ -9,6 +9,7 @@ impl Feature for SSE {
     fn supertype(self:&Self) -> Option<Box<dyn Feature>> { Some(Box::new(CPUSIMD)) }
 }
 
+#[allow(non_camel_case_types)]
 pub struct SSE_2;  // <: SSE
 
 impl Feature for SSE_2 { 
@@ -17,6 +18,7 @@ impl Feature for SSE_2 {
     fn supertype(self:&Self) -> Option<Box<dyn Feature>> { Some(Box::new(SSE)) }
 }
 
+#[allow(non_camel_case_types)]
 pub struct SSE_3;  // <: SSE_2 
 
 impl Feature for SSE_3 { 
@@ -25,6 +27,7 @@ impl Feature for SSE_3 {
     fn supertype(self:&Self) -> Option<Box<dyn Feature>> { Some(Box::new(SSE_2)) }
 }
 
+#[allow(non_camel_case_types)]
 pub struct SSSE_3;  // <: SSE_3 
 
 impl Feature for SSSE_3 { 
@@ -33,6 +36,7 @@ impl Feature for SSSE_3 {
     fn supertype(self:&Self) -> Option<Box<dyn Feature>> { Some(Box::new(SSE_3)) }
 }
 
+#[allow(non_camel_case_types)]
 pub struct SSE_4;  // <: SSSE_3 
 
 impl Feature for SSE_4 { 
@@ -41,6 +45,7 @@ impl Feature for SSE_4 {
     fn supertype(self:&Self) -> Option<Box<dyn Feature>> { Some(Box::new(SSSE_3)) }
 }
 
+#[allow(non_camel_case_types)]
 pub struct SSE_4_1;  // <: SSE_4
 
 impl Feature for SSE_4_1 { 
@@ -49,6 +54,7 @@ impl Feature for SSE_4_1 {
     fn supertype(self:&Self) -> Option<Box<dyn Feature>> { Some(Box::new(SSE_4)) }
 }
 
+#[allow(non_camel_case_types)]
 pub struct SSE_4_2;  // <: SSE_4
 
 impl Feature for SSE_4_2 { 
@@ -57,6 +63,7 @@ impl Feature for SSE_4_2 {
     fn supertype(self:&Self) -> Option<Box<dyn Feature>> { Some(Box::new(SSE_4)) }
 }
 
+#[allow(non_camel_case_types)]
 pub struct SSE_4a;  // <: SSE_3
 
 impl Feature for SSE_4a { 

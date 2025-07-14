@@ -1,5 +1,6 @@
 use crate::{Feature, PlatformParameters, CPUISA};
 
+#[allow(non_camel_case_types)]
 pub struct x86_32;  // <: CPUISA
 
 impl Feature for x86_32 { 
@@ -8,6 +9,7 @@ impl Feature for x86_32 {
     fn supertype(self:&Self) -> Option<Box<dyn Feature>> { Some(Box::new(CPUISA)) }
 }
 
+#[allow(non_camel_case_types)]
 pub struct x86_64;  // <: x86_32
 
 impl Feature for x86_64 { 
@@ -16,6 +18,7 @@ impl Feature for x86_64 {
     fn supertype(self:&Self) -> Option<Box<dyn Feature>> { Some(Box::new(x86_32)) }
 }
 
+#[allow(non_camel_case_types)]
 pub struct x86_64_v1;  // <: x86_64
 
 impl Feature for x86_64_v1 { 
@@ -23,6 +26,8 @@ impl Feature for x86_64_v1 {
     fn feature_class(self:&Self) -> std::option::Option<PlatformParameters> { Some(PlatformParameters::cpu_isa) } 
     fn supertype(self:&Self) -> Option<Box<dyn Feature>> { Some(Box::new(x86_64)) }
 }
+
+#[allow(non_camel_case_types)]
 pub struct x86_64_v2;  // <: x86_64_v1
 
 impl Feature for x86_64_v2 { 
@@ -31,6 +36,7 @@ impl Feature for x86_64_v2 {
     fn supertype(self:&Self) -> Option<Box<dyn Feature>> { Some(Box::new(x86_64_v1)) }
 }
 
+#[allow(non_camel_case_types)]
 pub struct x86_64_v3;  // <: x86_64_v2
 
 impl Feature for x86_64_v3 { 
@@ -39,6 +45,7 @@ impl Feature for x86_64_v3 {
     fn supertype(self:&Self) -> Option<Box<dyn Feature>> { Some(Box::new(x86_64_v2)) }
 }
 
+#[allow(non_camel_case_types)]
 pub struct x86_64_v4;  // <: x86_64_v3
 
 impl Feature for x86_64_v4 { 
@@ -47,6 +54,7 @@ impl Feature for x86_64_v4 {
     fn supertype(self:&Self) -> Option<Box<dyn Feature>> { Some(Box::new(x86_64_v3)) }
 }
 
+#[allow(non_camel_case_types)]
 pub struct IA_64;  // <: CPUISA
 
 impl Feature for IA_64 { 

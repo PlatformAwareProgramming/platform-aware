@@ -1,5 +1,9 @@
 use crate::{Feature, PlatformParameters, AccBackend};
 
+use std::sync::Arc;
+use ctor::ctor;
+use crate::insert_feature;
+
 pub struct DirectX;  // <: AcceleratorBackend
 
 impl Feature for DirectX { 
@@ -8,6 +12,7 @@ impl Feature for DirectX {
     fn supertype(self:&Self) -> Option<Box<dyn Feature>> { Some(Box::new(AccBackend)) }
 }
 
+#[allow(non_camel_case_types)]
 pub struct DirectX_11_0;  // <: DirectX
 
 impl Feature for DirectX_11_0 { 
@@ -16,6 +21,7 @@ impl Feature for DirectX_11_0 {
     fn supertype(self:&Self) -> Option<Box<dyn Feature>> { Some(Box::new(DirectX)) }
 }
 
+#[allow(non_camel_case_types)]
 pub struct DirectX_11_1;  // <: DirectX_1_1  
 
 impl Feature for DirectX_11_1 { 
@@ -24,6 +30,7 @@ impl Feature for DirectX_11_1 {
     fn supertype(self:&Self) -> Option<Box<dyn Feature>> { Some(Box::new(DirectX_11_0)) }
 }
 
+#[allow(non_camel_case_types)]
 pub struct DirectX_11_2;  // <: DirectX_1_2
 
 impl Feature for DirectX_11_2 { 
@@ -32,7 +39,7 @@ impl Feature for DirectX_11_2 {
     fn supertype(self:&Self) -> Option<Box<dyn Feature>> { Some(Box::new(DirectX_11_1)) }
 }
 
-
+#[allow(non_camel_case_types)]
 pub struct DirectX_12_0;  // <: DirectX_1_2
 
 impl Feature for DirectX_12_0 { 
@@ -41,6 +48,7 @@ impl Feature for DirectX_12_0 {
     fn supertype(self:&Self) -> Option<Box<dyn Feature>> { Some(Box::new(DirectX_11_2)) }
 }
 
+#[allow(non_camel_case_types)]
 pub struct DirectX_12_1;  // <: DirectX_1_2
 
 impl Feature for DirectX_12_1 { 
@@ -49,7 +57,7 @@ impl Feature for DirectX_12_1 {
     fn supertype(self:&Self) -> Option<Box<dyn Feature>> { Some(Box::new(DirectX_12_0)) }
 }
 
-
+#[allow(non_camel_case_types)]
 pub struct DirectX_12_2;  // <: DirectX_1_2
 
 impl Feature for DirectX_12_2 { 
@@ -57,10 +65,6 @@ impl Feature for DirectX_12_2 {
     fn feature_class(self:&Self) -> std::option::Option<PlatformParameters> { Some(PlatformParameters::acc_backend) } 
     fn supertype(self:&Self) -> Option<Box<dyn Feature>> { Some(Box::new(DirectX_12_1)) }
 }
-
-use std::sync::Arc;
-use ctor::ctor;
-use crate::insert_feature;
 
 #[ctor]
 fn module_initializer() {

@@ -8,6 +8,7 @@ impl Feature for Vulkan {
     fn supertype(self:&Self) -> Option<Box<dyn Feature>> { Some(Box::new(AccBackend)) }
 }
 
+#[allow(non_camel_case_types)]
 pub struct Vulkan_1_1;  // <: Vulkan
 
 impl Feature for Vulkan_1_1 { 
@@ -16,6 +17,7 @@ impl Feature for Vulkan_1_1 {
     fn supertype(self:&Self) -> Option<Box<dyn Feature>> { Some(Box::new(Vulkan)) }
 }
 
+#[allow(non_camel_case_types)]
 pub struct Vulkan_1_2;  // <: Vulkan_1_1  
 
 impl Feature for Vulkan_1_2 { 
@@ -24,6 +26,7 @@ impl Feature for Vulkan_1_2 {
     fn supertype(self:&Self) -> Option<Box<dyn Feature>> { Some(Box::new(Vulkan_1_1)) }
 }
 
+#[allow(non_camel_case_types)]
 pub struct Vulkan_1_3;  // <: Vulkan_1_2
 
 impl Feature for Vulkan_1_3 { 

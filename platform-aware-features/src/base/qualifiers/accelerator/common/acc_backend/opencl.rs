@@ -8,6 +8,7 @@ impl Feature for OpenCL {
     fn supertype(self:&Self) -> Option<Box<dyn Feature>> { Some(Box::new(AccBackend)) }
 }
 
+#[allow(non_camel_case_types)]
 pub struct OpenCL_1_0;  // <: OpenCL
 
 impl Feature for OpenCL_1_0 { 
@@ -16,6 +17,7 @@ impl Feature for OpenCL_1_0 {
     fn supertype(self:&Self) -> Option<Box<dyn Feature>> { Some(Box::new(OpenCL)) }
 }
 
+#[allow(non_camel_case_types)]
 pub struct OpenCL_1_1;  // <: OpenCL_1_0
 
 impl Feature for OpenCL_1_1 { 
@@ -24,6 +26,7 @@ impl Feature for OpenCL_1_1 {
     fn supertype(self:&Self) -> Option<Box<dyn Feature>> { Some(Box::new(OpenCL_1_0)) }
 }
 
+#[allow(non_camel_case_types)]
 pub struct OpenCL_1_2;  // <: OpenCL_1_1  
 
 impl Feature for OpenCL_1_2 { 
@@ -32,6 +35,7 @@ impl Feature for OpenCL_1_2 {
     fn supertype(self:&Self) -> Option<Box<dyn Feature>> { Some(Box::new(OpenCL_1_1)) }
 }
 
+#[allow(non_camel_case_types)]
 pub struct OpenCL_2_0;  // <: OpenCL_1_2
 
 impl Feature for OpenCL_2_0 { 
@@ -40,6 +44,7 @@ impl Feature for OpenCL_2_0 {
     fn supertype(self:&Self) -> Option<Box<dyn Feature>> { Some(Box::new(OpenCL_1_2)) }
 }
 
+#[allow(non_camel_case_types)]
 pub struct OpenCL_2_1;  // <: OpenCL_2_0
 
 impl Feature for OpenCL_2_1 { 
@@ -48,6 +53,7 @@ impl Feature for OpenCL_2_1 {
     fn supertype(self:&Self) -> Option<Box<dyn Feature>> { Some(Box::new(OpenCL_2_0)) }
 }
 
+#[allow(non_camel_case_types)]
 pub struct OpenCL_2_2;  // <: OpenCL_2_1
 
 impl Feature for OpenCL_2_2 { 
@@ -56,6 +62,7 @@ impl Feature for OpenCL_2_2 {
     fn supertype(self:&Self) -> Option<Box<dyn Feature>> { Some(Box::new(OpenCL_2_1)) }
 }
 
+#[allow(non_camel_case_types)]
 pub struct OpenCL_3_0;  // <: OpenCL_2_2
 
 impl Feature for OpenCL_3_0 { 

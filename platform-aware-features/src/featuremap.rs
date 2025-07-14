@@ -8,7 +8,7 @@ use crate::Feature;
 use std::sync::Arc;
 
 static FEATURE_MAP: Lazy<Mutex<HashMap<&'static str, Arc<dyn Feature + Send + Sync>>>> = Lazy::new(|| {
-    let mut map: HashMap<&'static str, Arc<dyn Feature + Send + Sync>> = HashMap::new();
+    let map: HashMap<&'static str, Arc<dyn Feature + Send + Sync>> = HashMap::new();
     Mutex::new(map)
 });
 

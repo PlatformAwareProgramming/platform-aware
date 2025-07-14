@@ -8,6 +8,7 @@ impl Feature for OpenGL {
     fn supertype(self:&Self) -> Option<Box<dyn Feature>> { Some(Box::new(AccBackend)) }
 }
 
+#[allow(non_camel_case_types)]
 pub struct OpenGL_4_6;  // <: OpenGL
 
 impl Feature for OpenGL_4_6 { 

@@ -9,6 +9,7 @@ impl Feature for NVLink {
     fn supertype(self:&Self) -> Option<Box<dyn Feature>> { Some(Box::new(AccInterconnect)) }
 }
 
+#[allow(non_camel_case_types)]
 pub struct NVLink_v1; // <: NVLink
 
 impl Feature for NVLink_v1 { 
@@ -17,6 +18,7 @@ impl Feature for NVLink_v1 {
     fn supertype(self:&Self) -> Option<Box<dyn Feature>> { Some(Box::new(NVLink)) }
 }
 
+#[allow(non_camel_case_types)]
 pub struct NVLink_v2; // <: NVLink
 
 impl Feature for NVLink_v2 { 
@@ -25,6 +27,7 @@ impl Feature for NVLink_v2 {
     fn supertype(self:&Self) -> Option<Box<dyn Feature>> { Some(Box::new(NVLink)) }
 }
 
+#[allow(non_camel_case_types)]
 pub struct NVLink_v3; // <: NVLink
 
 impl Feature for NVLink_v3 { 
@@ -33,6 +36,7 @@ impl Feature for NVLink_v3 {
     fn supertype(self:&Self) -> Option<Box<dyn Feature>> { Some(Box::new(NVLink)) }
 }
 
+#[allow(non_camel_case_types)]
 pub struct NVLink_v4; // <: NVLink
 
 impl Feature for NVLink_v4 { 
@@ -41,6 +45,7 @@ impl Feature for NVLink_v4 {
     fn supertype(self:&Self) -> Option<Box<dyn Feature>> { Some(Box::new(NVLink)) }
 }
 
+#[allow(non_camel_case_types)]
 pub struct NVLink_v5; // <: NVLink
 
 impl Feature for NVLink_v5 { 

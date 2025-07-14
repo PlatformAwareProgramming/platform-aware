@@ -154,6 +154,8 @@ impl Feature for HBM3 {
     fn feature_class(self:&Self) -> std::option::Option<PlatformParameters> { Some(PlatformParameters::mem_type) } 
     fn supertype(self:&Self) -> Option<Box<dyn Feature>> { Some(Box::new(HBM2)) }
 }
+
+#[allow(non_camel_case_types)]
 pub struct HBM_PIM;  // <: SDRAM
 
 impl Feature for HBM_PIM { 
