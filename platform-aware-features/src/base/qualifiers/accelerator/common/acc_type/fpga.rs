@@ -1,11 +1,11 @@
 
-use crate::{Feature, PlatformParameters, AccType};
+use crate::{Feature, PlatformParameter, AccType};
 
 pub struct FPGA;
 
 impl Feature for FPGA { 
      fn string(self:&Self) -> &'static str { "FPGA" } 
-    fn feature_class(self:&Self) -> std::option::Option<PlatformParameters> { Some(PlatformParameters::acc_type) } 
+    fn feature_class(self:&Self) -> std::option::Option<PlatformParameter> { Some(PlatformParameter::acc_type) } 
     fn supertype(self:&Self) -> Option<Box<dyn Feature>> { Some(Box::new(AccType)) }
 }
 

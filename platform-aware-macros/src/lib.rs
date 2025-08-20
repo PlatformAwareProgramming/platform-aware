@@ -91,13 +91,13 @@ impl FunctionData {
         for (platform, feature) in kernv {
             if tokens_len == 1 {
                 tokens.extend(quote! {
-                    (PlatformParameters::#platform,
+                    (PlatformParameter::#platform,
                         Arc::new(#feature) as Arc<dyn Feature + Send + Sync>
                     )
                 });
             } else {
                 tokens.extend(quote! {
-                    (PlatformParameters::#platform, Arc::new(#feature)
+                    (PlatformParameter::#platform, Arc::new(#feature)
                         as Arc<dyn Feature + Send + Sync>
                     ),
                 })

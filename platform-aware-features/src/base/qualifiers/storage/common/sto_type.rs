@@ -1,10 +1,10 @@
-use crate::{Feature, PlatformParameters, StoType};
+use crate::{Feature, PlatformParameter, StoType};
 
 pub struct SSD;  // <: StoType
 
 impl Feature for SSD { 
      fn string(self:&Self) -> &'static str { "SSD" } 
-    fn feature_class(self:&Self) -> std::option::Option<PlatformParameters> { Some(PlatformParameters::sto_type) } 
+    fn feature_class(self:&Self) -> std::option::Option<PlatformParameter> { Some(PlatformParameter::sto_type) } 
     fn supertype(self:&Self) -> Option<Box<dyn Feature>> { Some(Box::new(StoType)) }
 }
 
@@ -12,7 +12,7 @@ pub struct HDD;  // <: StoType
 
 impl Feature for HDD { 
      fn string(self:&Self) -> &'static str { "HDD" } 
-    fn feature_class(self:&Self) -> std::option::Option<PlatformParameters> { Some(PlatformParameters::sto_type) } 
+    fn feature_class(self:&Self) -> std::option::Option<PlatformParameter> { Some(PlatformParameter::sto_type) } 
     fn supertype(self:&Self) -> Option<Box<dyn Feature>> { Some(Box::new(StoType)) }
 }
 

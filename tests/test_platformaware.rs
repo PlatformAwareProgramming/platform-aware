@@ -4,18 +4,18 @@ use platform_aware_features::{Feature, CPUSIMD, AVX512};
 #[allow(unused)]
 mod mymodule {
 
-    use platform_aware_features::{resolve, AtMost, Feature, PlatformParameters,AVX512};
+    use platform_aware_features::{resolve, AtMost, Feature, PlatformParameter,AVX512};
     use platform_aware_nvidia::CUDA;
     use std::{collections::HashMap, sync::Arc};
     use lazy_static::lazy_static;
             
     lazy_static! { static ref Vf:i32 = { 
-                let features1:[(PlatformParameters, Arc<dyn Feature + Send + Sync>); 1] = [(PlatformParameters::cpu_simd, Arc::new(AVX512))];
-                let features2:[(PlatformParameters, Arc<dyn Feature + Send + Sync>); 2] = [(PlatformParameters::acc_backend, Arc::new(CUDA)),
-                                                                                            (PlatformParameters::acc_count, Arc::new(3))];
-                let features3:[(PlatformParameters, Arc<dyn Feature + Send + Sync>); 1] = [(PlatformParameters::acc_backend, Arc::new(CUDA))];
-                let features4:[(PlatformParameters, Arc<dyn Feature + Send + Sync>); 2] = [(PlatformParameters::acc_backend, Arc::new(CUDA)),
-                                                                            (PlatformParameters::acc_count, Arc::new(AtMost{val:5}))];
+                let features1:[(PlatformParameter, Arc<dyn Feature + Send + Sync>); 1] = [(PlatformParameter::cpu_simd, Arc::new(AVX512))];
+                let features2:[(PlatformParameter, Arc<dyn Feature + Send + Sync>); 2] = [(PlatformParameter::acc_backend, Arc::new(CUDA)),
+                                                                                            (PlatformParameter::acc_count, Arc::new(3))];
+                let features3:[(PlatformParameter, Arc<dyn Feature + Send + Sync>); 1] = [(PlatformParameter::acc_backend, Arc::new(CUDA))];
+                let features4:[(PlatformParameter, Arc<dyn Feature + Send + Sync>); 2] = [(PlatformParameter::acc_backend, Arc::new(CUDA)),
+                                                                            (PlatformParameter::acc_count, Arc::new(AtMost{val:5}))];
                 resolve(vec![HashMap::from(features1), 
                                 HashMap::from(features2), 
                                 HashMap::from(features3), 
@@ -24,12 +24,12 @@ mod mymodule {
     }
 
     lazy_static! { static ref Vg:i32 = { 
-        let features1:[(PlatformParameters, Arc<dyn Feature + Send + Sync>); 1] = [(PlatformParameters::cpu_simd, Arc::new(AVX512))];
-        let features2:[(PlatformParameters, Arc<dyn Feature + Send + Sync>); 2] = [(PlatformParameters::acc_backend, Arc::new(CUDA)),
-                                                                                        (PlatformParameters::acc_count, Arc::new(3))];
-        let features3:[(PlatformParameters, Arc<dyn Feature + Send + Sync>); 1] = [(PlatformParameters::acc_backend, Arc::new(CUDA))];
-        let features4:[(PlatformParameters, Arc<dyn Feature + Send + Sync>); 2] = [(PlatformParameters::acc_backend, Arc::new(CUDA)),
-                                                                                    (PlatformParameters::acc_count, Arc::new(AtMost{val:5}))];
+        let features1:[(PlatformParameter, Arc<dyn Feature + Send + Sync>); 1] = [(PlatformParameter::cpu_simd, Arc::new(AVX512))];
+        let features2:[(PlatformParameter, Arc<dyn Feature + Send + Sync>); 2] = [(PlatformParameter::acc_backend, Arc::new(CUDA)),
+                                                                                        (PlatformParameter::acc_count, Arc::new(3))];
+        let features3:[(PlatformParameter, Arc<dyn Feature + Send + Sync>); 1] = [(PlatformParameter::acc_backend, Arc::new(CUDA))];
+        let features4:[(PlatformParameter, Arc<dyn Feature + Send + Sync>); 2] = [(PlatformParameter::acc_backend, Arc::new(CUDA)),
+                                                                                    (PlatformParameter::acc_count, Arc::new(AtMost{val:5}))];
         resolve(vec![HashMap::from(features1), 
                         HashMap::from(features2), 
                         HashMap::from(features3), 
@@ -113,7 +113,7 @@ use platform_aware_macros::platformaware;
 
 #[platformaware(f)]
 mod mymodule2 {
-    use platform_aware_nvidia::NVidiaH100;
+    use platform_aware_nvidia::{NVidiaH100, CUDA10};
 
     // default version (fallback)
     #[kernelversion]
@@ -134,8 +134,8 @@ mod mymodule2 {
         3i64
     }
 
-    #[allow(unused_parens)]
-    #[kernelversion(acc_count=(AtLeast{val:4}), acc_backend=CUDA10)]
+    //#[allow(unused_parens)]
+    #[kernelversion(acc_count=(AtLeast{val:4}), acc_backend=CUDA10 , acc_cudacc=(AtLeast{val:60}))]
     fn f(x:i64, y:i64, z:i64) -> i64 {
         println!("third version actions x={x} y={y} z={z}");
         4i64

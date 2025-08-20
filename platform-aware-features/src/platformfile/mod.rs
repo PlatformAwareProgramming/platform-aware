@@ -9,7 +9,7 @@ use std::collections::HashMap;
 #[allow(unused_imports)]
 use crate::{lookup_feature, AtLeast, FeatureType, QuantifierType};
 #[allow(unused_imports)]
-use super::{Feature, PlatformParameters};
+use super::{Feature, PlatformParameter};
 
 use serde::Deserialize;
 use toml::value::Array;
@@ -142,9 +142,9 @@ macro_rules! readplatformfeatures {
     };
     // default impl
     () => {{
-        type PlatformFeatures = HashMap<PlatformParameters, Arc<dyn Feature + Send + Sync>>;
+        type PlatformFeatures = HashMap<PlatformParameter, Arc<dyn Feature + Send + Sync>>;
 
-        fn add_qualifier(m: &mut PlatformFeatures, par:PlatformParameters, v:String) { 
+        fn add_qualifier(m: &mut PlatformFeatures, par:PlatformParameter, v:String) { 
             let f = $crate::lookup_feature(Box::leak(v.into_boxed_str()));
             match f {
                 Some(f) => { m.insert(par, f); },
@@ -152,7 +152,7 @@ macro_rules! readplatformfeatures {
             }
         }
 
-        fn add_quantifier(m: &mut PlatformFeatures, par:PlatformParameters, v:i32) { 
+        fn add_quantifier(m: &mut PlatformFeatures, par:PlatformParameter, v:i32) { 
             m.insert(par, Arc::new(v));
         }
 
@@ -189,86 +189,86 @@ macro_rules! readplatformfeatures {
                     }; 
                 }
 
-                m.insert($crate::PlatformParameters::acc_backend, std::sync::Arc::new(fvec));
+                m.insert($crate::PlatformParameter::acc_backend, std::sync::Arc::new(fvec));
             }
 
             $crate::process_features!(feature, &mut m, {
-                acc_cudacc => ($crate::PlatformParameters::acc_cudacc, add_quantifier),
-                acc_cudatoolkit => ($crate::PlatformParameters::acc_cudatoolkit, add_quantifier),
-                acc_cudadriver => ($crate::PlatformParameters::acc_cudadriver, add_quantifier),
-                acc_architecture => ($crate::PlatformParameters::acc_architecture, add_qualifier),
-                acc_memory_type => ($crate::PlatformParameters::acc_memory_type, add_qualifier),
-                acc_manufacturer => ($crate::PlatformParameters::acc_manufacturer, add_qualifier),
-                acc_model => ($crate::PlatformParameters::acc_model, add_qualifier),
-                acc_processor => ($crate::PlatformParameters::acc_processor, add_qualifier),
-                acc_type => ($crate::PlatformParameters::acc_type, add_qualifier),
-                acc_count => ($crate::PlatformParameters::acc_count, add_quantifier),
-                acc_memorysize => ($crate::PlatformParameters::acc_memorysize, add_quantifier),
-                acc_processor_count => ($crate::PlatformParameters::acc_processor_count, add_quantifier),
-                acc_tdp => ($crate::PlatformParameters::acc_tdp, add_quantifier),
+                acc_cudacc => ($crate::PlatformParameter::acc_cudacc, add_quantifier),
+                acc_cudatoolkit => ($crate::PlatformParameter::acc_cudatoolkit, add_quantifier),
+                acc_cudadriver => ($crate::PlatformParameter::acc_cudadriver, add_quantifier),
+                acc_architecture => ($crate::PlatformParameter::acc_architecture, add_qualifier),
+                acc_memory_type => ($crate::PlatformParameter::acc_memory_type, add_qualifier),
+                acc_manufacturer => ($crate::PlatformParameter::acc_manufacturer, add_qualifier),
+                acc_model => ($crate::PlatformParameter::acc_model, add_qualifier),
+                acc_processor => ($crate::PlatformParameter::acc_processor, add_qualifier),
+                acc_type => ($crate::PlatformParameter::acc_type, add_qualifier),
+                acc_count => ($crate::PlatformParameter::acc_count, add_quantifier),
+                acc_memorysize => ($crate::PlatformParameter::acc_memorysize, add_quantifier),
+                acc_processor_count => ($crate::PlatformParameter::acc_processor_count, add_quantifier),
+                acc_tdp => ($crate::PlatformParameter::acc_tdp, add_quantifier),
             });
         }
 
         if let Some(u) = platform.processor {
             $crate::process_features!(u, &mut m, {
-                cpu_isa => ($crate::PlatformParameters::cpu_isa, add_qualifier),
-                cpu_manufacturer => ($crate::PlatformParameters::cpu_manufacturer, add_qualifier),
-                cpu_microarchitecture => ($crate::PlatformParameters::cpu_microarchitecture, add_qualifier),
-                cpu_model => ($crate::PlatformParameters::cpu_model, add_qualifier),
-                // cpu_simd => (PlatformParameters::cpu_simd, add_qualifier),
-                cpu_L1_size => ($crate::PlatformParameters::cpu_l1_size, add_quantifier),
-                cpu_L2_size => ($crate::PlatformParameters::cpu_l2_size, add_quantifier),
-                cpu_L3_size => ($crate::PlatformParameters::cpu_l3_size, add_quantifier),
-                cpu_core_clock => ($crate::PlatformParameters::cpu_clock, add_quantifier),
-                cpu_core_count => ($crate::PlatformParameters::cpu_core_count, add_quantifier),
-                cpu_core_threads_count => ($crate::PlatformParameters::cpu_core_threads_count, add_quantifier),
-                cpu_count => ($crate::PlatformParameters::cpu_count, add_quantifier),
-                cpu_tdp => ($crate::PlatformParameters::cpu_tdp, add_quantifier),
+                cpu_isa => ($crate::PlatformParameter::cpu_isa, add_qualifier),
+                cpu_manufacturer => ($crate::PlatformParameter::cpu_manufacturer, add_qualifier),
+                cpu_microarchitecture => ($crate::PlatformParameter::cpu_microarchitecture, add_qualifier),
+                cpu_model => ($crate::PlatformParameter::cpu_model, add_qualifier),
+                // cpu_simd => (PlatformParameter::cpu_simd, add_qualifier),
+                cpu_L1_size => ($crate::PlatformParameter::cpu_l1_size, add_quantifier),
+                cpu_L2_size => ($crate::PlatformParameter::cpu_l2_size, add_quantifier),
+                cpu_L3_size => ($crate::PlatformParameter::cpu_l3_size, add_quantifier),
+                cpu_core_clock => ($crate::PlatformParameter::cpu_clock, add_quantifier),
+                cpu_core_count => ($crate::PlatformParameter::cpu_core_count, add_quantifier),
+                cpu_core_threads_count => ($crate::PlatformParameter::cpu_core_threads_count, add_quantifier),
+                cpu_count => ($crate::PlatformParameter::cpu_count, add_quantifier),
+                cpu_tdp => ($crate::PlatformParameter::cpu_tdp, add_quantifier),
             });
         }
 
         if let Some(u) = platform.memory {
             $crate::process_features!(u, &mut m, {
-                mem_type => ($crate::PlatformParameters::mem_type, add_qualifier),
-                mem_bandwidth => ($crate::PlatformParameters::mem_bandwidth, add_quantifier),
-                mem_frequency => ($crate::PlatformParameters::mem_frequency, add_quantifier),
-                mem_latency  => ($crate::PlatformParameters::mem_latency, add_quantifier),
-                mem_size  => ($crate::PlatformParameters::mem_size, add_quantifier),
+                mem_type => ($crate::PlatformParameter::mem_type, add_qualifier),
+                mem_bandwidth => ($crate::PlatformParameter::mem_bandwidth, add_quantifier),
+                mem_frequency => ($crate::PlatformParameter::mem_frequency, add_quantifier),
+                mem_latency  => ($crate::PlatformParameter::mem_latency, add_quantifier),
+                mem_size  => ($crate::PlatformParameter::mem_size, add_quantifier),
             });
         }
 
         if let Some(u) = platform.interconnection {
             $crate::process_features!(u, &mut m, {
-                net_RDMA => ($crate::PlatformParameters::net_rdma, add_qualifier),
-                net_type=> ($crate::PlatformParameters::net_type, add_qualifier),
-                net_topology => ($crate::PlatformParameters::net_topology, add_qualifier),
-                net_bandwidth => ($crate::PlatformParameters::net_bandwidth, add_quantifier),
-                net_latency => ($crate::PlatformParameters::net_latency, add_quantifier),
-                net_startuptime=> ($crate::PlatformParameters::net_startup_time, add_quantifier),
+                net_RDMA => ($crate::PlatformParameter::net_rdma, add_qualifier),
+                net_type=> ($crate::PlatformParameter::net_type, add_qualifier),
+                net_topology => ($crate::PlatformParameter::net_topology, add_qualifier),
+                net_bandwidth => ($crate::PlatformParameter::net_bandwidth, add_quantifier),
+                net_latency => ($crate::PlatformParameter::net_latency, add_quantifier),
+                net_startuptime=> ($crate::PlatformParameter::net_startup_time, add_quantifier),
             });
         }
 
         if let Some(u) = platform.storage {
             $crate::process_features!(u, &mut m, {
-                sto_interface => ($crate::PlatformParameters::sto_interface, add_qualifier),
-                sto_type => ($crate::PlatformParameters::sto_type, add_qualifier),
-                sto_bandwidth => ($crate::PlatformParameters::sto_bandwidth, add_quantifier),
-                sto_latency => ($crate::PlatformParameters::sto_latency, add_quantifier),
-                sto_networkbandwidth => ($crate::PlatformParameters::sto_network_bandwidth, add_quantifier),
-                sto_size=> ($crate::PlatformParameters::sto_size, add_quantifier),
+                sto_interface => ($crate::PlatformParameter::sto_interface, add_qualifier),
+                sto_type => ($crate::PlatformParameter::sto_type, add_qualifier),
+                sto_bandwidth => ($crate::PlatformParameter::sto_bandwidth, add_quantifier),
+                sto_latency => ($crate::PlatformParameter::sto_latency, add_quantifier),
+                sto_networkbandwidth => ($crate::PlatformParameter::sto_network_bandwidth, add_quantifier),
+                sto_size=> ($crate::PlatformParameter::sto_size, add_quantifier),
             });
         }
 
         if let Some(u) = platform.node {
             $crate::process_features!(u, &mut m, {
-                vm_machinefamily => ($crate::PlatformParameters::vm_machinefamily, add_qualifier),
-                vm_machinetype => ($crate::PlatformParameters::vm_machinetype, add_qualifier),
-                vm_provider => ($crate::PlatformParameters::vm_provider, add_qualifier),
-                //vm_count => (PlatformParameters::vm_count, add_quantifier),
-                vm_threads_count=> ($crate::PlatformParameters::vm_threads_count, add_quantifier),
-                vm_vcpus_count => ($crate::PlatformParameters::vm_vcpus_count, add_quantifier),
-                //vm_dedicated => Some(v) => { add_quantifier(&mut m, PlatformParameters::vm_dedicated, v); }, None => {} }
-                //vm_virtual => Some(v) => { add_quantifier(&mut m, PlatformParameters::vm_virtual, v); }, None => {} }
+                vm_machinefamily => ($crate::PlatformParameter::vm_machinefamily, add_qualifier),
+                vm_machinetype => ($crate::PlatformParameter::vm_machinetype, add_qualifier),
+                vm_provider => ($crate::PlatformParameter::vm_provider, add_qualifier),
+                //vm_count => (PlatformParameter::vm_count, add_quantifier),
+                vm_threads_count=> ($crate::PlatformParameter::vm_threads_count, add_quantifier),
+                vm_vcpus_count => ($crate::PlatformParameter::vm_vcpus_count, add_quantifier),
+                //vm_dedicated => Some(v) => { add_quantifier(&mut m, PlatformParameter::vm_dedicated, v); }, None => {} }
+                //vm_virtual => Some(v) => { add_quantifier(&mut m, PlatformParameter::vm_virtual, v); }, None => {} }
             });
         }
 
@@ -277,12 +277,12 @@ macro_rules! readplatformfeatures {
         // }
 
 
-        //  m.insert(PlatformParameters::acc_backend, &CUDA8);
-        //  m.insert(PlatformParameters::acc_count, Arc::new(AtLeast{val: 5} ));
-        //  m.insert(PlatformParameters::cpu_core_count, Arc::new(12 ));
+        //  m.insert(PlatformParameter::acc_backend, &CUDA8);
+        //  m.insert(PlatformParameter::acc_count, Arc::new(AtLeast{val: 5} ));
+        //  m.insert(PlatformParameter::cpu_core_count, Arc::new(12 ));
 
         // let f = lookup_feature("AVX512");
-        // m.insert(PlatformParameters::cpu_simd, f);
+        // m.insert(PlatformParameter::cpu_simd, f);
 
         m
     }};

@@ -5,7 +5,7 @@ use std::{
     }
 };
 
-use platform_aware_features::{readplatformfeatures, Feature, PlatformParameters};
+use platform_aware_features::{readplatformfeatures, Feature, PlatformParameter};
 
 // reexport the macro
 pub use platform_aware_macros::platformaware;
@@ -17,7 +17,7 @@ pub use platform_aware_intel;
 //#[cfg(feature = "nvidia")]
 pub use platform_aware_nvidia;
 
-type PlatformFeatures = HashMap<PlatformParameters, Arc<dyn Feature + Send + Sync>>;
+type PlatformFeatures = HashMap<PlatformParameter, Arc<dyn Feature + Send + Sync>>;
 
 pub static PLATFORMFEATURES: LazyLock<Mutex<PlatformFeatures>> = LazyLock::new(
     || readplatformfeatures!().into()
