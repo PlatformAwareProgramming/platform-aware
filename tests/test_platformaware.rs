@@ -10,12 +10,12 @@ mod mymodule {
     use lazy_static::lazy_static;
             
     lazy_static! { static ref Vf:i32 = { 
-                let features1:[(PlatformParameter, Arc<dyn Feature + Send + Sync>); 1] = [(PlatformParameter::cpu_simd, Arc::new(AVX512))];
-                let features2:[(PlatformParameter, Arc<dyn Feature + Send + Sync>); 2] = [(PlatformParameter::acc_backend, Arc::new(CUDA)),
-                                                                                            (PlatformParameter::acc_count, Arc::new(3))];
-                let features3:[(PlatformParameter, Arc<dyn Feature + Send + Sync>); 1] = [(PlatformParameter::acc_backend, Arc::new(CUDA))];
-                let features4:[(PlatformParameter, Arc<dyn Feature + Send + Sync>); 2] = [(PlatformParameter::acc_backend, Arc::new(CUDA)),
-                                                                            (PlatformParameter::acc_count, Arc::new(AtMost{val:5}))];
+                let features1:[(PlatformParameter, Arc<dyn Feature + Send + Sync>); 1] = [("cpu_simd".to_string(), Arc::new(AVX512))];
+                let features2:[(PlatformParameter, Arc<dyn Feature + Send + Sync>); 2] = [("acc_backend".to_string(), Arc::new(CUDA)),
+                                                                                            ("acc_count".to_string(), Arc::new(3))];
+                let features3:[(PlatformParameter, Arc<dyn Feature + Send + Sync>); 1] = [("acc_backend".to_string(), Arc::new(CUDA))];
+                let features4:[(PlatformParameter, Arc<dyn Feature + Send + Sync>); 2] = [("acc_backend".to_string(), Arc::new(CUDA)),
+                                                                            ("acc_count".to_string(), Arc::new(AtMost{val:5}))];
                 resolve(vec![HashMap::from(features1), 
                                 HashMap::from(features2), 
                                 HashMap::from(features3), 
@@ -24,12 +24,12 @@ mod mymodule {
     }
 
     lazy_static! { static ref Vg:i32 = { 
-        let features1:[(PlatformParameter, Arc<dyn Feature + Send + Sync>); 1] = [(PlatformParameter::cpu_simd, Arc::new(AVX512))];
-        let features2:[(PlatformParameter, Arc<dyn Feature + Send + Sync>); 2] = [(PlatformParameter::acc_backend, Arc::new(CUDA)),
-                                                                                        (PlatformParameter::acc_count, Arc::new(3))];
-        let features3:[(PlatformParameter, Arc<dyn Feature + Send + Sync>); 1] = [(PlatformParameter::acc_backend, Arc::new(CUDA))];
-        let features4:[(PlatformParameter, Arc<dyn Feature + Send + Sync>); 2] = [(PlatformParameter::acc_backend, Arc::new(CUDA)),
-                                                                                    (PlatformParameter::acc_count, Arc::new(AtMost{val:5}))];
+        let features1:[(PlatformParameter, Arc<dyn Feature + Send + Sync>); 1] = [("cpu_simd".to_string(), Arc::new(AVX512))];
+        let features2:[(PlatformParameter, Arc<dyn Feature + Send + Sync>); 2] = [("acc_backend".to_string(), Arc::new(CUDA)),
+                                                                                        ("acc_count".to_string(), Arc::new(3))];
+        let features3:[(PlatformParameter, Arc<dyn Feature + Send + Sync>); 1] = [("acc_backend".to_string(), Arc::new(CUDA))];
+        let features4:[(PlatformParameter, Arc<dyn Feature + Send + Sync>); 2] = [("acc_backend".to_string(), Arc::new(CUDA)),
+                                                                                    ("acc_count".to_string(), Arc::new(AtMost{val:5}))];
         resolve(vec![HashMap::from(features1), 
                         HashMap::from(features2), 
                         HashMap::from(features3), 
@@ -135,7 +135,7 @@ mod mymodule2 {
     }
 
     //#[allow(unused_parens)]
-    #[kernelversion(acc_count=(AtLeast{val:4}), acc_backend=CUDA10 , acc_cudacc=(AtLeast{val:60}))]
+    #[kernelversion(acc_count=(AtLeast{val:4}), acc_backend=CUDA10 , acc_cudacc=(AtLeast{val:50}))]
     fn f(x:i64, y:i64, z:i64) -> i64 {
         println!("third version actions x={x} y={y} z={z}");
         4i64

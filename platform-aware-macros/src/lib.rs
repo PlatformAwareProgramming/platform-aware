@@ -89,15 +89,19 @@ impl FunctionData {
         let mut tokens = TokenStream::new();
         let mut tokens_len = kernv.len();
         for (platform, feature) in kernv {
+
+            let platform_str = platform.to_string();
+            let platform_lit = syn::LitStr::new(&platform_str, proc_macro2::Span::call_site());
+
             if tokens_len == 1 {
                 tokens.extend(quote! {
-                    (PlatformParameter::#platform,
+                    (#platform_lit.to_string(),
                         Arc::new(#feature) as Arc<dyn Feature + Send + Sync>
                     )
                 });
             } else {
                 tokens.extend(quote! {
-                    (PlatformParameter::#platform, Arc::new(#feature)
+                    (#platform_lit.to_string(), Arc::new(#feature)
                         as Arc<dyn Feature + Send + Sync>
                     ),
                 })

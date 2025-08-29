@@ -4,7 +4,7 @@ pub struct GPUDirect; // <: AccInterconnect
 
 impl Feature for GPUDirect { 
      fn string(self:&Self) -> &'static str { "GPUDirect" } 
-    fn feature_class(self:&Self) -> std::option::Option<PlatformParameter> { Some(PlatformParameter::acc_interconnect) } 
+    fn feature_class(self:&Self) -> std::option::Option<PlatformParameter> { Some("acc_interconnect".to_string()) } 
     fn supertype(self:&Self) -> Option<Box<dyn Feature>> { Some(Box::new(AccInterconnect)) }
 }
 

@@ -1,6 +1,6 @@
 use std::{collections::HashMap, sync::Arc};
 
-use crate::{readplatformfeatures, Feature, PlatformParameter, PLATFORM_PARAMETERS};
+use crate::{readplatformfeatures, Feature, PlatformParameter, CURRENT_FEATURES, PLATFORM_PARAMETERS};
 
 
 use lazy_static::lazy_static;
@@ -18,10 +18,10 @@ use std::sync::Mutex;
 // Presumo que esses tipos estão definidos
 // use crate::your_module::{PlatformParameter, Feature, readplatformfeatures};
 
-lazy_static! {
-    static ref CURRENT_FEATURES: Mutex<HashMap<PlatformParameter, Arc<dyn Feature + Send + Sync>>> = 
-        Mutex::new(readplatformfeatures!());
-}
+//lazy_static! {
+//    static ref CURRENT_FEATURES: Mutex<HashMap<PlatformParameter, Arc<dyn Feature + Send + Sync>>> = 
+//        Mutex::new(readplatformfeatures());
+//}
 
 // The glorious resolution algorithm
 pub fn resolve(featureset_list:Vec<HashMap<PlatformParameter, Arc<dyn Feature + Send + Sync>>> ) -> i32
@@ -29,8 +29,10 @@ pub fn resolve(featureset_list:Vec<HashMap<PlatformParameter, Arc<dyn Feature + 
    // println!("ENTER RESOLVE");
 
     let actualplatformfeatures: HashMap<PlatformParameter, Arc<dyn Feature + Send + Sync>> = {
-        let guard = CURRENT_FEATURES.lock().unwrap();
-        guard.clone()
+        let mut m0 = CURRENT_FEATURES.lock().unwrap();
+        let m = readplatformfeatures();
+        m0.extend(m.into_iter());
+        m0.clone()
     };
 
     let mut i: i32 = (featureset_list.len()-1).try_into().unwrap();

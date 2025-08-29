@@ -33,3 +33,6 @@ mem_size = 17179
 # mem_latency = 0
 mem_type = "DDR4"
 mem_bandwidth = 2133
+
+[application]
+problem_class="A"

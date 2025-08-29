@@ -17,12 +17,14 @@ pub use platform_aware_intel;
 //#[cfg(feature = "nvidia")]
 pub use platform_aware_nvidia;
 
+/*
+
 type PlatformFeatures = HashMap<PlatformParameter, Arc<dyn Feature + Send + Sync>>;
 
 pub static PLATFORMFEATURES: LazyLock<Mutex<PlatformFeatures>> = LazyLock::new(
-    || readplatformfeatures!().into()
+    || readplatformfeatures().into()
 );
-
+ 
 #[cfg(test)]
 mod tests {
     #[test]
@@ -38,3 +40,4 @@ mod tests {
         assert!(platformfeatures.is_empty());
     }
 }
+*/

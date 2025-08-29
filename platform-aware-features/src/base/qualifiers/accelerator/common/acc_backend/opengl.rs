@@ -4,7 +4,7 @@ pub struct OpenGL;  // <: AcceleratorBackend
 
 impl Feature for OpenGL { 
      fn string(self:&Self) -> &'static str { "OpenGL" } 
-    fn feature_class(self:&Self) -> std::option::Option<PlatformParameter> { Some(PlatformParameter::acc_backend) } 
+    fn feature_class(self:&Self) -> std::option::Option<PlatformParameter> { Some("acc_backend".to_string()) } 
     fn supertype(self:&Self) -> Option<Box<dyn Feature>> { Some(Box::new(AccBackend)) }
 }
 
@@ -13,7 +13,7 @@ pub struct OpenGL_4_6;  // <: OpenGL
 
 impl Feature for OpenGL_4_6 { 
      fn string(self:&Self) -> &'static str { "OpenGL_4_6" } 
-    fn feature_class(self:&Self) -> std::option::Option<PlatformParameter> { Some(PlatformParameter::acc_backend) } 
+    fn feature_class(self:&Self) -> std::option::Option<PlatformParameter> { Some("acc_backend".to_string()) } 
     fn supertype(self:&Self) -> Option<Box<dyn Feature>> { Some(Box::new(OpenGL)) }
 }
 
