@@ -1,4 +1,4 @@
-use platform_aware_features::{insert_feature, AccBackend, Feature, PlatformParameter, CURRENT_FEATURES};
+use platform_aware_features::{insert_feature, AccBackend, Feature, PlatformParameter};
 
 pub struct CUDA;
 
