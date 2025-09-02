@@ -4,200 +4,71 @@ use once_cell::sync::Lazy;
 
 use super::{AccArchitecture, AccBackend, AccInterconnect, AccManufacturer, AccModel, AccProcessor, AccType, AtLeast, AtMost, CPUManufacturer, CPUMicroarchitecture, CPUModel, Feature, MemoryType, NETType, NetTopology, StoInterface, StoType, CPUISA, CPUSIMD};
 
-
-//#[derive(Debug)]
-#[derive(Clone, Debug)]
-#[allow(non_camel_case_types)]
-pub enum PlatformParameters {
-    /* accelerator features */
-    acc_manufacturer,
-    acc_memory_type,
-    acc_count,
-    acc_backend,
-    acc_cudacc,
-    acc_cudatoolkit,
-    acc_cudadriver,
-    acc_architecture,
-    acc_model,
-    acc_processor_count,
-    acc_processor,
-    acc_memorysize,
-    acc_tdp,
-    acc_type,
-    acc_interconnect,
-
-    /* processor features */
-    cpu_count,
-    cpu_core_count,
-    cpu_core_threads_count,
-    cpu_l1_size,
-    cpu_l2_size,
-    cpu_l3_size,
-    cpu_clock,
-    cpu_manufacturer,
-    cpu_isa,
-    cpu_simd,
-    cpu_tdp,
-    cpu_model,
-    cpu_microarchitecture,
-
-    /* interconnection */
-    net_latency,
-    net_type,
-    net_bandwidth,
-    net_startup_time,
-    net_rdma,
-    net_topology,
-
-    /* storage */
-    sto_bandwidth,
-    sto_type,
-    sto_latency,
-    sto_size,
-    sto_network_bandwidth,
-    sto_interface,
-
-    /* memory */
-    mem_type,
-    mem_size,
-    mem_frequency,
-    mem_latency,
-    mem_bandwidth,
-
-    /* node (cloud) */
-    vm_provider,
-    vm_dedicated,
-    vm_machinefamily,
-    vm_machinetype,
-    vm_vcpus_count,
-    vm_threads_count,
-}
+pub type PlatformParameter = String;
 
 
-pub const PLATFORM_PARAMETERS:&[PlatformParameters] = &[
-                                                    PlatformParameters::cpu_simd,
-                                                    PlatformParameters::acc_model, 
-                                                    PlatformParameters::acc_backend, 
-                                                    PlatformParameters::acc_cudacc, 
-                                                    PlatformParameters::acc_cudatoolkit,
-                                                    PlatformParameters::acc_cudadriver,
-                                                    PlatformParameters::acc_count,
-                                                    PlatformParameters::acc_manufacturer,
-                                                    PlatformParameters::acc_memory_type,
-                                                    PlatformParameters::acc_count,
-                                                    PlatformParameters::acc_architecture,
-                                                    PlatformParameters::acc_processor_count,
-                                                    PlatformParameters::acc_processor,
-                                                    PlatformParameters::acc_memorysize,
-                                                    PlatformParameters::acc_tdp,
-                                                    PlatformParameters::acc_type,                                                    
-                                                    PlatformParameters::acc_interconnect,                                                    
-                                                    PlatformParameters::cpu_core_count,
-                                                    PlatformParameters::cpu_count,
-                                                    PlatformParameters::cpu_core_threads_count,
-                                                    PlatformParameters::cpu_simd,
-                                                    PlatformParameters::cpu_l1_size,
-                                                    PlatformParameters::cpu_l2_size,
-                                                    PlatformParameters::cpu_l3_size,
-                                                    PlatformParameters::cpu_clock,
-                                                    PlatformParameters::cpu_manufacturer,
-                                                    PlatformParameters::cpu_isa,
-                                                    PlatformParameters::cpu_tdp,
-                                                    PlatformParameters::cpu_model,
-                                                    PlatformParameters::cpu_microarchitecture,
-                                                    PlatformParameters::net_latency,
-                                                    PlatformParameters::net_type,
-                                                    PlatformParameters::net_bandwidth,
-                                                    PlatformParameters::net_startup_time,
-                                                    PlatformParameters::net_rdma,
-                                                    PlatformParameters::net_topology,
-                                                    PlatformParameters::sto_bandwidth,
-                                                    PlatformParameters::sto_type,
-                                                    PlatformParameters::sto_latency,
-                                                    PlatformParameters::sto_size,
-                                                    PlatformParameters::sto_network_bandwidth,
-                                                    PlatformParameters::sto_interface,
-                                                    PlatformParameters::mem_type,
-                                                    PlatformParameters::mem_size,
-                                                    PlatformParameters::mem_frequency,
-                                                    PlatformParameters::mem_latency,
-                                                    PlatformParameters::mem_bandwidth,
-                                                    PlatformParameters::vm_dedicated,
-                                                    PlatformParameters::vm_machinetype,
-                                                    PlatformParameters::vm_threads_count,
-                                                    PlatformParameters::vm_machinefamily,
-                                                    PlatformParameters::vm_provider,
-                                                    PlatformParameters::vm_vcpus_count
-                                                   ];
-
-
-pub static FEATURE_TOP: Lazy<Mutex<HashMap<PlatformParameters, Arc<dyn Feature + Send + Sync>>>> = Lazy::new(|| {
-    let mut map: HashMap<PlatformParameters, Arc<dyn Feature + Send + Sync>> = HashMap::new();
-
-    map.insert(PlatformParameters::acc_manufacturer, Arc::new(AccManufacturer));
-    map.insert(PlatformParameters::acc_memory_type, Arc::new(MemoryType));
-    map.insert(PlatformParameters::acc_count, Arc::new(AtLeast{val:0}));
-    map.insert(PlatformParameters::acc_backend, Arc::new(AccBackend));
-    map.insert(PlatformParameters::acc_cudacc, Arc::new(AtLeast{val:10}));
-    map.insert(PlatformParameters::acc_cudatoolkit, Arc::new(AtLeast{val:10}));
-    map.insert(PlatformParameters::acc_cudadriver, Arc::new(AtLeast{val:100}));
-    map.insert(PlatformParameters::acc_architecture, Arc::new(AccArchitecture));
-    map.insert(PlatformParameters::acc_model, Arc::new(AccModel));
-    map.insert(PlatformParameters::acc_processor_count, Arc::new(AtLeast{val:1}));
-    map.insert(PlatformParameters::acc_processor, Arc::new(AccProcessor));
-    map.insert(PlatformParameters::acc_memorysize, Arc::new(AtLeast{val:0}));
-    map.insert(PlatformParameters::acc_tdp, Arc::new(AtMost{val:i32::MAX}));
-    map.insert(PlatformParameters::acc_type, Arc::new(AccType));
-    map.insert(PlatformParameters::acc_interconnect, Arc::new(AccInterconnect));
-    map.insert(PlatformParameters::cpu_count, Arc::new(AtLeast{val:1}));
-    map.insert(PlatformParameters::cpu_core_count, Arc::new(AtLeast{val:1}));
-    map.insert(PlatformParameters::cpu_core_threads_count, Arc::new(AtLeast{val:1}));
-    map.insert(PlatformParameters::cpu_l1_size, Arc::new(AtLeast{val:0}));
-    map.insert(PlatformParameters::cpu_l2_size, Arc::new(AtLeast{val:0}));
-    map.insert(PlatformParameters::cpu_l3_size, Arc::new(AtLeast{val:0}));
-    map.insert(PlatformParameters::cpu_manufacturer, Arc::new(CPUManufacturer));
-    map.insert(PlatformParameters::cpu_isa, Arc::new(CPUISA));
-    map.insert(PlatformParameters::cpu_simd, Arc::new(CPUSIMD));
-    map.insert(PlatformParameters::cpu_model, Arc::new(CPUModel));
-    map.insert(PlatformParameters::cpu_microarchitecture, Arc::new(CPUMicroarchitecture));
-    map.insert(PlatformParameters::net_latency, Arc::new(AtMost{val:0}));
-    map.insert(PlatformParameters::net_type, Arc::new(NETType));
-    map.insert(PlatformParameters::net_bandwidth, Arc::new(AtLeast{val:0}));
-    map.insert(PlatformParameters::net_startup_time, Arc::new(AtLeast{val:1}));
-    map.insert(PlatformParameters::net_rdma, Arc::new(AtLeast{val:1}));
-    map.insert(PlatformParameters::net_topology, Arc::new(NetTopology));
-    map.insert(PlatformParameters::sto_bandwidth, Arc::new(AtLeast{val:1}));
-    map.insert(PlatformParameters::sto_type, Arc::new(StoType));
-    map.insert(PlatformParameters::sto_latency, Arc::new(AtLeast{val:1}));
-    map.insert(PlatformParameters::sto_size, Arc::new(AtLeast{val:0}));
-    map.insert(PlatformParameters::sto_network_bandwidth, Arc::new(AtLeast{val:1}));
-    map.insert(PlatformParameters::sto_interface, Arc::new(StoInterface));
-    map.insert(PlatformParameters::mem_type, Arc::new(MemoryType));
-    map.insert(PlatformParameters::mem_size, Arc::new(AtLeast{val:1}));
-    map.insert(PlatformParameters::mem_frequency, Arc::new(AtLeast{val:1}));
-    map.insert(PlatformParameters::mem_latency, Arc::new(AtLeast{val:1}));
-    map.insert(PlatformParameters::mem_bandwidth, Arc::new(AtLeast{val:1}));
-//    map.insert(PlatformParameters::vm_provider, Arc::new(CPUSIMD));
-//    map.insert(PlatformParameters::vm_dedicated, Arc::new(CPUSIMD));
-//    map.insert(PlatformParameters::vm_machinefamily, Arc::new(CPUSIMD));
-//    map.insert(PlatformParameters::vm_machinetype, Arc::new(CPUSIMD));
-//    map.insert(PlatformParameters::vm_vcpus_count, Arc::new(CPUSIMD));
-//    map.insert(PlatformParameters::vm_threads_count, Arc::new(CPUSIMD));
-    
+pub static PLATFORM_PARAMETERS: Lazy<Mutex<Vec<PlatformParameter>>> = Lazy::new(|| {
+    let map: Vec<PlatformParameter> = Vec::new();
     Mutex::new(map)
 });
 
+pub type PlatformFeatures = HashMap<PlatformParameter, Arc<dyn Feature + Send + Sync>>;
 
-impl PartialEq for PlatformParameters {
-    fn eq(&self, other: &Self) -> bool {
-        core::mem::discriminant(self) == core::mem::discriminant(other)
-    }
+
+pub static FEATURE_TOP: Lazy<Mutex<PlatformFeatures>> = Lazy::new(|| {
+    let map: PlatformFeatures = HashMap::new();    
+    Mutex::new(map)
+});
+
+pub fn insert_parameter(fname:PlatformParameter, fvalue: Arc<dyn Feature + Send + Sync>) {
+    let mut dict = FEATURE_TOP.lock().unwrap();
+    let mut paramlist = PLATFORM_PARAMETERS.lock().unwrap();
+    paramlist.push(fname.clone());
+    dict.insert(fname, fvalue);
 }
 
-impl Eq for PlatformParameters {}
+use ctor::ctor;
 
-impl std::hash::Hash for PlatformParameters {
-    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
-        core::mem::discriminant(self).hash(state);
-    }
+#[ctor]
+fn module_initializer() {
+    insert_parameter("acc_manufacturer".to_string(), Arc::new(AccManufacturer));
+    insert_parameter("acc_memory_type".to_string(), Arc::new(MemoryType));
+    insert_parameter("acc_count".to_string(), Arc::new(AtLeast{val:0}));
+    insert_parameter("acc_backend".to_string(), Arc::new(AccBackend));
+    insert_parameter("acc_architecture".to_string(), Arc::new(AccArchitecture));
+    insert_parameter("acc_model".to_string(), Arc::new(AccModel));
+    insert_parameter("acc_processor_count".to_string(), Arc::new(AtLeast{val:1}));
+    insert_parameter("acc_processor".to_string(), Arc::new(AccProcessor));
+    insert_parameter("acc_memorysize".to_string(), Arc::new(AtLeast{val:0}));
+    insert_parameter("acc_tdp".to_string(), Arc::new(AtMost{val:i32::MAX}));
+    insert_parameter("acc_type".to_string(), Arc::new(AccType));
+    insert_parameter("acc_interconnect".to_string(), Arc::new(AccInterconnect));
+    insert_parameter("cpu_count".to_string(), Arc::new(AtLeast{val:1}));
+    insert_parameter("cpu_core_count".to_string(), Arc::new(AtLeast{val:1}));
+    insert_parameter("cpu_core_threads_count".to_string(), Arc::new(AtLeast{val:1}));
+    insert_parameter("cpu_l1_size".to_string(), Arc::new(AtLeast{val:0}));
+    insert_parameter("cpu_l2_size".to_string(), Arc::new(AtLeast{val:0}));
+    insert_parameter("cpu_l3_size".to_string(), Arc::new(AtLeast{val:0}));
+    insert_parameter("cpu_manufacturer".to_string(), Arc::new(CPUManufacturer));
+    insert_parameter("cpu_isa".to_string(), Arc::new(CPUISA));
+    insert_parameter("cpu_simd".to_string(), Arc::new(CPUSIMD));
+    insert_parameter("cpu_model".to_string(), Arc::new(CPUModel));
+    insert_parameter("cpu_microarchitecture".to_string(), Arc::new(CPUMicroarchitecture));
+    insert_parameter("net_latency".to_string(), Arc::new(AtMost{val:0}));
+    insert_parameter("net_type".to_string(), Arc::new(NETType));
+    insert_parameter("net_bandwidth".to_string(), Arc::new(AtLeast{val:0}));
+    insert_parameter("net_startup_time".to_string(), Arc::new(AtLeast{val:1}));
+    insert_parameter("net_rdma".to_string(), Arc::new(AtLeast{val:1}));
+    insert_parameter("net_topology".to_string(), Arc::new(NetTopology));
+    insert_parameter("sto_bandwidth".to_string(), Arc::new(AtLeast{val:1}));
+    insert_parameter("sto_type".to_string(), Arc::new(StoType));
+    insert_parameter("sto_latency".to_string(), Arc::new(AtLeast{val:1}));
+    insert_parameter("sto_size".to_string(), Arc::new(AtLeast{val:0}));
+    insert_parameter("sto_network_bandwidth".to_string(), Arc::new(AtLeast{val:1}));
+    insert_parameter("sto_interface".to_string(), Arc::new(StoInterface));
+    insert_parameter("mem_type".to_string(), Arc::new(MemoryType));
+    insert_parameter("mem_size".to_string(), Arc::new(AtLeast{val:1}));
+    insert_parameter("mem_frequency".to_string(), Arc::new(AtLeast{val:1}));
+    insert_parameter("mem_latency".to_string(), Arc::new(AtLeast{val:1}));
+    insert_parameter("mem_bandwidth".to_string(), Arc::new(AtLeast{val:1}));
 }

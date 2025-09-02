@@ -2,10 +2,11 @@
 
 use quote::{quote, ToTokens};
 use proc_macro2::{
-    Span, TokenStream, TokenTree
+    Span, TokenStream
 };
 use syn::{
-    parse_macro_input, punctuated::Punctuated, Attribute, Block, FnArg, Ident, Item, ItemFn, ItemMod, Meta, Pat, PatIdent, PatType, ReturnType, Token
+    parse_macro_input, punctuated::Punctuated, Attribute, Block, FnArg, Ident,
+    Item, ItemFn, ItemMod, Meta, Pat, PatIdent, PatType, ReturnType, Token
 };
 
 struct FunctionData {
@@ -88,13 +89,21 @@ impl FunctionData {
         let mut tokens = TokenStream::new();
         let mut tokens_len = kernv.len();
         for (platform, feature) in kernv {
+
+            let platform_str = platform.to_string();
+            let platform_lit = syn::LitStr::new(&platform_str, proc_macro2::Span::call_site());
+
             if tokens_len == 1 {
                 tokens.extend(quote! {
-                    (PlatformParameters::#platform, Arc::new(#feature) as Arc<dyn Feature + Send + Sync>)
+                    (#platform_lit.to_string(),
+                        Arc::new(#feature) as Arc<dyn Feature + Send + Sync>
+                    )
                 });
             } else {
                 tokens.extend(quote! {
-                    (PlatformParameters::#platform, Arc::new(#feature) as Arc<dyn Feature + Send + Sync>),
+                    (#platform_lit.to_string(), Arc::new(#feature)
+                        as Arc<dyn Feature + Send + Sync>
+                    ),
                 })
             }
     

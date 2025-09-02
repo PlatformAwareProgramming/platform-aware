@@ -1,12 +1,12 @@
 [workspace]
 resolver="2"
 members = [
-    "."
-, "platform-aware-amd", "platform-aware-features", "platform-aware-intel", "platform-aware-nvidia", "platform-aware-macros"]
+    ".", "platform-aware-amd", "platform-aware-features", "platform-aware-intel", "platform-aware-nvidia", "platform-aware-macros"]
 
 [package]
 name = "platform-aware"
 version = "0.1.0"
+repository = "https://github.com/PlatformAwareProgramming/platform-aware"
 edition = "2021"
 
 [workspace.dependencies]
@@ -17,13 +17,10 @@ platform-aware-intel = {path="platform-aware-intel"}
 platform-aware-amd = {path="platform-aware-amd"}
 
 [dependencies]
-quote = "1.0.38"
-syn = "2.0.98"
-lazy_static = "1.5.0"
 platform-aware-features = {workspace=true}
 platform-aware-macros = {workspace=true}
 platform-aware-nvidia = {workspace=true}
 platform-aware-intel = {workspace=true}
 platform-aware-amd = {workspace=true}
-dashmap = "6.1.0"
-ctor = "0.4.2"
+
+lazy_static = "1.5.0"

@@ -1,7 +1,6 @@
 mod base; 
-mod platformfile;
+pub mod platformfile;
 mod featuremap;
-
 
 pub use base::*;
 pub use platformfile::*;

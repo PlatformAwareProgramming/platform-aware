@@ -1,34 +1,37 @@
-use crate::{Feature, PlatformParameters, AccBackend};
+use crate::{Feature, PlatformParameter, AccBackend};
 
 pub struct Vulkan;  // <: AcceleratorBackend
 
 impl Feature for Vulkan { 
      fn string(self:&Self) -> &'static str { "Vulkan" } 
-    fn feature_class(self:&Self) -> std::option::Option<PlatformParameters> { Some(PlatformParameters::acc_backend) } 
+    fn feature_class(self:&Self) -> std::option::Option<PlatformParameter> { Some("acc_backend".to_string()) } 
     fn supertype(self:&Self) -> Option<Box<dyn Feature>> { Some(Box::new(AccBackend)) }
 }
 
+#[allow(non_camel_case_types)]
 pub struct Vulkan_1_1;  // <: Vulkan
 
 impl Feature for Vulkan_1_1 { 
      fn string(self:&Self) -> &'static str { "Vulkan_1_1" } 
-    fn feature_class(self:&Self) -> std::option::Option<PlatformParameters> { Some(PlatformParameters::acc_backend) } 
+    fn feature_class(self:&Self) -> std::option::Option<PlatformParameter> { Some("acc_backend".to_string()) } 
     fn supertype(self:&Self) -> Option<Box<dyn Feature>> { Some(Box::new(Vulkan)) }
 }
 
+#[allow(non_camel_case_types)]
 pub struct Vulkan_1_2;  // <: Vulkan_1_1  
 
 impl Feature for Vulkan_1_2 { 
      fn string(self:&Self) -> &'static str { "Vulkan_1_2" } 
-    fn feature_class(self:&Self) -> std::option::Option<PlatformParameters> { Some(PlatformParameters::acc_backend) } 
+    fn feature_class(self:&Self) -> std::option::Option<PlatformParameter> { Some("acc_backend".to_string()) } 
     fn supertype(self:&Self) -> Option<Box<dyn Feature>> { Some(Box::new(Vulkan_1_1)) }
 }
 
+#[allow(non_camel_case_types)]
 pub struct Vulkan_1_3;  // <: Vulkan_1_2
 
 impl Feature for Vulkan_1_3 { 
      fn string(self:&Self) -> &'static str { "Vulkan_1_3" } 
-    fn feature_class(self:&Self) -> std::option::Option<PlatformParameters> { Some(PlatformParameters::acc_backend) } 
+    fn feature_class(self:&Self) -> std::option::Option<PlatformParameter> { Some("acc_backend".to_string()) } 
     fn supertype(self:&Self) -> Option<Box<dyn Feature>> { Some(Box::new(Vulkan_1_2)) }
 }
 

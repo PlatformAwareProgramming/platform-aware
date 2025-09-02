@@ -4,10 +4,8 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-platform-aware-features = {path="../platform-aware-features"}
-platform-aware-nvidia = {path="../platform-aware-nvidia"}
-platform-aware-intel ={ path="../platform-aware-intel"}
-platform-aware-amd ={ path="../platform-aware-amd"}
+platform-aware-features = {workspace=true}
+
 quote = "1.0.38"
 syn = {version="2.0.98", features = ["full", "extra-traits"]}
 lazy_static = "1.5.0"

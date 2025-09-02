@@ -1,11 +1,22 @@
 
 use std::path::Path;
-use std::sync::Arc;
+use std::sync::{Arc, Mutex};
 use std::{env, fs};
 use std::error::Error;
 
+use once_cell::sync::Lazy;
+use serde::de::DeserializeOwned;
 use serde::Deserialize;
 use toml::value::Array;
+use std::collections::HashMap;
+
+
+pub static CURRENT_FEATURES: Lazy<Mutex<PlatformFeatures>> = Lazy::new(|| {
+    let m = HashMap::new(); // readplatformfeatures();
+    Mutex::new(m)
+});
+
+
 
 #[derive(Deserialize)]
 pub struct Platform {
@@ -23,9 +34,6 @@ pub struct PlatformAccelerator {
     pub acc_memory_type:Option<String>,
     pub acc_count:Option<i32>,
     pub acc_backend:Option<Array>,
-    pub acc_cudacc:Option<i32>,
-    pub acc_cudatoolkit:Option<i32>,
-    pub acc_cudadriver:Option<i32>,
     pub acc_architecture:Option<String>,
     pub acc_model:Option<String>,
     pub acc_processor_count:Option<i32>,
@@ -93,7 +101,7 @@ pub struct PlatformNode {
     pub vm_vcpus_count:Option<i32>,
 }
 
-pub fn readplatform() -> Result<Platform,Box<dyn Error>> {
+pub fn readplatform<P:DeserializeOwned>() -> Result<P,Box<dyn Error>> {
 
     let platform_path = match env::var("PLATFORM_DESCRIPTION") {
         Ok(var) => var,
@@ -104,33 +112,21 @@ pub fn readplatform() -> Result<Platform,Box<dyn Error>> {
 
     Ok(toml::from_str(&contents).unwrap())
 }
-use std::collections::HashMap;
 
 
-use crate::{lookup_feature, AtLeast, FeatureType, QuantifierType};
 
-use super::{Feature, PlatformParameters};
+use crate::{lookup_feature, PlatformFeatures, PlatformParameter};
 
+use super::Feature;
 
-// TODO: automatic read of the platform file at the beginning of the execution
-//use lazy_static::lazy_static;
-//use std::sync::Mutex;
-// lazy_static! { static ref currentfeatures: Mutex<HashMap<PlatformParameters, &'static dyn Feature>> = Mutex::new(readplatformfeatures()); }
-
-pub fn readplatformfeatures() -> HashMap<PlatformParameters, Arc<dyn Feature + Send + Sync>>
+pub fn readplatformfeatures() -> PlatformFeatures
 {
-    let t = match readplatform() {
+    let t: Platform = match readplatform() {
         Ok(t) => t,
         Err(_) => todo!(),
     };
 
-   // let v0 = t.processor.unwrap();
-   // let v1 = v0.cpu_simd.unwrap();
-   // println!("ACCELERATOR {}", v1[0]);
-
-    let mut m: HashMap<PlatformParameters, Arc<dyn Feature + Send + Sync>> = HashMap::new();
-
-   // println!("readplatformfeatures at startup"); 
+   let mut m: PlatformFeatures = ::std::collections::HashMap::new();
 
     match t.accelerator {
         Some(u) => {
@@ -147,110 +143,95 @@ pub fn readplatformfeatures() -> HashMap<PlatformParameters, Arc<dyn Feature + S
                    
                 }
 
-              m.insert(PlatformParameters::acc_backend, Arc::new(fvec));
+              m.insert("acc_backend".to_string(), Arc::new(fvec));
 
             }, None => {} }
-            match u.acc_cudacc { Some(v) => { add_quantifier(&mut m, PlatformParameters::acc_cudacc, v); }, None => {} }
-            match u.acc_cudatoolkit { Some(v) => { add_quantifier(&mut m, PlatformParameters::acc_cudatoolkit, v); }, None => {} }
-            match u.acc_cudadriver { Some(v) => { add_quantifier(&mut m, PlatformParameters::acc_cudadriver, v); }, None => {} }
-            match u.acc_architecture { Some(v) => add_qualifier(&mut m, PlatformParameters::acc_architecture, v), None => {} }
-            match u.acc_memory_type { Some(v) => add_qualifier(&mut m, PlatformParameters::acc_memory_type, v), None => {} }
-            match u.acc_manufacturer { Some(v) => add_qualifier(&mut m, PlatformParameters::acc_manufacturer, v), None => {} }
-            match u.acc_model { Some(v) =>  add_qualifier(&mut m, PlatformParameters::acc_model, v), None => {} }
-            match u.acc_processor { Some(v) => add_qualifier(&mut m, PlatformParameters::acc_processor, v), None => {} }
-            match u.acc_type { Some(v) => add_qualifier(&mut m, PlatformParameters::acc_type, v), None => {} }
-            match u.acc_count { Some(v) => { add_quantifier(&mut m, PlatformParameters::acc_count, v); }, None => {} }
-            match u.acc_memorysize { Some(v) => { add_quantifier(&mut m, PlatformParameters::acc_architecture, v); }, None => {} }
-            match u.acc_processor_count { Some(v) => { add_quantifier(&mut m, PlatformParameters::acc_processor_count, v); }, None => {} }
-            match u.acc_tdp { Some(v) => { add_quantifier(&mut m, PlatformParameters::acc_tdp, v); }, None => {} }
+            match u.acc_architecture { Some(v) => add_qualifier(&mut m, "acc_architecture".to_string(), v), None => {} }
+            match u.acc_memory_type { Some(v) => add_qualifier(&mut m, "acc_memory_type".to_string(), v), None => {} }
+            match u.acc_manufacturer { Some(v) => add_qualifier(&mut m, "acc_manufacturer".to_string(), v), None => {} }
+            match u.acc_model { Some(v) =>  add_qualifier(&mut m, "acc_model".to_string(), v), None => {} }
+            match u.acc_processor { Some(v) => add_qualifier(&mut m, "acc_processor".to_string(), v), None => {} }
+            match u.acc_type { Some(v) => add_qualifier(&mut m, "acc_type".to_string(), v), None => {} }
+            match u.acc_count { Some(v) => { add_quantifier(&mut m, "acc_count".to_string(), v); }, None => {} }
+            match u.acc_memorysize { Some(v) => { add_quantifier(&mut m, "acc_architecture".to_string(), v); }, None => {} }
+            match u.acc_processor_count { Some(v) => { add_quantifier(&mut m, "acc_processor_count".to_string(), v); }, None => {} }
+            match u.acc_tdp { Some(v) => { add_quantifier(&mut m, "acc_tdp".to_string(), v); }, None => {} }
         },
         None => {},
     }
 
     match t.processor {
         Some(u) => {
-            match u.cpu_isa { Some(v) => add_qualifier(&mut m, PlatformParameters::cpu_isa, v), None => {} }
-            match u.cpu_manufacturer { Some(v) => add_qualifier(&mut m, PlatformParameters::cpu_manufacturer, v), None => {} }
-            match u.cpu_microarchitecture { Some(v) => add_qualifier(&mut m, PlatformParameters::cpu_microarchitecture, v), None => {} }
-            match u.cpu_model { Some(v) => add_qualifier(&mut m, PlatformParameters::cpu_model, v), None => {} }
-            //match u.cpu_simd { Some(v) => add_qualifier(&mut m, PlatformParameters::cpu_simd, v), None => {} }
-            match u.cpu_L1_size { Some(v) => { add_quantifier(&mut m, PlatformParameters::cpu_l1_size, v); }, None => {} }
-            match u.cpu_L2_size { Some(v) => { add_quantifier(&mut m, PlatformParameters::cpu_l2_size, v); }, None => {} }
-            match u.cpu_L3_size { Some(v) => { add_quantifier(&mut m, PlatformParameters::cpu_l3_size, v); }, None => {} }
-            match u.cpu_core_clock { Some(v) => { add_quantifier(&mut m, PlatformParameters::cpu_clock, v); }, None => {} }
-            match u.cpu_core_count { Some(v) => { add_quantifier(&mut m, PlatformParameters::cpu_core_count, v); }, None => {} }
-            match u.cpu_core_threads_count { Some(v) => { add_quantifier(&mut m, PlatformParameters::cpu_core_threads_count, v); }, None => {} }
-            match u.cpu_count { Some(v) => { add_quantifier(&mut m, PlatformParameters::cpu_count, v); }, None => {} }
-            match u.cpu_tdp { Some(v) => { add_quantifier(&mut m, PlatformParameters::cpu_tdp, v); }, None => {} }
+            match u.cpu_isa { Some(v) => add_qualifier(&mut m, "cpu_isa".to_string(), v), None => {} }
+            match u.cpu_manufacturer { Some(v) => add_qualifier(&mut m, "cpu_manufacturer".to_string(), v), None => {} }
+            match u.cpu_microarchitecture { Some(v) => add_qualifier(&mut m, "cpu_microarchitecture".to_string(), v), None => {} }
+            match u.cpu_model { Some(v) => add_qualifier(&mut m, "cpu_model".to_string(), v), None => {} }
+            //match u.cpu_simd { Some(v) => add_qualifier(&mut m, "cpu_simd".to_string(), v), None => {} }
+            match u.cpu_L1_size { Some(v) => { add_quantifier(&mut m, "cpu_l1_size".to_string(), v); }, None => {} }
+            match u.cpu_L2_size { Some(v) => { add_quantifier(&mut m, "cpu_l2_size".to_string(), v); }, None => {} }
+            match u.cpu_L3_size { Some(v) => { add_quantifier(&mut m, "cpu_l3_size".to_string(), v); }, None => {} }
+            match u.cpu_core_clock { Some(v) => { add_quantifier(&mut m, "cpu_clock".to_string(), v); }, None => {} }
+            match u.cpu_core_count { Some(v) => { add_quantifier(&mut m, "cpu_core_count".to_string(), v); }, None => {} }
+            match u.cpu_core_threads_count { Some(v) => { add_quantifier(&mut m, "cpu_core_threads_count".to_string(), v); }, None => {} }
+            match u.cpu_count { Some(v) => { add_quantifier(&mut m, "cpu_count".to_string(), v); }, None => {} }
+            match u.cpu_tdp { Some(v) => { add_quantifier(&mut m, "cpu_tdp".to_string(), v); }, None => {} }
         },
         None => {},
     }
 
     match t.memory {
         Some(u) => {
-            match u.mem_type { Some(v) => add_qualifier(&mut m, PlatformParameters::mem_type, v), None => {} }
-            match u.mem_bandwidth { Some(v) => { add_quantifier(&mut m, PlatformParameters::mem_bandwidth, v); }, None => {} }
-            match u.mem_frequency { Some(v) => { add_quantifier(&mut m, PlatformParameters::mem_frequency, v); }, None => {} }
-            match u.mem_latency { Some(v) => { add_quantifier(&mut m, PlatformParameters::mem_latency, v); }, None => {} }
-            match u.mem_size { Some(v) => { add_quantifier(&mut m, PlatformParameters::mem_size, v); }, None => {} }
+            match u.mem_type { Some(v) => add_qualifier(&mut m, "mem_type".to_string(), v), None => {} }
+            match u.mem_bandwidth { Some(v) => { add_quantifier(&mut m, "mem_bandwidth".to_string(), v); }, None => {} }
+            match u.mem_frequency { Some(v) => { add_quantifier(&mut m, "mem_frequency".to_string(), v); }, None => {} }
+            match u.mem_latency { Some(v) => { add_quantifier(&mut m, "mem_latency".to_string(), v); }, None => {} }
+            match u.mem_size { Some(v) => { add_quantifier(&mut m, "mem_size".to_string(), v); }, None => {} }
         },
         None => {},
     }
 
     match t.interconnection {
         Some(u) => {
-            match u.net_RDMA { Some(v) => add_qualifier(&mut m, PlatformParameters::net_rdma, v), None => {} }
-            match u.net_type { Some(v) => add_qualifier(&mut m, PlatformParameters::net_type, v), None => {} }
-            match u.net_topology { Some(v) => add_qualifier(&mut m, PlatformParameters::net_topology, v), None => {} }
-            match u.net_bandwidth { Some(v) => { add_quantifier(&mut m, PlatformParameters::net_bandwidth, v); }, None => {} }
-            match u.net_latency { Some(v) => { add_quantifier(&mut m, PlatformParameters::net_latency, v); }, None => {} }
-            match u.net_startuptime { Some(v) => { add_quantifier(&mut m, PlatformParameters::net_startup_time, v); }, None => {} }
+            match u.net_RDMA { Some(v) => add_qualifier(&mut m, "net_rdma".to_string(), v), None => {} }
+            match u.net_type { Some(v) => add_qualifier(&mut m, "net_type".to_string(), v), None => {} }
+            match u.net_topology { Some(v) => add_qualifier(&mut m, "net_topology".to_string(), v), None => {} }
+            match u.net_bandwidth { Some(v) => { add_quantifier(&mut m, "net_bandwidth".to_string(), v); }, None => {} }
+            match u.net_latency { Some(v) => { add_quantifier(&mut m, "net_latency".to_string(), v); }, None => {} }
+            match u.net_startuptime { Some(v) => { add_quantifier(&mut m, "net_startup_time".to_string(), v); }, None => {} }
         },
         None => {},
     }
 
     match t.storage {
         Some(u) => {
-            match u.sto_interface { Some(v) => add_qualifier(&mut m, PlatformParameters::sto_interface, v), None => {} }
-            match u.sto_type { Some(v) => add_qualifier(&mut m, PlatformParameters::sto_type, v), None => {} }
-            match u.sto_bandwidth { Some(v) => { add_quantifier(&mut m, PlatformParameters::sto_bandwidth, v); }, None => {} }
-            match u.sto_latency { Some(v) => { add_quantifier(&mut m, PlatformParameters::sto_latency, v); }, None => {} }
-            match u.sto_networkbandwidth { Some(v) => { add_quantifier(&mut m, PlatformParameters::sto_network_bandwidth, v); }, None => {} }
-            match u.sto_size { Some(v) => { add_quantifier(&mut m, PlatformParameters::sto_size, v); }, None => {} }
+            match u.sto_interface { Some(v) => add_qualifier(&mut m, "sto_interface".to_string(), v), None => {} }
+            match u.sto_type { Some(v) => add_qualifier(&mut m, "sto_type".to_string(), v), None => {} }
+            match u.sto_bandwidth { Some(v) => { add_quantifier(&mut m, "sto_bandwidth".to_string(), v); }, None => {} }
+            match u.sto_latency { Some(v) => { add_quantifier(&mut m, "sto_latency".to_string(), v); }, None => {} }
+            match u.sto_networkbandwidth { Some(v) => { add_quantifier(&mut m, "sto_network_bandwidth".to_string(), v); }, None => {} }
+            match u.sto_size { Some(v) => { add_quantifier(&mut m, "sto_size".to_string(), v); }, None => {} }
         },
         None => {},
     }
 
     match t.node {
         Some(u) => {
-            match u.vm_machinefamily { Some(v) => add_qualifier(&mut m, PlatformParameters::vm_machinefamily, v), None => {} }
-            match u.vm_machinetype { Some(v) => add_qualifier(&mut m, PlatformParameters::vm_machinetype, v), None => {} }
-            match u.vm_provider { Some(v) => add_qualifier(&mut m, PlatformParameters::vm_provider, v), None => {} }
-            //match u.vm_count { Some(v) => { add_quantifier(&mut m, PlatformParameters::vm_count, v); }, None => {} }
-            match u.vm_threads_count { Some(v) => { add_quantifier(&mut m, PlatformParameters::vm_threads_count, v); }, None => {} }
-            match u.vm_vcpus_count { Some(v) => { add_quantifier(&mut m, PlatformParameters::vm_vcpus_count, v); }, None => {} }
-            //match u.vm_dedicated { Some(v) => { add_quantifier(&mut m, PlatformParameters::vm_dedicated, v); }, None => {} }
-            //match u.vm_virtual { Some(v) => { add_quantifier(&mut m, PlatformParameters::vm_virtual, v); }, None => {} }
+            match u.vm_machinefamily { Some(v) => add_qualifier(&mut m, "vm_machinefamily".to_string(), v), None => {} }
+            match u.vm_machinetype { Some(v) => add_qualifier(&mut m, "vm_machinetype".to_string(), v), None => {} }
+            match u.vm_provider { Some(v) => add_qualifier(&mut m, "vm_provider".to_string(), v), None => {} }
+            //match u.vm_count { Some(v) => { add_quantifier(&mut m, "vm_count".to_string(), v); }, None => {} }
+            match u.vm_threads_count { Some(v) => { add_quantifier(&mut m, "vm_threads_count".to_string(), v); }, None => {} }
+            match u.vm_vcpus_count { Some(v) => { add_quantifier(&mut m, "vm_vcpus_count".to_string(), v); }, None => {} }
+            //match u.vm_dedicated { Some(v) => { add_quantifier(&mut m, "vm_dedicated".to_string(), v); }, None => {} }
+            //match u.vm_virtual { Some(v) => { add_quantifier(&mut m, "vm_virtual".to_string(), v); }, None => {} }
         },
         None => {},
     }
 
-   // for (k,v) in &m {
-   //     println!("---> {:?}: {:?}", k, match v.feature_type() { FeatureType::Quantifier => v.string(), FeatureType::Qualifier => v.string() });
-   // }
-
-
-  //  m.insert(PlatformParameters::acc_backend, &CUDA8);
-  //  m.insert(PlatformParameters::acc_count, Arc::new(AtLeast{val: 5} ));
-  //  m.insert(PlatformParameters::cpu_core_count, Arc::new(12 ));
-
-   // let f = lookup_feature("AVX512");
-   // m.insert(PlatformParameters::cpu_simd, f);
-
-    return m;
+   return m;
 }
 
-fn add_qualifier(m: &mut HashMap<PlatformParameters, Arc<dyn Feature + Send + Sync>>, par:PlatformParameters, v:String) { 
+pub fn add_qualifier(m: &mut HashMap<PlatformParameter, Arc<dyn Feature + Send + Sync>>, par:PlatformParameter, v:String) { 
     let f = lookup_feature(Box::leak(v.into_boxed_str()));
     match f {
         Some(f) => { m.insert(par, f); },
@@ -258,6 +239,6 @@ fn add_qualifier(m: &mut HashMap<PlatformParameters, Arc<dyn Feature + Send + Sy
     }
 }
 
-fn add_quantifier(m: &mut HashMap<PlatformParameters, Arc<dyn Feature + Send + Sync>>, par:PlatformParameters, v:i32) { 
+pub fn add_quantifier(m: &mut HashMap<PlatformParameter, Arc<dyn Feature + Send + Sync>>, par:PlatformParameter, v:i32) { 
     m.insert(par, Arc::new(v));
 }

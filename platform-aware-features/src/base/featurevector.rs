@@ -53,5 +53,5 @@ impl Feature for Vec<Arc<dyn Feature + Send + Sync>> {
     }
     
     
-    fn feature_class(self:&Self) -> Option<super::PlatformParameters> { self[0].feature_class() }
+    fn feature_class(self:&Self) -> Option<super::PlatformParameter> { self[0].feature_class() }
 }

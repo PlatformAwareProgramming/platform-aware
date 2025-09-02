@@ -1,7 +1,7 @@
 //mod quantifier;
 
 
-use crate::{PlatformParameters, QuantifierType};
+use crate::{PlatformParameter, QuantifierType};
 
 use std::{hash::{DefaultHasher, Hash, Hasher}, sync::Arc};
 
@@ -22,7 +22,7 @@ pub trait Feature {
         s.finish()
     }
 
-    fn feature_class(self:&Self) -> Option<PlatformParameters>;
+    fn feature_class(self:&Self) -> Option<PlatformParameter>;
 
     fn feature_type(self:&Self) -> FeatureType { FeatureType::Qualifier }
 
@@ -80,5 +80,12 @@ pub trait Feature {
 
 }
 
+
+pub struct NullFeature;
+
+impl Feature for NullFeature {
+    fn string(self:&Self) -> &'static str { "null" }
+    fn feature_class(self:&Self) -> Option<PlatformParameter> { None }
+}
 
 
