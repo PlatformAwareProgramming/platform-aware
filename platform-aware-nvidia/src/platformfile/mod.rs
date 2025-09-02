@@ -1,7 +1,6 @@
 
-use std::{env, error::Error, fs, path::Path};
 
-use platform_aware_features::{add_quantifier, PlatformFeatures};
+use platform_aware_features::{add_quantifier, readplatform, PlatformFeatures};
 use serde::Deserialize;
 
 
@@ -17,21 +16,10 @@ pub struct PlatformAccelerator {
     pub acc_cudadriver:Option<i32>,
 }
 
-fn readplatform() -> Result<Platform,Box<dyn Error>> {
 
-    let platform_path = match env::var("PLATFORM_DESCRIPTION") {
-        Ok(var) => var,
-        Err(_) => env::var("PWD")?
-    };
-
-    let contents: String = fs::read_to_string(Path::new(&platform_path).join("Platform.toml"))?;
-
-    Ok(toml::from_str(&contents).unwrap())
-}
-
-pub fn readnvidiaplatformfeatures() -> PlatformFeatures
+pub fn readplatformfeatures_nvidia() -> PlatformFeatures
 {
-    let t = match readplatform() {
+    let t:Platform = match readplatform() {
         Ok(t) => t,
         Err(_) => todo!(),
     };

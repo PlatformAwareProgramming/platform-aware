@@ -1,27 +1,6 @@
 use std::{collections::HashMap, sync::Arc};
 
-use crate::{readplatformfeatures, Feature, PlatformParameter, CURRENT_FEATURES, PLATFORM_PARAMETERS};
-
-
-use lazy_static::lazy_static;
-use std::sync::Mutex;
-
-// Presumo que esses tipos existem
-// use crate::your_module::{PlatformParameter, Feature, read_platform_features};
-
-/*lazy_static! {
-    static ref CURRENT_FEATURES: Mutex<HashMap<PlatformParameter, &'static dyn Feature>> = 
-        Mutex::new(read_platform_features());
-}*/
-
-
-// Presumo que esses tipos estão definidos
-// use crate::your_module::{PlatformParameter, Feature, readplatformfeatures};
-
-//lazy_static! {
-//    static ref CURRENT_FEATURES: Mutex<HashMap<PlatformParameter, Arc<dyn Feature + Send + Sync>>> = 
-//        Mutex::new(readplatformfeatures());
-//}
+use crate::{readplatformfeatures, Feature, NullFeature, PlatformParameter, CURRENT_FEATURES, PLATFORM_PARAMETERS};
 
 // The glorious resolution algorithm
 pub fn resolve(featureset_list:Vec<HashMap<PlatformParameter, Arc<dyn Feature + Send + Sync>>> ) -> i32
@@ -30,8 +9,12 @@ pub fn resolve(featureset_list:Vec<HashMap<PlatformParameter, Arc<dyn Feature + 
 
     let actualplatformfeatures: HashMap<PlatformParameter, Arc<dyn Feature + Send + Sync>> = {
         let mut m0 = CURRENT_FEATURES.lock().unwrap();
-        let m = readplatformfeatures();
-        m0.extend(m.into_iter());
+        if !m0.contains_key(&".".to_string())  // read Platform.toml only once
+        {           
+            let mut m = readplatformfeatures();
+            m.insert(".".to_string(), Arc::new(NullFeature));
+            m0.extend(m.into_iter());
+        }
         m0.clone()
     };
 

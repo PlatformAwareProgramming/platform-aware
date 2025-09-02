@@ -195,12 +195,8 @@ impl Feature for CUDA122 {
     fn feature_class(&self) -> Option<PlatformParameter> { Some("acc_backend".to_string()) }
 }
 
-
-
 use std::sync::Arc;
 use ctor::ctor;
-
-use crate::readnvidiaplatformfeatures;
 
 #[ctor]
 fn module_initializer() {

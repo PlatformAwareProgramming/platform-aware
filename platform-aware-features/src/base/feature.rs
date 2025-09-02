@@ -81,4 +81,11 @@ pub trait Feature {
 }
 
 
+pub struct NullFeature;
+
+impl Feature for NullFeature {
+    fn string(self:&Self) -> &'static str { "null" }
+    fn feature_class(self:&Self) -> Option<PlatformParameter> { None }
+}
+
 

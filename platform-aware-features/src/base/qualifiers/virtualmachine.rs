@@ -7,7 +7,7 @@ pub struct VMmachinetype;
 
 impl Feature for VMprovider { 
     fn is_top(self:&Self) -> bool { true }
-     fn string(self:&Self) -> &'static str { "VMprovider" } 
+    fn string(self:&Self) -> &'static str { "VMprovider" } 
     fn feature_class(self:&Self) -> std::option::Option<PlatformParameter> { Some("vm_provider".to_string()) } 
 }
 

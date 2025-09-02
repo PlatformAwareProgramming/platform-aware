@@ -5,8 +5,10 @@ use std::{env, fs};
 use std::error::Error;
 
 use once_cell::sync::Lazy;
+use serde::de::DeserializeOwned;
 use serde::Deserialize;
 use toml::value::Array;
+use std::collections::HashMap;
 
 
 pub static CURRENT_FEATURES: Lazy<Mutex<PlatformFeatures>> = Lazy::new(|| {
@@ -32,9 +34,6 @@ pub struct PlatformAccelerator {
     pub acc_memory_type:Option<String>,
     pub acc_count:Option<i32>,
     pub acc_backend:Option<Array>,
- //   pub acc_cudacc:Option<i32>,
- //   pub acc_cudatoolkit:Option<i32>,
- //   pub acc_cudadriver:Option<i32>,
     pub acc_architecture:Option<String>,
     pub acc_model:Option<String>,
     pub acc_processor_count:Option<i32>,
@@ -102,7 +101,7 @@ pub struct PlatformNode {
     pub vm_vcpus_count:Option<i32>,
 }
 
-fn readplatform() -> Result<Platform,Box<dyn Error>> {
+pub fn readplatform<P:DeserializeOwned>() -> Result<P,Box<dyn Error>> {
 
     let platform_path = match env::var("PLATFORM_DESCRIPTION") {
         Ok(var) => var,
@@ -113,7 +112,7 @@ fn readplatform() -> Result<Platform,Box<dyn Error>> {
 
     Ok(toml::from_str(&contents).unwrap())
 }
-use std::collections::HashMap;
+
 
 
 use crate::{lookup_feature, PlatformFeatures, PlatformParameter};
@@ -122,7 +121,7 @@ use super::Feature;
 
 pub fn readplatformfeatures() -> PlatformFeatures
 {
-    let t = match readplatform() {
+    let t: Platform = match readplatform() {
         Ok(t) => t,
         Err(_) => todo!(),
     };
