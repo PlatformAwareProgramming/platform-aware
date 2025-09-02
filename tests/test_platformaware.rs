@@ -3,7 +3,7 @@ use platform_aware_features::{Feature, CPUSIMD, AVX512};
 
 #[allow(unused)]
 mod mymodule {
-
+  
     use platform_aware_features::{resolve, AtMost, Feature, PlatformParameter,AVX512};
     use platform_aware_nvidia::CUDA;
     use std::{collections::HashMap, sync::Arc};
@@ -34,8 +34,9 @@ mod mymodule {
                         HashMap::from(features2), 
                         HashMap::from(features3), 
                         HashMap::from(features4)])
-    };
-}
+       };
+    }
+  
     pub fn f(x:i64, y:i64, z:i64) -> i64 {
         match *Vf{
             1 => f1(x,y,z),
