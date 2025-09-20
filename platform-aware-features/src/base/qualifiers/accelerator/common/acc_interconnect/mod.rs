@@ -1,6 +1,5 @@
-mod pcie;
 mod gpudirect;
+mod pcie;
 
-pub use pcie::*;
 pub use gpudirect::*;
-
+pub use pcie::*;

@@ -1,5 +1,5 @@
-mod sse;
 mod avx;
+mod sse;
 
-pub use sse::*;
 pub use avx::*;
+pub use sse::*;

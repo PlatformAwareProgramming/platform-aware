@@ -1,8 +1,6 @@
 use std::{
-    collections::HashMap, 
-    sync::{
-        LazyLock, Mutex, Arc
-    }
+    collections::HashMap,
+    sync::{Arc, LazyLock, Mutex},
 };
 
 use platform_aware_features::{readplatformfeatures, Feature, PlatformParameter};
@@ -24,7 +22,7 @@ type PlatformFeatures = HashMap<PlatformParameter, Arc<dyn Feature + Send + Sync
 pub static PLATFORMFEATURES: LazyLock<Mutex<PlatformFeatures>> = LazyLock::new(
     || readplatformfeatures().into()
 );
- 
+
 #[cfg(test)]
 mod tests {
     #[test]
