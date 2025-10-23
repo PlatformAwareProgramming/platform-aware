@@ -1,15 +1,13 @@
 mod base; 
 mod platformfile;
-mod featuremap;
-mod resolve;
 
+pub use configurable_features::*;
 pub use base::*;
-use ctor::ctor;
-pub use platformfile::*;
-pub use resolve::*;
-pub use featuremap::*;
 
- 
+use platformfile::readplatformfeatures;
+
+use ctor::ctor;
+
 #[ctor]
 fn module_initializer() {
     

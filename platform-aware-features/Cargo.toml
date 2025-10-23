@@ -11,3 +11,4 @@ serde = {version = "1.0.145", features = ["derive"]}
 dashmap = "6.1.0"
 once_cell = "1.21.3"
 ctor = "0.4.2"
+configurable-features = {path = "../../configurable-features"}

@@ -1,6 +1,7 @@
-use crate::{AccBackend, Feature, PlatformParameter};
+use crate::{AccBackend, PlatformParameter};
 
 use crate::insert_feature;
+use configurable_features::Feature;
 use ctor::ctor;
 use std::sync::Arc;
 

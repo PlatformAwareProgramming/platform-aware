@@ -1,4 +1,4 @@
-use crate::{AccBackend, Feature, PlatformParameter};
+use crate::{AccBackend, PlatformParameter};
 
 pub struct Vulkan; // <: AcceleratorBackend
 
@@ -60,6 +60,7 @@ impl Feature for Vulkan_1_3 {
 }
 
 use crate::insert_feature;
+use configurable_features::Feature;
 use ctor::ctor;
 use std::sync::Arc;
 

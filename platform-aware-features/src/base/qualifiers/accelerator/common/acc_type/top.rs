@@ -1,4 +1,6 @@
-use crate::{Feature, PlatformParameter};
+use configurable_features::Feature;
+
+use crate::{PlatformParameter};
 
 pub struct AccType;
 

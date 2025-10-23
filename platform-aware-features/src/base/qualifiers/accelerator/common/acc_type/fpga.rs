@@ -1,4 +1,4 @@
-use crate::{AccType, Feature, PlatformParameter};
+use crate::{AccType, PlatformParameter};
 
 pub struct FPGA;
 
@@ -15,6 +15,7 @@ impl Feature for FPGA {
 }
 
 use crate::insert_feature;
+use configurable_features::Feature;
 use ctor::ctor;
 use std::sync::Arc;
 

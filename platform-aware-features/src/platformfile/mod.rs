@@ -1,18 +1,8 @@
-use std::error::Error;
-use std::path::Path;
-use std::sync::{Arc, Mutex};
-use std::{env, fs};
+use std::sync::Arc;
 
-use once_cell::sync::Lazy;
-use serde::de::DeserializeOwned;
 use serde::Deserialize;
 use std::collections::HashMap;
 use toml::value::Array;
-
-pub static CURRENT_FEATURES: Lazy<Mutex<PlatformFeatures>> = Lazy::new(|| {
-    let m = HashMap::new(); // readplatformfeatures();
-    Mutex::new(m)
-});
 
 #[derive(Deserialize)]
 pub struct Platform {
@@ -97,20 +87,8 @@ pub struct PlatformNode {
     pub vm_vcpus_count: Option<i32>,
 }
 
-pub fn readplatform<P: DeserializeOwned>() -> Result<P, Box<dyn Error>> {
-    let platform_path = match env::var("PLATFORM_DESCRIPTION") {
-        Ok(var) => var,
-        Err(_) => env::var("PWD")?,
-    };
 
-    let contents: String = fs::read_to_string(Path::new(&platform_path).join("Platform.toml"))?;
-
-    Ok(toml::from_str(&contents).unwrap())
-}
-
-use crate::{lookup_feature, PlatformFeatures, PlatformParameter};
-
-use super::Feature;
+use configurable_features::{lookup_feature, PlatformFeatures, PlatformParameter, Feature, readplatform};
 
 pub fn readplatformfeatures() -> PlatformFeatures {
     let t: Platform = match readplatform() {

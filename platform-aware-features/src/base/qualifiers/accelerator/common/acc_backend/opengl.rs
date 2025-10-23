@@ -1,4 +1,4 @@
-use crate::{AccBackend, Feature, PlatformParameter};
+use crate::{AccBackend, PlatformParameter};
 
 pub struct OpenGL; // <: AcceleratorBackend
 
@@ -30,6 +30,7 @@ impl Feature for OpenGL_4_6 {
 }
 
 use crate::insert_feature;
+use configurable_features::Feature;
 use ctor::ctor;
 use std::sync::Arc;
 

@@ -1,4 +1,4 @@
-use crate::{AccBackend, Feature, PlatformParameter};
+use crate::{AccBackend, PlatformParameter};
 
 pub struct OpenCL; // <: AcceleratorBackend
 
@@ -120,6 +120,7 @@ impl Feature for OpenCL_3_0 {
 }
 
 use crate::insert_feature;
+use configurable_features::Feature;
 use ctor::ctor;
 use std::sync::Arc;
 
