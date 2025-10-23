@@ -1,9 +1,9 @@
+mod directx;
 mod opencl;
 mod opengl;
-mod vulkan; 
-mod directx;
+mod vulkan;
 
+pub use directx::*;
 pub use opencl::*;
 pub use opengl::*;
 pub use vulkan::*;
-pub use directx::*;

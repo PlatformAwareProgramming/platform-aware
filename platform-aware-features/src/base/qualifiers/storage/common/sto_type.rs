@@ -1,24 +1,36 @@
 use crate::{Feature, PlatformParameter, StoType};
 
-pub struct SSD;  // <: StoType
+pub struct SSD; // <: StoType
 
-impl Feature for SSD { 
-     fn string(self:&Self) -> &'static str { "SSD" } 
-    fn feature_class(self:&Self) -> std::option::Option<PlatformParameter> { Some("sto_type".to_string()) } 
-    fn supertype(self:&Self) -> Option<Box<dyn Feature>> { Some(Box::new(StoType)) }
+impl Feature for SSD {
+    fn string(self: &Self) -> &'static str {
+        "SSD"
+    }
+    fn feature_class(self: &Self) -> std::option::Option<PlatformParameter> {
+        Some("sto_type".to_string())
+    }
+    fn supertype(self: &Self) -> Option<Box<dyn Feature>> {
+        Some(Box::new(StoType))
+    }
 }
 
-pub struct HDD;  // <: StoType
+pub struct HDD; // <: StoType
 
-impl Feature for HDD { 
-     fn string(self:&Self) -> &'static str { "HDD" } 
-    fn feature_class(self:&Self) -> std::option::Option<PlatformParameter> { Some("sto_type".to_string()) } 
-    fn supertype(self:&Self) -> Option<Box<dyn Feature>> { Some(Box::new(StoType)) }
+impl Feature for HDD {
+    fn string(self: &Self) -> &'static str {
+        "HDD"
+    }
+    fn feature_class(self: &Self) -> std::option::Option<PlatformParameter> {
+        Some("sto_type".to_string())
+    }
+    fn supertype(self: &Self) -> Option<Box<dyn Feature>> {
+        Some(Box::new(StoType))
+    }
 }
 
 use crate::insert_feature;
-use std::sync::Arc;
 use ctor::ctor;
+use std::sync::Arc;
 
 #[ctor]
 fn module_initializer() {

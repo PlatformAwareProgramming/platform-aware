@@ -7,7 +7,7 @@ pub use base::*;
 use ctor::ctor;
 pub use platformfile::*;
 pub use resolve::*;
-pub use featuremap::{insert_feature, lookup_feature};
+pub use featuremap::*;
 
  
 #[ctor]
@@ -19,3 +19,4 @@ fn module_initializer() {
     m0.extend(m.into_iter());
 
 }
+

@@ -1,4 +1,3 @@
-
 // reexport the macro
 pub use platform_aware_macros::platformaware;
 

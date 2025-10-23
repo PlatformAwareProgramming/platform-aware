@@ -1,0 +1,7 @@
+chain_width                 = 75
+comment_width               = 100
+max_width                   = 100
+wrap_comments               = true
+format_strings              = true
+newline_style               = "Unix"
+style_edition               = "2021"
