@@ -1,10 +1,10 @@
 #[allow(unused_imports)]
-use platform_aware_features::{Feature, CPUSIMD, AVX512};
+use platform_aware::{Feature, CPUSIMD, AVX512};
 
 #[allow(unused)]
 mod mymodule {
   
-    use platform_aware_features::{resolve, AtMost, Feature, PlatformParameter,AVX512};
+    use platform_aware::{resolve, AtMost, Feature, PlatformParameter,AVX512};
     use platform_aware_nvidia::CUDA;
     use std::{collections::HashMap, sync::Arc};
     use lazy_static::lazy_static;
@@ -12,7 +12,7 @@ mod mymodule {
     lazy_static! { static ref Vf:i32 = { 
                 let features1:[(PlatformParameter, Arc<dyn Feature + Send + Sync>); 1] = [("cpu_simd".to_string(), Arc::new(AVX512))];
                 let features2:[(PlatformParameter, Arc<dyn Feature + Send + Sync>); 2] = [("acc_backend".to_string(), Arc::new(CUDA)),
-                                                                                            ("acc_count".to_string(), Arc::new(3))];
+                                                                                          ("acc_count".to_string(), Arc::new(3))];
                 let features3:[(PlatformParameter, Arc<dyn Feature + Send + Sync>); 1] = [("acc_backend".to_string(), Arc::new(CUDA))];
                 let features4:[(PlatformParameter, Arc<dyn Feature + Send + Sync>); 2] = [("acc_backend".to_string(), Arc::new(CUDA)),
                                                                             ("acc_count".to_string(), Arc::new(AtMost{val:5}))];
