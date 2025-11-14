@@ -5,7 +5,7 @@ mod processor;
 use std::sync::Arc;
 
 pub use accelerator::*;
-use platform_aware_features::{insert_parameter, AtLeast, CURRENT_FEATURES};
+use platform_aware_features::{AtLeast, CURRENT_FEATURES, insert_parameter, readplatformfeatures};
 pub use platformfile::*;
 #[allow(unused_imports)]
 pub use processor::*;
@@ -19,7 +19,9 @@ fn module_initializer() {
     insert_parameter("acc_cudadriver".to_string(), Arc::new(AtLeast { val: 100 }));
 
     let mut m0 = CURRENT_FEATURES.lock().unwrap();
-    let m = readplatformfeatures_nvidia();
+    let m1 = readplatformfeatures();
+    let m2 = readplatformfeatures_nvidia();
 
-    m0.extend(m.into_iter());
+    m0.extend(m1.into_iter());
+    m0.extend(m2.into_iter());
 }

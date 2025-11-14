@@ -1,3 +1,6 @@
+use std::sync::Mutex;
+
+use once_cell::sync::Lazy;
 use platform_aware_features::{add_quantifier, readplatform, PlatformFeatures};
 use serde::Deserialize;
 
@@ -13,15 +16,21 @@ pub struct PlatformAccelerator {
     pub acc_cudadriver: Option<i32>,
 }
 
-pub fn readplatformfeatures_nvidia() -> PlatformFeatures {
+pub static CURRENT_PLATFORM_NVIDIA: Lazy<Mutex<Platform>> = Lazy::new(|| {
     let t: Platform = match readplatform() {
         Ok(t) => t,
         Err(_) => todo!(),
     };
+    Mutex::new(t)
+});
+
+pub fn readplatformfeatures_nvidia() -> PlatformFeatures {
+
+   let t = CURRENT_PLATFORM_NVIDIA.lock().unwrap();
 
     let mut m: PlatformFeatures = ::std::collections::HashMap::new();
 
-    match t.accelerator {
+    match &t.accelerator {
         Some(u) => {
             match u.acc_cudacc {
                 Some(v) => {

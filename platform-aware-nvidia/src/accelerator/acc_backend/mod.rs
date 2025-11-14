@@ -1,5 +1,5 @@
 use platform_aware_features::{
-    insert_feature, AccBackend, Feature, PlatformParameter, CURRENT_FEATURES,
+    insert_feature, AccBackend, Feature, PlatformParameter,
 };
 
 pub struct CUDA;
@@ -393,6 +393,9 @@ fn module_initializer() {
     insert_feature(Arc::new(CUDA120));
     insert_feature(Arc::new(CUDA121));
     insert_feature(Arc::new(CUDA122));
+
+    println!("added CUDA backend features");
+
 
     // specific parameters for the above features are declared here
 }
