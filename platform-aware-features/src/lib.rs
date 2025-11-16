@@ -4,7 +4,7 @@ mod platformfile;
 pub use configurable_features::*;
 pub use base::*;
 
-pub use platformfile::{readplatformfeatures, readplatform, readfeaturevector, readqualifier, readquantifier};
+pub use platformfile::{readplatformfeatures, readplatform, readqualifierlist, readqualifier, readquantifier};
 
 use ctor::ctor;
 

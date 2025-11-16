@@ -121,7 +121,7 @@ pub fn readquantifier(f:Option<i32>,
 } 
 
 
-pub fn readfeaturevector(f:Option<Vec<Value>>, 
+pub fn readqualifierlist(f:Option<Vec<Value>>, 
                          fstr:&str, 
                          m: &mut HashMap<PlatformParameter, Arc<dyn Feature + Send + Sync>>)
 {
@@ -153,7 +153,7 @@ pub fn readplatformfeatures() -> PlatformFeatures {
 
     match &t.accelerator {
         Some(u) => {
-            readfeaturevector(u.acc_backend.clone(), "acc_backend", &mut m);
+            readqualifierlist(u.acc_backend.clone(), "acc_backend", &mut m);
             readqualifier(u.acc_architecture.clone(), "acc_architecture", &mut m);
             readqualifier(u.acc_interconnect.clone(), "acc_interconnect", &mut m);
             readqualifier(u.acc_memory_type.clone(), "acc_memory_type", &mut m);

@@ -1,7 +1,7 @@
 use std::sync::{Arc, Mutex};
 
 use once_cell::sync::Lazy;
-use platform_aware_features::{PlatformFeatures, add_qualifier, add_quantifier, readfeaturevector, readplatform, readqualifier, readquantifier};
+use platform_aware_features::{PlatformFeatures, add_qualifier, add_quantifier, readqualifierlist, readplatform, readqualifier, readquantifier};
 use serde::Deserialize;
 use toml::value::Array;
 
@@ -37,7 +37,7 @@ pub fn readplatformfeatures_nvidia() -> PlatformFeatures {
     // only modify parameters that has NVIDIA features.
     match &t.accelerator {
         Some(u) => {
-            readfeaturevector(u.acc_backend.clone(), "acc_backend",  &mut m);
+            readqualifierlist(u.acc_backend.clone(), "acc_backend",  &mut m);
             readqualifier(u.acc_interconnect.clone(), "acc_interconnect", &mut m);
             readqualifier(u.acc_model.clone(), "acc_model", &mut m);
             readquantifier(u.acc_cudacc.clone(), "acc_cudacc", &mut m);
