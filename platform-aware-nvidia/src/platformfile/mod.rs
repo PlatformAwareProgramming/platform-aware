@@ -1,8 +1,9 @@
-use std::sync::Mutex;
+use std::sync::{Arc, Mutex};
 
 use once_cell::sync::Lazy;
-use platform_aware_features::{add_quantifier, readplatform, PlatformFeatures};
+use platform_aware_features::{PlatformFeatures, add_qualifier, add_quantifier, readfeaturevector, readplatform, readqualifier, readquantifier};
 use serde::Deserialize;
+use toml::value::Array;
 
 #[derive(Deserialize)]
 pub struct Platform {
@@ -11,6 +12,9 @@ pub struct Platform {
 
 #[derive(Deserialize)]
 pub struct PlatformAccelerator {
+    pub acc_backend: Option<Array>,              // from platform_aware_features
+    pub acc_interconnect: Option<String>,        // from platform_aware_features 
+    pub acc_model: Option<String>,               // from platform_aware_features
     pub acc_cudacc: Option<i32>,
     pub acc_cudatoolkit: Option<i32>,
     pub acc_cudadriver: Option<i32>,
@@ -30,26 +34,15 @@ pub fn readplatformfeatures_nvidia() -> PlatformFeatures {
 
     let mut m: PlatformFeatures = ::std::collections::HashMap::new();
 
+    // only modify parameters that has NVIDIA features.
     match &t.accelerator {
         Some(u) => {
-            match u.acc_cudacc {
-                Some(v) => {
-                    add_quantifier(&mut m, "acc_cudacc".to_string(), v);
-                }
-                None => {}
-            }
-            match u.acc_cudatoolkit {
-                Some(v) => {
-                    add_quantifier(&mut m, "acc_cudatoolkit".to_string(), v);
-                }
-                None => {}
-            }
-            match u.acc_cudadriver {
-                Some(v) => {
-                    add_quantifier(&mut m, "acc_cudadriver".to_string(), v);
-                }
-                None => {}
-            }
+            readfeaturevector(u.acc_backend.clone(), "acc_backend",  &mut m);
+            readqualifier(u.acc_interconnect.clone(), "acc_interconnect", &mut m);
+            readqualifier(u.acc_model.clone(), "acc_model", &mut m);
+            readquantifier(u.acc_cudacc.clone(), "acc_cudacc", &mut m);
+            readquantifier(u.acc_cudatoolkit.clone(), "acc_cudatoolkit", &mut m);
+            readquantifier(u.acc_cudadriver.clone(), "acc_cudadriver", &mut m);
         }
         None => {}
     }

@@ -19,9 +19,8 @@ fn module_initializer() {
     insert_parameter("acc_cudadriver".to_string(), Arc::new(AtLeast { val: 100 }));
 
     let mut m0 = CURRENT_FEATURES.lock().unwrap();
-    let m1 = readplatformfeatures();
-    let m2 = readplatformfeatures_nvidia();
+    let m1 = readplatformfeatures_nvidia();
 
     m0.extend(m1.into_iter());
-    m0.extend(m2.into_iter());
 }
+

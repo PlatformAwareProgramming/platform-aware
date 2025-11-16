@@ -3,7 +3,7 @@ use std::sync::{Arc, Mutex};
 use once_cell::sync::Lazy;
 use serde::Deserialize;
 use std::collections::HashMap;
-use toml::value::Array;
+use toml::{Value, value::Array};
 
 use configurable_features::{lookup_feature, PlatformFeatures, PlatformParameter, Feature};
 pub use configurable_features::readplatform;
@@ -21,6 +21,7 @@ pub struct Platform {
 #[derive(Deserialize)]
 pub struct PlatformAccelerator {
     pub acc_manufacturer: Option<String>,
+    pub acc_interconnect: Option<String>,
     pub acc_memory_type: Option<String>,
     pub acc_count: Option<i32>,
     pub acc_backend: Option<Array>,
@@ -99,16 +100,32 @@ pub static CURRENT_PLATFORM: Lazy<Mutex<Platform>> = Lazy::new(|| {
     Mutex::new(t)
 });
 
+pub fn readqualifier(f:Option<String>, 
+                         fstr:&str, 
+                         m: &mut HashMap<PlatformParameter, Arc<dyn Feature + Send + Sync>>)
+{
+    match f {
+        Some(v) => add_qualifier(m, fstr.to_string(), v.to_string()),
+        None => {}
+    }
+} 
 
-pub fn readplatformfeatures() -> PlatformFeatures {
- 
-    let t = CURRENT_PLATFORM.lock().unwrap();
+pub fn readquantifier(f:Option<i32>, 
+                         fstr:&str, 
+                         m: &mut HashMap<PlatformParameter, Arc<dyn Feature + Send + Sync>>)
+{
+    match f {
+        Some(v) => add_quantifier(m, fstr.to_string(), v),
+        None => {}
+    }
+} 
 
-    let mut m: PlatformFeatures = ::std::collections::HashMap::new();
 
-    match &t.accelerator {
-        Some(u) => {
-            match &u.acc_backend {
+pub fn readfeaturevector(f:Option<Vec<Value>>, 
+                         fstr:&str, 
+                         m: &mut HashMap<PlatformParameter, Arc<dyn Feature + Send + Sync>>)
+{
+               match f {
                 Some(v) => {
                     let mut fvec = Vec::new();
                     for fv in v {
@@ -122,270 +139,98 @@ pub fn readplatformfeatures() -> PlatformFeatures {
                         };
                     }
 
-                    m.insert("acc_backend".to_string(), Arc::new(fvec));
+                    m.insert(fstr.to_string(), Arc::new(fvec));
                 }
                 None => {}
             }
-            match &u.acc_architecture {
-                Some(v) => add_qualifier(&mut m, "acc_architecture".to_string(), v.to_string()),
-                None => {}
-            }
-            match &u.acc_memory_type {
-                Some(v) => add_qualifier(&mut m, "acc_memory_type".to_string(), v.to_string()),
-                None => {}
-            }
-            match &u.acc_manufacturer {
-                Some(v) => add_qualifier(&mut m, "acc_manufacturer".to_string(), v.to_string()),
-                None => {}
-            }
-            match &u.acc_model {
-                Some(v) => add_qualifier(&mut m, "acc_model".to_string(), v.to_string()),
-                None => {}
-            }
-            match &u.acc_processor {
-                Some(v) => add_qualifier(&mut m, "acc_processor".to_string(), v.to_string()),
-                None => {}
-            }
-            match &u.acc_type {
-                Some(v) => add_qualifier(&mut m, "acc_type".to_string(), v.to_string()),
-                None => {}
-            }
-            match &u.acc_count {
-                Some(v) => {
-                    add_quantifier(&mut m, "acc_count".to_string(), *v);
-                }
-                None => {}
-            }
-            match &u.acc_memorysize {
-                Some(v) => {
-                    add_quantifier(&mut m, "acc_architecture".to_string(), *v);
-                }
-                None => {}
-            }
-            match &u.acc_processor_count {
-                Some(v) => {
-                    add_quantifier(&mut m, "acc_processor_count".to_string(), *v);
-                }
-                None => {}
-            }
-            match &u.acc_tdp {
-                Some(v) => {
-                    add_quantifier(&mut m, "acc_tdp".to_string(), *v);
-                }
-                None => {}
-            }
+}
+
+pub fn readplatformfeatures() -> PlatformFeatures {
+ 
+    let t = CURRENT_PLATFORM.lock().unwrap();
+
+    let mut m: PlatformFeatures = ::std::collections::HashMap::new();
+
+    match &t.accelerator {
+        Some(u) => {
+            readfeaturevector(u.acc_backend.clone(), "acc_backend", &mut m);
+            readqualifier(u.acc_architecture.clone(), "acc_architecture", &mut m);
+            readqualifier(u.acc_interconnect.clone(), "acc_interconnect", &mut m);
+            readqualifier(u.acc_memory_type.clone(), "acc_memory_type", &mut m);
+            readqualifier(u.acc_manufacturer.clone(), "acc_manufacturer", &mut m);
+            readqualifier(u.acc_model.clone(), "acc_model", &mut m);
+            readqualifier(u.acc_processor.clone(), "acc_processor", &mut m);
+            readqualifier(u.acc_type.clone(), "acc_type", &mut m);
+            readquantifier(u.acc_count.clone(), "acc_count", &mut m);
+            readquantifier(u.acc_memorysize.clone(), "acc_memorysize", &mut m);
+            readquantifier(u.acc_processor_count.clone(), "acc_processor_count", &mut m);
+            readquantifier(u.acc_tdp.clone(), "acc_tdp", &mut m);
         }
         None => {}
     }
 
     match &t.processor {
         Some(u) => {
-            match &u.cpu_isa {
-                Some(v) => add_qualifier(&mut m, "cpu_isa".to_string(), v.to_string()),
-                None => {}
-            }
-            match &u.cpu_manufacturer {
-                Some(v) => add_qualifier(&mut m, "cpu_manufacturer".to_string(), v.to_string()),
-                None => {}
-            }
-            match &u.cpu_microarchitecture {
-                Some(v) => add_qualifier(&mut m, "cpu_microarchitecture".to_string(), v.to_string()),
-                None => {}
-            }
-            match &u.cpu_model {
-                Some(v) => add_qualifier(&mut m, "cpu_model".to_string(), v.to_string()),
-                None => {}
-            }
-            //match u.cpu_simd { Some(v) => add_qualifier(&mut m,
-            // "cpu_simd".to_string(), v), None => {} }
-            match &u.cpu_L1_size {
-                Some(v) => {
-                    add_quantifier(&mut m, "cpu_l1_size".to_string(), *v);
-                }
-                None => {}
-            }
-            match &u.cpu_L2_size {
-                Some(v) => {
-                    add_quantifier(&mut m, "cpu_l2_size".to_string(), *v);
-                }
-                None => {}
-            }
-            match &u.cpu_L3_size {
-                Some(v) => {
-                    add_quantifier(&mut m, "cpu_l3_size".to_string(), *v);
-                }
-                None => {}
-            }
-            match &u.cpu_core_clock {
-                Some(v) => {
-                    add_quantifier(&mut m, "cpu_clock".to_string(), *v);
-                }
-                None => {}
-            }
-            match &u.cpu_core_count {
-                Some(v) => {
-                    add_quantifier(&mut m, "cpu_core_count".to_string(), *v);
-                }
-                None => {}
-            }
-            match &u.cpu_core_threads_count {
-                Some(v) => {
-                    add_quantifier(&mut m, "cpu_core_threads_count".to_string(), *v);
-                }
-                None => {}
-            }
-            match &u.cpu_count {
-                Some(v) => {
-                    add_quantifier(&mut m, "cpu_count".to_string(), *v);
-                }
-                None => {}
-            }
-            match &u.cpu_tdp {
-                Some(v) => {
-                    add_quantifier(&mut m, "cpu_tdp".to_string(), *v);
-                }
-                None => {}
-            }
+            readqualifier(u.cpu_isa.clone(), "cpu_isa", &mut m);
+            readqualifier(u.cpu_manufacturer.clone(), "cpu_manufacturer", &mut m);
+            readqualifier(u.cpu_microarchitecture.clone(), "cpu_microarchitecture", &mut m);
+            readqualifier(u.cpu_model.clone(), "cpu_model", &mut m);
+            readquantifier(u.cpu_L1_size.clone(), "cpu_L1_size", &mut m);
+            readquantifier(u.cpu_L2_size.clone(), "cpu_L2_size", &mut m);
+            readquantifier(u.cpu_L3_size.clone(), "cpu_L3_size", &mut m);
+            readquantifier(u.cpu_core_clock.clone(), "cpu_core_clock", &mut m);
+            readquantifier(u.cpu_core_count.clone(), "cpu_core_count", &mut m);
+            readquantifier(u.cpu_core_threads_count.clone(), "cpu_core_threads_count", &mut m);
+            readquantifier(u.cpu_count.clone(), "cpu_count", &mut m);
+            readquantifier(u.cpu_tdp.clone(), "cpu_tdp", &mut m);
         }
         None => {}
     }
 
     match &t.memory {
         Some(u) => {
-            match &u.mem_type {
-                Some(v) => add_qualifier(&mut m, "mem_type".to_string(), v.to_string()),
-                None => {}
-            }
-            match &u.mem_bandwidth {
-                Some(v) => {
-                    add_quantifier(&mut m, "mem_bandwidth".to_string(), *v);
-                }
-                None => {}
-            }
-            match &u.mem_frequency {
-                Some(v) => {
-                    add_quantifier(&mut m, "mem_frequency".to_string(), *v);
-                }
-                None => {}
-            }
-            match &u.mem_latency {
-                Some(v) => {
-                    add_quantifier(&mut m, "mem_latency".to_string(), *v);
-                }
-                None => {}
-            }
-            match &u.mem_size {
-                Some(v) => {
-                    add_quantifier(&mut m, "mem_size".to_string(), *v);
-                }
-                None => {}
-            }
+            readqualifier(u.mem_type.clone(), "mem_type", &mut m);
+            readquantifier(u.mem_bandwidth.clone(), "mem_bandwidth", &mut m);
+            readquantifier(u.mem_frequency.clone(), "cpmem_frequencyu_tdp", &mut m);
+            readquantifier(u.mem_latency.clone(), "mem_latency", &mut m);
+            readquantifier(u.mem_size.clone(), "mem_size", &mut m);
         }
         None => {}
     }
 
     match &t.interconnection {
         Some(u) => {
-            match &u.net_RDMA {
-                Some(v) => add_qualifier(&mut m, "net_rdma".to_string(), v.to_string()),
-                None => {}
-            }
-            match &u.net_type {
-                Some(v) => add_qualifier(&mut m, "net_type".to_string(), v.to_string()),
-                None => {}
-            }
-            match &u.net_topology {
-                Some(v) => add_qualifier(&mut m, "net_topology".to_string(), v.to_string()),
-                None => {}
-            }
-            match &u.net_bandwidth {
-                Some(v) => {
-                    add_quantifier(&mut m, "net_bandwidth".to_string(), *v);
-                }
-                None => {}
-            }
-            match &u.net_latency {
-                Some(v) => {
-                    add_quantifier(&mut m, "net_latency".to_string(), *v);
-                }
-                None => {}
-            }
-            match &u.net_startuptime {
-                Some(v) => {
-                    add_quantifier(&mut m, "net_startup_time".to_string(), *v);
-                }
-                None => {}
-            }
+            readqualifier(u.net_RDMA.clone(), "net_rdma", &mut m);
+            readqualifier(u.net_type.clone(), "net_type", &mut m);
+            readqualifier(u.net_topology.clone(), "net_topology", &mut m);
+            readquantifier(u.net_bandwidth.clone(), "net_bandwidth", &mut m);
+            readquantifier(u.net_latency.clone(), "net_latency", &mut m);
+            readquantifier(u.net_startuptime.clone(), "net_startuptime", &mut m);
         }
         None => {}
     }
 
     match &t.storage {
         Some(u) => {
-            match &u.sto_interface {
-                Some(v) => add_qualifier(&mut m, "sto_interface".to_string(), v.to_string()),
-                None => {}
-            }
-            match &u.sto_type {
-                Some(v) => add_qualifier(&mut m, "sto_type".to_string(), v.to_string()),
-                None => {}
-            }
-            match &u.sto_bandwidth {
-                Some(v) => {
-                    add_quantifier(&mut m, "sto_bandwidth".to_string(), *v);
-                }
-                None => {}
-            }
-            match &u.sto_latency {
-                Some(v) => {
-                    add_quantifier(&mut m, "sto_latency".to_string(), *v);
-                }
-                None => {}
-            }
-            match &u.sto_networkbandwidth {
-                Some(v) => {
-                    add_quantifier(&mut m, "sto_network_bandwidth".to_string(), *v);
-                }
-                None => {}
-            }
-            match &u.sto_size {
-                Some(v) => {
-                    add_quantifier(&mut m, "sto_size".to_string(), *v);
-                }
-                None => {}
-            }
+            readqualifier(u.sto_interface.clone(), "sto_interface", &mut m);
+            readqualifier(u.sto_type.clone(), "sto_type", &mut m);
+            readquantifier(u.sto_bandwidth.clone(), "sto_bandwidth", &mut m);
+            readquantifier(u.sto_latency.clone(), "sto_latency", &mut m);
+            readquantifier(u.sto_networkbandwidth.clone(), "sto_networkbandwidth", &mut m);
+            readquantifier(u.sto_size.clone(), "sto_size", &mut m);
         }
         None => {}
     }
 
     match &t.node {
         Some(u) => {
-            match &u.vm_machinefamily {
-                Some(v) => add_qualifier(&mut m, "vm_machinefamily".to_string(), v.to_string()),
-                None => {}
-            }
-            match &u.vm_machinetype {
-                Some(v) => add_qualifier(&mut m, "vm_machinetype".to_string(), v.to_string()),
-                None => {}
-            }
-            match &u.vm_provider {
-                Some(v) => add_qualifier(&mut m, "vm_provider".to_string(), v.to_string()),
-                None => {}
-            }
+            readqualifier(u.vm_machinefamily.clone(), "vm_machinefamily", &mut m);
+            readqualifier(u.vm_machinetype.clone(), "vm_machinetype", &mut m);
+            readqualifier(u.vm_provider.clone(), "vm_provider", &mut m);
             //match u.vm_count { Some(v) => { add_quantifier(&mut m,
             // "vm_count".to_string(), v); }, None => {} }
-            match &u.vm_threads_count {
-                Some(v) => {
-                    add_quantifier(&mut m, "vm_threads_count".to_string(), *v);
-                }
-                None => {}
-            }
-            match &u.vm_vcpus_count {
-                Some(v) => {
-                    add_quantifier(&mut m, "vm_vcpus_count".to_string(), *v);
-                }
-                None => {}
-            }
+            readquantifier(u.vm_threads_count.clone(), "vm_threads_count", &mut m);
+            readquantifier(u.vm_vcpus_count.clone(), "vm_vcpus_count", &mut m);
             //match u.vm_dedicated { Some(v) => { add_quantifier(&mut m,
             // "vm_dedicated".to_string(), v); }, None => {} } match
             // u.vm_virtual { Some(v) => { add_quantifier(&mut m,

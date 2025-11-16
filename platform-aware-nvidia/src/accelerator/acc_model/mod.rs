@@ -1,5 +1,8 @@
-use platform_aware_features::{insert_feature, AccModel, Feature, PlatformParameter};
+use platform_aware_features::{AccModel, Feature, PlatformParameter, create_feature_hierarchy, insert_feature};
 
+use ctor::ctor;
+
+/*
 pub struct NVidiaH100;
 
 impl Feature for NVidiaH100 {
@@ -80,4 +83,15 @@ fn module_initializer() {
     insert_feature(Arc::new(NVidiaMTX570A));
     insert_feature(Arc::new(NVidiaRTX4000Ada));
     insert_feature(Arc::new(NvidiaGeForce940MX));
+}
+
+*/
+
+create_feature_hierarchy! { 
+    NVidiaA100 ->
+    NVidiaH100 ->
+    NVidiaMTX570A ->
+    NVidiaRTX4000Ada ->
+    NvidiaGeForce940MX =>
+    "acc_model";
 }
