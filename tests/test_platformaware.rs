@@ -126,7 +126,7 @@ use platform_aware::configurable;
 
 #[configurable(f)]
 mod mymodule2 {
-    use platform_aware_nvidia::{NVidiaH100, CUDA10};
+    use platform_aware_nvidia::{CUDA20, CUDA50, CUDA90, NVidiaH100};
 
     // default version (fallback)
     #[assumptions]
@@ -148,7 +148,7 @@ mod mymodule2 {
     }
 
     //#[allow(unused_parens)]
-    #[assumptions(acc_count=(AtLeast{val:4}), acc_backend=CUDA10 , acc_cudacc=(AtLeast{val:50}))]
+    #[assumptions(acc_count=(AtLeast{val:4}), acc_backend=CUDA20 , acc_cudacc=(AtLeast{val:50}))]
     fn f(x: i64, y: i64, z: i64) -> i64 {
         println!("third version actions x={x} y={y} z={z}");
         4i64

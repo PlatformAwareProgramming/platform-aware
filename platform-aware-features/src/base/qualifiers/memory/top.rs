@@ -1,15 +1,5 @@
-use crate::{Feature, PlatformParameter};
 
-pub struct MemoryType;
+use configurable_features::create_feature_hierarchy;
 
-impl Feature for MemoryType {
-    fn is_top(self: &Self) -> bool {
-        true
-    }
-    fn string(self: &Self) -> &'static str {
-        "MemoryType"
-    }
-    fn feature_class(self: &Self) -> std::option::Option<PlatformParameter> {
-        Some("mem_type".to_string())
-    }
-}
+create_feature_hierarchy! {  register_features ; "mem_type" : None -> MemoryType;}
+

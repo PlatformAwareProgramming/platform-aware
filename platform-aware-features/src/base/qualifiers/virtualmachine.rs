@@ -1,41 +1,13 @@
-use crate::{Feature, PlatformParameter};
 
-pub struct VMprovider;
-pub struct VMmachinefamily;
-pub struct VMmachinetype;
+use configurable_features::create_feature_hierarchy;
 
-impl Feature for VMprovider {
-    fn is_top(self: &Self) -> bool {
-        true
-    }
-    fn string(self: &Self) -> &'static str {
-        "VMprovider"
-    }
-    fn feature_class(self: &Self) -> std::option::Option<PlatformParameter> {
-        Some("vm_provider".to_string())
-    }
-}
+create_feature_hierarchy! {  register_features_1 ;"vm_provider" : None -> VMprovider;}
+create_feature_hierarchy! {  register_features_2 ; "vm_machinefamily" : None -> VMmachinefamily;}
+create_feature_hierarchy! {  register_features_3 ; "vm_machinetype" : None -> VMmachinetype;}
 
-impl Feature for VMmachinefamily {
-    fn is_top(self: &Self) -> bool {
-        true
-    }
-    fn string(self: &Self) -> &'static str {
-        "VMmachinefamily"
-    }
-    fn feature_class(self: &Self) -> std::option::Option<PlatformParameter> {
-        Some("vm_machinefamily".to_string())
-    }
-}
-
-impl Feature for VMmachinetype {
-    fn is_top(self: &Self) -> bool {
-        true
-    }
-    fn string(self: &Self) -> &'static str {
-        "VMmachinetype"
-    }
-    fn feature_class(self: &Self) -> std::option::Option<PlatformParameter> {
-        Some("vm_machinetype".to_string())
-    }
-}
+// Added qualifiers for Virtual Machine features (by copilot)
+create_feature_hierarchy! {  register_features_4 ;"vm_cpuarch" : None -> VMcpuarch;}
+create_feature_hierarchy! {  register_features_5 ;"vm_osfamily" : None -> VMosfamily;}
+create_feature_hierarchy! {  register_features_6 ;"vm_osname" : None -> VMosname;}
+create_feature_hierarchy! {  register_features_7 ;"vm_oshypervisor" : None -> VMoshypervisor;}
+create_feature_hierarchy! {  register_features_8 ;"vm_virtualizationtype" : None -> VMvirtualizationtype;}

@@ -1,28 +1,4 @@
-use crate::{Feature, PlatformParameter};
+use configurable_features::create_feature_hierarchy;
 
-pub struct StoType;
-pub struct StoInterface;
-
-impl Feature for StoType {
-    fn is_top(self: &Self) -> bool {
-        true
-    }
-    fn string(self: &Self) -> &'static str {
-        "StoType"
-    }
-    fn feature_class(self: &Self) -> std::option::Option<PlatformParameter> {
-        Some("sto_type".to_string())
-    }
-}
-
-impl Feature for StoInterface {
-    fn is_top(self: &Self) -> bool {
-        true
-    }
-    fn string(self: &Self) -> &'static str {
-        "StoInterface"
-    }
-    fn feature_class(self: &Self) -> std::option::Option<PlatformParameter> {
-        Some("sto_interface".to_string())
-    }
-}
+create_feature_hierarchy! {  register_features_1 ; "sto_type" : None -> StoType;}
+create_feature_hierarchy! {  register_features_2 ; "sto_interface" : None -> StoInterface;}

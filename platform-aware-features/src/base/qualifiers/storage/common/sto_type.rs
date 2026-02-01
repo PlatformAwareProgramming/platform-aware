@@ -1,39 +1,7 @@
-use crate::{Feature, PlatformParameter, StoType};
 
-pub struct SSD; // <: StoType
+use configurable_features::create_feature_hierarchy;
 
-impl Feature for SSD {
-    fn string(self: &Self) -> &'static str {
-        "SSD"
-    }
-    fn feature_class(self: &Self) -> std::option::Option<PlatformParameter> {
-        Some("sto_type".to_string())
-    }
-    fn supertype(self: &Self) -> Option<Box<dyn Feature>> {
-        Some(Box::new(StoType))
-    }
-}
+use crate::StoType;
 
-pub struct HDD; // <: StoType
+create_feature_hierarchy! { register_features ; "sto_type" : StoType -> SSD & HDD; }
 
-impl Feature for HDD {
-    fn string(self: &Self) -> &'static str {
-        "HDD"
-    }
-    fn feature_class(self: &Self) -> std::option::Option<PlatformParameter> {
-        Some("sto_type".to_string())
-    }
-    fn supertype(self: &Self) -> Option<Box<dyn Feature>> {
-        Some(Box::new(StoType))
-    }
-}
-
-use crate::insert_feature;
-use ctor::ctor;
-use std::sync::Arc;
-
-#[ctor]
-fn module_initializer() {
-    insert_feature(Arc::new(SSD));
-    insert_feature(Arc::new(HDD));
-}

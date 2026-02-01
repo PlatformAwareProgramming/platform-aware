@@ -1,53 +1,6 @@
-use crate::{Feature, PlatformParameter, CPUSIMD};
+use configurable_features::create_feature_hierarchy;
 
-pub struct AVX; // <: ProcessorSIMD
+use crate::CPUSIMD;
 
-impl Feature for AVX {
-    fn string(self: &Self) -> &'static str {
-        "AVX"
-    }
-    fn feature_class(self: &Self) -> std::option::Option<PlatformParameter> {
-        Some("cpu_simd".to_string())
-    }
-    fn supertype(self: &Self) -> Option<Box<dyn Feature>> {
-        Some(Box::new(CPUSIMD))
-    }
-}
-
-pub struct AVX2; // <: AVX
-
-impl Feature for AVX2 {
-    fn string(self: &Self) -> &'static str {
-        "AVX2"
-    }
-    fn feature_class(self: &Self) -> std::option::Option<PlatformParameter> {
-        Some("cpu_simd".to_string())
-    }
-    fn supertype(self: &Self) -> Option<Box<dyn Feature>> {
-        Some(Box::new(AVX))
-    }
-}
-pub struct AVX512; // <: AVX2   # https://en.wikipedia.org/wiki/AVX-512
-
-impl Feature for AVX512 {
-    fn string(self: &Self) -> &'static str {
-        "AVX512"
-    }
-    fn feature_class(self: &Self) -> std::option::Option<PlatformParameter> {
-        Some("cpu_simd".to_string())
-    }
-    fn supertype(self: &Self) -> Option<Box<dyn Feature>> {
-        Some(Box::new(AVX2))
-    }
-}
-
-use crate::insert_feature;
-use ctor::ctor;
-use std::sync::Arc;
-
-#[ctor]
-fn module_initializer() {
-    insert_feature(Arc::new(AVX));
-    insert_feature(Arc::new(AVX2));
-    insert_feature(Arc::new(AVX512));
-}
+create_feature_hierarchy! {  register_features_1 ;"cpu_simd" : CPUSIMD -> AVX -> AVX2 -> AVX512;}
+create_feature_hierarchy! {  register_features_2 ;"cpu_simd" : AVX512 -> AVX512_F & AVX512_CD & AVX512_PF & AVX512_ER & AVX512_VL & AVX512_BW & AVX512_DQ & AVX512_IFMA & AVX512_VBMI & AVX512_VBMI2 & AVX512_VNNI & AVX512_BITALG & AVX512_BF16; }

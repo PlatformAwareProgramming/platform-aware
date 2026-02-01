@@ -1,24 +1,9 @@
-use crate::{AccInterconnect, Feature, PlatformParameter};
+use configurable_features::{create_feature_hierarchy};
 
-pub struct GPUDirect; // <: AccInterconnect
+use crate::AccInterconnect;
 
-impl Feature for GPUDirect {
-    fn string(self: &Self) -> &'static str {
-        "GPUDirect"
-    }
-    fn feature_class(self: &Self) -> std::option::Option<PlatformParameter> {
-        Some("acc_interconnect".to_string())
-    }
-    fn supertype(self: &Self) -> Option<Box<dyn Feature>> {
-        Some(Box::new(AccInterconnect))
-    }
-}
-
-use crate::insert_feature;
-use ctor::ctor;
-use std::sync::Arc;
-
-#[ctor]
-fn module_initializer() {
-    insert_feature(Arc::new(GPUDirect));
+create_feature_hierarchy! {  register_features ;
+    "acc_interconnect" :
+    AccInterconnect ->
+    GPUdirect;
 }

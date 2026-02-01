@@ -1,95 +1,25 @@
-use configurable_features::Feature;
 
-use crate::{PlatformParameter};
+use configurable_features::create_feature_hierarchy;
 
-pub struct AccManufacturer;
-pub struct AccMemoryType;
-pub struct AccArchitecture;
-pub struct AccModel;
-pub struct AccProcessor;
-pub struct AccInterconnect;
-pub struct AccBackend;
 
-impl Feature for AccBackend {
-    fn is_top(self: &Self) -> bool {
-        true
-    }
-    fn string(self: &Self) -> &'static str {
-        "AccBackend"
-    }
-    fn feature_class(self: &Self) -> std::option::Option<PlatformParameter> {
-        Some("acc_backend".to_string())
-    }
-}
+create_feature_hierarchy! { register_features_1 ; "acc_backend" : None -> AccBackend;}
+create_feature_hierarchy! { register_features_2 ; "acc_type" : None -> AccType;}
+create_feature_hierarchy! { register_features_3 ; "acc_interconnect" : None -> AccInterconnect;}
+create_feature_hierarchy! { register_features_4 ; "acc_manufacturer" : None -> AccManufacturer;}
+create_feature_hierarchy! { register_features_5 ; "acc_memory_type" : None -> AccMemoryType;}
+create_feature_hierarchy! { register_features_6 ; "acc_architecture" : None -> AccArchitecture;}
+create_feature_hierarchy! { register_features_7 ; "acc_model" : None -> AccModel;}
+create_feature_hierarchy! { register_features_8 ; "acc_processor" : None -> AccProcessor;}
 
-impl Feature for AccInterconnect {
-    fn is_top(self: &Self) -> bool {
-        true
-    }
-    fn string(self: &Self) -> &'static str {
-        "AccInterconnect"
-    }
-    fn feature_class(self: &Self) -> std::option::Option<PlatformParameter> {
-        Some("acc_interconnect".to_string())
-    }
-}
+// Additional accelerator qualifiers (co-pilot generated)
 
-impl Feature for AccManufacturer {
-    fn is_top(self: &Self) -> bool {
-        true
-    }
-    fn string(self: &Self) -> &'static str {
-        "AccManufacturer"
-    }
-    fn feature_class(self: &Self) -> std::option::Option<PlatformParameter> {
-        Some("acc_manufacturer".to_string())
-    }
-}
+create_feature_hierarchy! { register_features_9 ; "acc_usage" : None -> AccUsage;}
+create_feature_hierarchy! { register_features_10 ; "acc_power_source" : None -> AccPowerSource;}
+create_feature_hierarchy! { register_features_11 ; "acc_form_factor" : None -> AccFormFactor;}
+create_feature_hierarchy! { register_features_12 ; "acc_connection_interface" : None -> AccConnectionInterface;}
+create_feature_hierarchy! { register_features_13 ; "acc_virtualization_support" : None -> AccVirtualizationSupport;}
+create_feature_hierarchy! { register_features_14 ; "acc_cooling_type" : None -> AccCoolingType;}
+create_feature_hierarchy! { register_features_15 ; "acc_fp_precision_support" : None -> AccFPPrecisionSupport;}
+create_feature_hierarchy! { register_features_16 ; "acc_tensor_core_support" : None -> AccTensorCoreSupport;}
 
-impl Feature for AccMemoryType {
-    fn is_top(self: &Self) -> bool {
-        true
-    }
-    fn string(self: &Self) -> &'static str {
-        "AccMemoryType"
-    }
-    fn feature_class(self: &Self) -> std::option::Option<PlatformParameter> {
-        Some("acc_memory_type".to_string())
-    }
-}
-
-impl Feature for AccArchitecture {
-    fn is_top(self: &Self) -> bool {
-        true
-    }
-    fn string(self: &Self) -> &'static str {
-        "AccArchitecture"
-    }
-    fn feature_class(self: &Self) -> std::option::Option<PlatformParameter> {
-        Some("acc_model".to_string())
-    }
-}
-
-impl Feature for AccModel {
-    fn is_top(self: &Self) -> bool {
-        true
-    }
-    fn string(self: &Self) -> &'static str {
-        "AccModel"
-    }
-    fn feature_class(self: &Self) -> std::option::Option<PlatformParameter> {
-        Some("acc_model".to_string())
-    }
-}
-
-impl Feature for AccProcessor {
-    fn is_top(self: &Self) -> bool {
-        true
-    }
-    fn string(self: &Self) -> &'static str {
-        "AccProcessor"
-    }
-    fn feature_class(self: &Self) -> std::option::Option<PlatformParameter> {
-        Some("acc_processor".to_string())
-    }
-}
+create_feature_hierarchy! { register_features_17 ; "acc_ray_tracing_support" : None -> AccRayTracingSupport;}  

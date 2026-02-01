@@ -5,7 +5,7 @@ use serde::Deserialize;
 use std::collections::HashMap;
 use toml::{Value, value::Array};
 
-use configurable_features::{lookup_feature, PlatformFeatures, PlatformParameter, Feature};
+use configurable_features::{Feature, PlatformFeatures, PlatformParameter, QualifierFeature, lookup_feature};
 pub use configurable_features::readplatform;
 
 #[derive(Deserialize)]
@@ -106,7 +106,7 @@ pub fn readqualifier(f:Option<String>,
 {
     match f {
         Some(v) => add_qualifier(m, fstr.to_string(), v.to_string()),
-        None => {}
+        None => {  }
     }
 } 
 
@@ -116,7 +116,7 @@ pub fn readquantifier(f:Option<i32>,
 {
     match f {
         Some(v) => add_quantifier(m, fstr.to_string(), v),
-        None => {}
+        None => {  }
     }
 } 
 
@@ -127,23 +127,28 @@ pub fn readqualifierlist(f:Option<Vec<Value>>,
 {
                match f {
                 Some(v) => {
-                    let mut fvec = Vec::new();
+                    let mut fvec: Vec<Arc<dyn Feature + Send + Sync>> = Vec::new();
                     for fv in v {
                         let fs = fv.as_str().unwrap();
                         let static_fs: &'static str = Box::leak(fs.to_string().into_boxed_str());
                         match lookup_feature(static_fs) {
-                            Some(f) => fvec.push(f),
-                            None => {
-                                println!("qualifier {} not found and ignored", static_fs)
+                                Some(f) => fvec.push(f),
+                                None => { 
+                                    //println!("qualifier {} not found and ignored", static_fs)
                             }
                         };
                     }
+
 
                     m.insert(fstr.to_string(), Arc::new(fvec));
                 }
                 None => {}
             }
 }
+
+
+
+
 
 pub fn readplatformfeatures() -> PlatformFeatures {
  
@@ -247,12 +252,16 @@ pub fn add_qualifier(
     par: PlatformParameter,
     v: String,
 ) {
-    let f = lookup_feature(Box::leak(v.into_boxed_str()));
+    let fname = Box::leak(v.into_boxed_str());
+    let f = lookup_feature(fname);
     match f {
         Some(f) => {
+             println!("qualifier {fname} exists");
             m.insert(par, f);
         }
-        None => {}
+        None => { 
+            //println!("qualifier {fname} not found and ignored") 
+        }
     }
 }
 
