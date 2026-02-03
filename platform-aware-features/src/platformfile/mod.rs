@@ -189,6 +189,7 @@ pub fn readplatformfeatures() -> PlatformFeatures {
             readquantifier(u.cpu_core_threads_count.clone(), "cpu_core_threads_count", &mut m);
             readquantifier(u.cpu_count.clone(), "cpu_count", &mut m);
             readquantifier(u.cpu_tdp.clone(), "cpu_tdp", &mut m);
+            readqualifierlist(u.cpu_simd.clone(), "cpu_simd", &mut m);
         }
         None => {}
     }
