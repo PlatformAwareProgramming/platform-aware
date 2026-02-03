@@ -5,6 +5,6 @@ use crate::AccType;
 
 create_feature_hierarchy! {  register_features ;
     "acc_type" :
-    AccType ->
+    AccType :>
     FPGA;
  }

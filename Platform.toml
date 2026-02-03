@@ -1,6 +1,6 @@
 [accelerator]
 acc_manufacturer = "NVIDIA"
-acc_memory_type = "DDR3"
+acc_memorytype = "DDR3"
 acc_count = 4
 acc_backend = ["OpenCL_3_0","CUDA50","OpenGL_4_6","Vulkan_1_3","DirectX_11_0"]
 #acc_backend = ["CUDA50"]

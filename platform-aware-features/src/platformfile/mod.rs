@@ -22,12 +22,12 @@ pub struct Platform {
 pub struct PlatformAccelerator {
     pub acc_manufacturer: Option<String>,
     pub acc_interconnect: Option<String>,
-    pub acc_memory_type: Option<String>,
+    pub acc_memorytype: Option<String>,
     pub acc_count: Option<i32>,
     pub acc_backend: Option<Array>,
     pub acc_architecture: Option<String>,
     pub acc_model: Option<String>,
-    pub acc_processor_count: Option<i32>,
+    pub acc_processorcount: Option<i32>,
     pub acc_processor: Option<String>,
     pub acc_memorysize: Option<i32>,
     pub acc_tdp: Option<i32>,
@@ -102,7 +102,7 @@ pub static CURRENT_PLATFORM: Lazy<Mutex<Platform>> = Lazy::new(|| {
 
 pub fn readqualifier(f:Option<String>, 
                          fstr:&str, 
-                         m: &mut HashMap<PlatformParameter, Arc<dyn Feature + Send + Sync>>)
+                         m: &mut HashMap<PlatformParameter, Arc<dyn Feature /* + Send +  Sync */>>)
 {
     match f {
         Some(v) => add_qualifier(m, fstr.to_string(), v.to_string()),
@@ -112,7 +112,7 @@ pub fn readqualifier(f:Option<String>,
 
 pub fn readquantifier(f:Option<i32>, 
                          fstr:&str, 
-                         m: &mut HashMap<PlatformParameter, Arc<dyn Feature + Send + Sync>>)
+                         m: &mut HashMap<PlatformParameter, Arc<dyn Feature /* + Send +  Sync */>>)
 {
     match f {
         Some(v) => add_quantifier(m, fstr.to_string(), v),
@@ -123,11 +123,11 @@ pub fn readquantifier(f:Option<i32>,
 
 pub fn readqualifierlist(f:Option<Vec<Value>>, 
                          fstr:&str, 
-                         m: &mut HashMap<PlatformParameter, Arc<dyn Feature + Send + Sync>>)
+                         m: &mut HashMap<PlatformParameter, Arc<dyn Feature /* + Send +  Sync */>>)
 {
                match f {
                 Some(v) => {
-                    let mut fvec: Vec<Arc<dyn Feature + Send + Sync>> = Vec::new();
+                    let mut fvec: Vec<Arc<dyn QualifierFeature /* + Send +  Sync */>> = Vec::new();
                     for fv in v {
                         let fs = fv.as_str().unwrap();
                         let static_fs: &'static str = Box::leak(fs.to_string().into_boxed_str());
@@ -141,6 +141,7 @@ pub fn readqualifierlist(f:Option<Vec<Value>>,
 
 
                     m.insert(fstr.to_string(), Arc::new(fvec));
+                    // m.insert(fstr.to_string(), Arc::new(fvec));
                 }
                 None => {}
             }
@@ -158,18 +159,18 @@ pub fn readplatformfeatures() -> PlatformFeatures {
 
     match &t.accelerator {
         Some(u) => {
+            readquantifier(u.acc_count.clone(), "acc_count", &mut m);
+            readqualifier(u.acc_type.clone(), "acc_type", &mut m);
             readqualifierlist(u.acc_backend.clone(), "acc_backend", &mut m);
-            readqualifier(u.acc_architecture.clone(), "acc_architecture", &mut m);
-            readqualifier(u.acc_interconnect.clone(), "acc_interconnect", &mut m);
-            readqualifier(u.acc_memory_type.clone(), "acc_memory_type", &mut m);
-            readqualifier(u.acc_manufacturer.clone(), "acc_manufacturer", &mut m);
             readqualifier(u.acc_model.clone(), "acc_model", &mut m);
             readqualifier(u.acc_processor.clone(), "acc_processor", &mut m);
-            readqualifier(u.acc_type.clone(), "acc_type", &mut m);
-            readquantifier(u.acc_count.clone(), "acc_count", &mut m);
+            readquantifier(u.acc_processorcount.clone(), "acc_processorcount", &mut m);
+            readqualifier(u.acc_memorytype.clone(), "acc_memorytype", &mut m);
             readquantifier(u.acc_memorysize.clone(), "acc_memorysize", &mut m);
-            readquantifier(u.acc_processor_count.clone(), "acc_processor_count", &mut m);
+            readqualifier(u.acc_interconnect.clone(), "acc_interconnect", &mut m);
             readquantifier(u.acc_tdp.clone(), "acc_tdp", &mut m);
+            readqualifier(u.acc_architecture.clone(), "acc_architecture", &mut m);
+            readqualifier(u.acc_manufacturer.clone(), "acc_manufacturer", &mut m);
         }
         None => {}
     }
@@ -248,7 +249,7 @@ pub fn readplatformfeatures() -> PlatformFeatures {
 }
 
 pub fn add_qualifier(
-    m: &mut HashMap<PlatformParameter, Arc<dyn Feature + Send + Sync>>,
+    m: &mut HashMap<PlatformParameter, Arc<dyn Feature /* + Send +  Sync */>>,
     par: PlatformParameter,
     v: String,
 ) {
@@ -266,7 +267,7 @@ pub fn add_qualifier(
 }
 
 pub fn add_quantifier(
-    m: &mut HashMap<PlatformParameter, Arc<dyn Feature + Send + Sync>>,
+    m: &mut HashMap<PlatformParameter, Arc<dyn Feature /* + Send +  Sync */>>,
     par: PlatformParameter,
     v: i32,
 ) {

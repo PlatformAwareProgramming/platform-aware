@@ -4,6 +4,6 @@ use crate::AccInterconnect;
 
 create_feature_hierarchy! {  register_features ;
     "acc_interconnect" :
-    AccInterconnect ->
+    AccInterconnect :>
     GPUdirect;
 }

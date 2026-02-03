@@ -4,7 +4,7 @@ use crate::AccBackend;
 
 create_feature_hierarchy! {  register_features ;
     "acc_backend" :
-    AccBackend ->
-    OpenGL ->
+    AccBackend :>
+    OpenGL :>
     OpenGL_4_6;
 }

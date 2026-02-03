@@ -10,11 +10,11 @@ mod mymodule {
     use lazy_static::lazy_static;
             
     lazy_static! { static ref Vf:i32 = { 
-                let features1:[(PlatformParameter, Arc<dyn Feature + Send + Sync>); 1] = [("cpu_simd".to_string(), Arc::new(AVX512))];
-                let features2:[(PlatformParameter, Arc<dyn Feature + Send + Sync>); 2] = [("acc_backend".to_string(), Arc::new(CUDA)),
+                let features1:[(PlatformParameter, Arc<dyn Feature /* + Send +  Sync */>); 1] = [("cpu_simd".to_string(), Arc::new(AVX512))];
+                let features2:[(PlatformParameter, Arc<dyn Feature /* + Send +  Sync */>); 2] = [("acc_backend".to_string(), Arc::new(CUDA)),
                                                                                           ("acc_count".to_string(), Arc::new(3))];
-                let features3:[(PlatformParameter, Arc<dyn Feature + Send + Sync>); 1] = [("acc_backend".to_string(), Arc::new(CUDA))];
-                let features4:[(PlatformParameter, Arc<dyn Feature + Send + Sync>); 2] = [("acc_backend".to_string(), Arc::new(CUDA)),
+                let features3:[(PlatformParameter, Arc<dyn Feature /* + Send +  Sync */>); 1] = [("acc_backend".to_string(), Arc::new(CUDA))];
+                let features4:[(PlatformParameter, Arc<dyn Feature /* + Send +  Sync */>); 2] = [("acc_backend".to_string(), Arc::new(CUDA)),
                                                                             ("acc_count".to_string(), Arc::new(AtMost{val:5}))];
                 resolve(vec![HashMap::from(features1), 
                                 HashMap::from(features2), 
@@ -26,15 +26,15 @@ mod mymodule {
 
     lazy_static! {
         static ref Vg: i32 = {
-            let features1: [(PlatformParameter, Arc<dyn Feature + Send + Sync>); 1] =
+            let features1: [(PlatformParameter, Arc<dyn Feature /* + Send +  Sync */>); 1] =
                 [("cpu_simd".to_string(), Arc::new(AVX512))];
-            let features2: [(PlatformParameter, Arc<dyn Feature + Send + Sync>); 2] = [
+            let features2: [(PlatformParameter, Arc<dyn Feature /* + Send +  Sync */>); 2] = [
                 ("acc_backend".to_string(), Arc::new(CUDA)),
                 ("acc_count".to_string(), Arc::new(3)),
             ];
-            let features3: [(PlatformParameter, Arc<dyn Feature + Send + Sync>); 1] =
+            let features3: [(PlatformParameter, Arc<dyn Feature /* + Send +  Sync */>); 1] =
                 [("acc_backend".to_string(), Arc::new(CUDA))];
-            let features4: [(PlatformParameter, Arc<dyn Feature + Send + Sync>); 2] = [
+            let features4: [(PlatformParameter, Arc<dyn Feature /* + Send +  Sync */>); 2] = [
                 ("acc_backend".to_string(), Arc::new(CUDA)),
                 ("acc_count".to_string(), Arc::new(AtMost { val: 5 })),
             ];
