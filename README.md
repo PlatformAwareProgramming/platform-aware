@@ -1,9 +1,11 @@
 # The platform-aware crate
 Structured platform-aware programming for Rust.
 
-This is an experimental crate that supports the authors' research on structured platform-aware programming, in which Rust is one of the target languages.
+This is an experimental crate that supports the authors' research on structured platform-aware programming, with Rust as one of the target languages. It has a base crate, also experimental, called [configurable-features](https://github.com/PlatformAwareProgramming/configurable-features).
 
 It is the Rust equivalent of the [PlatformAware.jl](https://github.com/PlatformAwareProgramming/PlatformAware.jl) package for Julia.
+
+
 
 ## How it works
 
