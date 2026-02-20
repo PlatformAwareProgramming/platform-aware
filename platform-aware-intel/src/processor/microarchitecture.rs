@@ -1,9 +1,13 @@
 use platform_aware_features::{CPUMicroarchitecture, create_feature_hierarchy};
 
+create_feature_hierarchy! {
+    register_features_microarchitecture_1 ; "cpu_microarchitecture" : 
+    CPUMicroarchitecture :>  IntelMicroarchitecture;
+}
 
 create_feature_hierarchy! {
-    register_features_microarchitecture ; "cpu_microarchitecture" : 
-    CPUMicroarchitecture :> Bonnell &
+    register_features_microarchitecture_2 ; "cpu_microarchitecture" : 
+    IntelMicroarchitecture :> Bonnell &
                             Nehalem &
                             NehalemEP &
                             NehalemEX &
