@@ -913,3 +913,146 @@ create_feature_hierarchy! {
                           AMDEPYC_7573X &
                           AMDEPYC_7773X;
 }
+
+// ------------------------------------------------------------
+// ADDITIONS (new AMD processors from 2022+ only)
+// ------------------------------------------------------------
+
+// =====================
+// EPYC (4th Gen: 9004/8004)
+// =====================
+
+create_feature_hierarchy! {
+    register_features_model_amd_lines_epyc_4thgen_1 ; "cpu_model" :
+    AMDEPYC :> AMDEPYC_9004 &
+              AMDEPYC_9004_VCache &
+              AMDEPYC_8004 &
+              AMDEPYC_97x4;
+}
+
+create_feature_hierarchy! {
+    register_features_model_amd_models_epyc_9004_1 ; "cpu_model" :
+    AMDEPYC_9004 :> AMDEPYC_9654 &
+                    AMDEPYC_9554 &
+                    AMDEPYC_9454 &
+                    AMDEPYC_9354 &
+                    AMDEPYC_9254 &
+                    AMDEPYC_9174F &
+                    AMDEPYC_9124;
+}
+
+create_feature_hierarchy! {
+    register_features_model_amd_models_epyc_9004_vcache_1 ; "cpu_model" :
+    AMDEPYC_9004_VCache :> AMDEPYC_9684X &
+                           AMDEPYC_9584X &
+                           AMDEPYC_9484X &
+                           AMDEPYC_9384X &
+                           AMDEPYC_9284X;
+}
+
+create_feature_hierarchy! {
+    register_features_model_amd_models_epyc_97x4_1 ; "cpu_model" :
+    AMDEPYC_97x4 :> AMDEPYC_9754 &
+                    AMDEPYC_9734 &
+                    AMDEPYC_9654P &
+                    AMDEPYC_9634;
+}
+
+create_feature_hierarchy! {
+    register_features_model_amd_models_epyc_8004_1 ; "cpu_model" :
+    AMDEPYC_8004 :> AMDEPYC_8534P &
+                    AMDEPYC_8434P &
+                    AMDEPYC_8324P &
+                    AMDEPYC_8224P;
+}
+
+// =====================
+// Ryzen Desktop (Zen 4 / Zen 5 era)
+// =====================
+
+// Ryzen 7000 (desktop)
+create_feature_hierarchy! {
+    register_features_model_amd_models_ryzen_7000_desktop_1 ; "cpu_model" :
+    AMDRyzen_9 :> AMDRyzen_9_7950X3D &
+                 AMDRyzen_9_7950X &
+                 AMDRyzen_9_7900X3D &
+                 AMDRyzen_9_7900X &
+                 AMDRyzen_9_7900;
+}
+
+create_feature_hierarchy! {
+    register_features_model_amd_models_ryzen_7000_desktop_2 ; "cpu_model" :
+    AMDRyzen_7 :> AMDRyzen_7_7800X3D &
+                 AMDRyzen_7_7700X &
+                 AMDRyzen_7_7700;
+}
+
+create_feature_hierarchy! {
+    register_features_model_amd_models_ryzen_7000_desktop_3 ; "cpu_model" :
+    AMDRyzen_5 :> AMDRyzen_5_7600X &
+                 AMDRyzen_5_7600 &
+                 AMDRyzen_5_7500F;
+}
+
+// Ryzen 8000G (desktop APUs)
+create_feature_hierarchy! {
+    register_features_model_amd_models_ryzen_8000g_desktop_1 ; "cpu_model" :
+    AMDRyzen_7 :> AMDRyzen_7_8700G;
+}
+
+create_feature_hierarchy! {
+    register_features_model_amd_models_ryzen_8000g_desktop_2 ; "cpu_model" :
+    AMDRyzen_5 :> AMDRyzen_5_8600G &
+                 AMDRyzen_5_8500G;
+}
+
+create_feature_hierarchy! {
+    register_features_model_amd_models_ryzen_8000g_desktop_3 ; "cpu_model" :
+    AMDRyzen_3 :> AMDRyzen_3_8300G;
+}
+
+// Ryzen 9000 (desktop)
+create_feature_hierarchy! {
+    register_features_model_amd_models_ryzen_9000_desktop_1 ; "cpu_model" :
+    AMDRyzen_9 :> AMDRyzen_9_9950X &
+                 AMDRyzen_9_9900X;
+}
+
+create_feature_hierarchy! {
+    register_features_model_amd_models_ryzen_9000_desktop_2 ; "cpu_model" :
+    AMDRyzen_7 :> AMDRyzen_7_9700X;
+}
+
+create_feature_hierarchy! {
+    register_features_model_amd_models_ryzen_9000_desktop_3 ; "cpu_model" :
+    AMDRyzen_5 :> AMDRyzen_5_9600X &
+                 AMDRyzen_5_9600;
+}
+
+// =====================
+// Threadripper (sTR5) and Threadripper PRO (SP6)
+// =====================
+
+// Threadripper 7000 (HEDT)
+create_feature_hierarchy! {
+    register_features_model_amd_models_threadripper_7000_1 ; "cpu_model" :
+    AMDRyzen_Threadripper :> AMDRyzen_Threadripper_7960X &
+                            AMDRyzen_Threadripper_7970X &
+                            AMDRyzen_Threadripper_7980X;
+}
+
+// Threadripper PRO 7000 WX (workstation)
+create_feature_hierarchy! {
+    register_features_model_amd_lines_threadripper_pro_7000_wx_1 ; "cpu_model" :
+    AMDRyzen_PRO :> AMDRyzen_PRO_Threadripper_7000_WX;
+}
+
+create_feature_hierarchy! {
+    register_features_model_amd_models_threadripper_pro_7000_wx_1 ; "cpu_model" :
+    AMDRyzen_PRO_Threadripper_7000_WX :> AMDRyzen_Threadripper_PRO_7995WX &
+                                        AMDRyzen_Threadripper_PRO_7985WX &
+                                        AMDRyzen_Threadripper_PRO_7975WX &
+                                        AMDRyzen_Threadripper_PRO_7965WX &
+                                        AMDRyzen_Threadripper_PRO_7955WX &
+                                        AMDRyzen_Threadripper_PRO_7945WX;
+}
