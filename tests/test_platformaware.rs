@@ -122,40 +122,41 @@ mod mymodule {
 
 //use platform_aware_macros::platformaware;
 
-use platform_aware::configurable;
+use platform_aware::platformaware;
 
-#[configurable(f)]
+#[platformaware]
 mod mymodule2 {
-    use platform_aware_nvidia::{CUDA20, CUDA50, CUDA90, NVidiaH100};
+   // use platform_aware::*;
+   use platform_aware::{AtLeast, AVX512};
+    use platform_aware_nvidia::{CUDA30, CUDA20, CUDA50, CUDA90, NVidiaH100};
 
     // default version (fallback)
-    #[assumptions]
-    fn f(x: i64, y: i64, z: i64) -> i64 {
+    #[kernelversion]
+    pub fn f(x: i64, y: i64, z: i64) -> i64 {
         println!("fall-back actions x={x} y={y} z={z}");
         1i64
     }
 
-    #[assumptions(cpu_simd=AVX512)]
-    fn f(x: i64, y: i64, z: i64) -> i64 {
+    #[kernelversion(cpu_simd=AVX512)]
+    pub fn f(x: i64, y: i64, z: i64) -> i64 {
         println!("first version actions x={x} y={y} z={z}");
         2i64
     }
 
-    #[assumptions(acc_model=NVidiaH100)]
-    fn f(x: i64, y: i64, z: i64) -> i64 {
+    #[kernelversion(acc_model=NVidiaH100)]
+    pub fn f(x: i64, y: i64, z: i64) -> i64 {
         println!("second version actions x={x} y={y} z={z}");
         3i64
     }
 
-    //#[allow(unused_parens)]
-    #[assumptions(acc_count=(AtLeast{val:4}), acc_backend=CUDA20 , acc_cudacc=(AtLeast{val:50}))]
-    fn f(x: i64, y: i64, z: i64) -> i64 {
+    #[kernelversion(acc_count=AtLeast{val:4}, acc_backend=CUDA30 , acc_cudacc=AtLeast{val:50})]
+    pub fn f(x: i64, y: i64, z: i64) -> i64 {
         println!("third version actions x={x} y={y} z={z}");
         4i64
     }
 
-    #[assumptions(acc_count = 4)]
-    fn f(x: i64, y: i64, z: i64) -> i64 {
+    #[kernelversion(acc_count=AtLeast{val:4})]
+    pub fn f(x: i64, y: i64, z: i64) -> i64 {
         println!("fourth version actions x={x} y={y} z={z}");
         5i64
     }
@@ -163,5 +164,6 @@ mod mymodule2 {
 
 #[test]
 fn test_macro() {
-    mymodule2::f(1, 2, 3);
+    let r  = mymodule2::f(1, 2, 3);
+    assert_eq!(r, 4i64)
 }

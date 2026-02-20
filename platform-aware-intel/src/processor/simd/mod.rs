@@ -1,2 +1,2 @@
 #[allow(unused_imports)]
-use platform_aware_features::{Feature, PlatformParameter, CPUSIMD};
+use platform_aware_features::{Feature, PlatformParameter};
