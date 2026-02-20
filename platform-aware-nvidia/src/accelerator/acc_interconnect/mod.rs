@@ -1,8 +1,6 @@
 use platform_aware_features::{AccInterconnect, create_feature_hierarchy};
 
 
-
-
 create_feature_hierarchy! { register_features_1 ;
     "acc_interconnect" : 
     AccInterconnect :> 

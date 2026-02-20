@@ -128,7 +128,7 @@ use platform_aware::platformaware;
 mod mymodule2 {
    // use platform_aware::*;
    use platform_aware::{AtLeast, AVX512};
-    use platform_aware_nvidia::{CUDA30, CUDA20, CUDA50, CUDA90, NVidiaH100};
+    use platform_aware_nvidia::{CUDA30, CUDA20, CUDA50, CUDA90, NVIDIA_H100};
 
     // default version (fallback)
     #[kernelversion]
@@ -143,7 +143,7 @@ mod mymodule2 {
         2i64
     }
 
-    #[kernelversion(acc_model=NVidiaH100)]
+    #[kernelversion(acc_model=NVIDIA_H100)]
     pub fn f(x: i64, y: i64, z: i64) -> i64 {
         println!("second version actions x={x} y={y} z={z}");
         3i64
