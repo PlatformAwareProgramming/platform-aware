@@ -1,0 +1,14 @@
+[package]
+name = "heat-equation-ffi"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[dependencies]
+lazy_static = "1.5"
+platform-aware = { path = "../.." }
+platform-aware-amd = { path = "../../platform-aware-amd" }
+platform-aware-nvidia = { path = "../../platform-aware-nvidia" }
+
+# Keep this self-contained example out of the repository's parent workspace.
+[workspace]
