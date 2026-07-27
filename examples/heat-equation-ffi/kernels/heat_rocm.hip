@@ -8,8 +8,14 @@ extern "C" __global__ void heat_rocm_kernel(
         next[i] = u[i] + alpha * (u[i - 1] - 2.0f * u[i] + u[i + 1]);
 }
 
-// As on CUDA, this bridge exposes only the vendor kernel symbol to Rust.
-extern "C" void *heat_rocm_kernel_address() {
-    return reinterpret_cast<void *>(heat_rocm_kernel);
+// Keep HIP's C++ dim3 and kernel-argument ABI on the HIP side of the FFI
+// boundary. Rust only passes C-compatible pointers and scalar values.
+extern "C" int heat_rocm_launch(
+    const float *u, float *next, int n, float alpha,
+    unsigned int blocks, unsigned int threads)
+{
+    hipLaunchKernelGGL(
+        heat_rocm_kernel, dim3(blocks), dim3(threads), 0, 0,
+        u, next, n, alpha);
+    return static_cast<int>(hipGetLastError());
 }
-

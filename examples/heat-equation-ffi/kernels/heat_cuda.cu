@@ -8,9 +8,12 @@ extern "C" __global__ void heat_cuda_kernel(
         next[i] = u[i] + alpha * (u[i - 1] - 2.0f * u[i] + u[i + 1]);
 }
 
-// Rust can launch a CUDA function through cudaLaunchKernel but cannot name a
-// __global__ symbol. This tiny bridge only exposes that symbol's address.
-extern "C" void *heat_cuda_kernel_address() {
-    return reinterpret_cast<void *>(heat_cuda_kernel);
+// Keep CUDA's C++ dim3 and kernel-argument ABI on the CUDA side of the FFI
+// boundary. Rust only passes C-compatible pointers and scalar values.
+extern "C" int heat_cuda_launch(
+    const float *u, float *next, int n, float alpha,
+    unsigned int blocks, unsigned int threads)
+{
+    heat_cuda_kernel<<<blocks, threads>>>(u, next, n, alpha);
+    return static_cast<int>(cudaGetLastError());
 }
-

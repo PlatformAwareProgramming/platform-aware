@@ -8,8 +8,9 @@ with fixed zero boundary values. Stability requires `0 <= alpha <= 0.5`.
 The public kernel function is `heat_solver_equation::solve_heat`. The
 `#[platformaware]` macro gives it two versions: `acc_backend=CUDA` calls the
 CUDA Runtime API, while `acc_backend=ROCM` calls the HIP Runtime API through
-raw FFI. Only the GPU kernel symbol-address bridges are compiled as vendor
-source. There is no common GPU abstraction or generic GPU implementation.
+raw FFI. Small kernel-launch bridges are compiled as vendor source so that
+the C++ `dim3` and kernel-argument ABI does not cross Rust's FFI boundary.
+There is no common GPU abstraction or generic GPU implementation.
 
 Build once on a machine or build container that has both the CUDA and ROCm
 toolkits installed (`nvcc` and `hipcc` must be on `PATH`):

@@ -1,4 +1,28 @@
-use std::{ffi::c_void, mem::size_of, ptr};
+use platform_aware::platformaware;
+
+#[platformaware]
+mod heat_solver_equation {
+    use platform_aware_amd::ROCM;
+    use platform_aware_nvidia::CUDA;
+
+    #[kernelversion(acc_backend=CUDA)]
+    pub fn solve_heat(n: usize, steps: usize, alpha: f32) -> Vec<f32> {
+        super::solve_heat_cuda_impl(n, steps, alpha)
+    }
+
+    #[kernelversion(acc_backend=ROCM)]
+    pub fn solve_heat(n: usize, steps: usize, alpha: f32) -> Vec<f32> {
+        super::solve_heat_rocm_impl(n, steps, alpha)
+    }
+}
+
+fn main() {
+    let answer = heat_solver_equation::solve_heat(1024, 100, 0.4);
+    println!("centre after 100 steps: {}", answer[512]);
+}
+
+
+use std::{mem::size_of, ptr};
 
 const HOST_TO_DEVICE: i32 = 1;
 const DEVICE_TO_HOST: i32 = 2;
@@ -32,24 +56,9 @@ fn solve_heat_cuda_impl(n: usize, steps: usize, alpha: f32) -> Vec<f32> {
         let blocks = ((n as u32 - 2) + threads - 1) / threads;
         for _ in 0..steps {
             // Dirichlet boundary values u[0] = u[n-1] = 0 remain untouched.
-            let mut n_arg = n as i32;
-            let mut alpha_arg = alpha;
-            let mut args = [
-                (&mut u as *mut *mut c_void).cast(),
-                (&mut next as *mut *mut c_void).cast(),
-                (&mut n_arg as *mut i32).cast(),
-                (&mut alpha_arg as *mut f32).cast(),
-            ];
             check(
-                cuda::cudaLaunchKernel(
-                    cuda::heat_cuda_kernel_address(),
-                    Dim3::x(blocks),
-                    Dim3::x(threads),
-                    0,
-                    ptr::null_mut(),
-                    args.as_mut_ptr(),
-                ),
-                "cudaLaunchKernel",
+                cuda::heat_cuda_launch(u.cast(), next.cast(), n as i32, alpha, blocks, threads),
+                "heat_cuda_launch",
             );
             std::mem::swap(&mut u, &mut next);
         }
@@ -82,24 +91,9 @@ fn solve_heat_rocm_impl(n: usize, steps: usize, alpha: f32) -> Vec<f32> {
         let threads = 256_u32;
         let blocks = ((n as u32 - 2) + threads - 1) / threads;
         for _ in 0..steps {
-            let mut n_arg = n as i32;
-            let mut alpha_arg = alpha;
-            let mut args = [
-                (&mut u as *mut *mut c_void).cast(),
-                (&mut next as *mut *mut c_void).cast(),
-                (&mut n_arg as *mut i32).cast(),
-                (&mut alpha_arg as *mut f32).cast(),
-            ];
             check(
-                rocm::hipLaunchKernel(
-                    rocm::heat_rocm_kernel_address(),
-                    Dim3::x(blocks),
-                    Dim3::x(threads),
-                    args.as_mut_ptr(),
-                    0,
-                    ptr::null_mut(),
-                ),
-                "hipLaunchKernel",
+                rocm::heat_rocm_launch(u.cast(), next.cast(), n as i32, alpha, blocks, threads),
+                "heat_rocm_launch",
             );
             std::mem::swap(&mut u, &mut next);
         }
@@ -114,36 +108,21 @@ fn solve_heat_rocm_impl(n: usize, steps: usize, alpha: f32) -> Vec<f32> {
     host
 }
 
-#[repr(C)]
-#[derive(Clone, Copy)]
-struct Dim3 {
-    x: u32,
-    y: u32,
-    z: u32,
-}
-
-impl Dim3 {
-    fn x(x: u32) -> Self {
-        Self { x, y: 1, z: 1 }
-    }
-}
-
 mod cuda {
     use std::ffi::c_void;
     extern "C" {
-        pub fn heat_cuda_kernel_address() -> *const c_void;
+        pub fn heat_cuda_launch(
+            u: *const f32,
+            next: *mut f32,
+            n: i32,
+            alpha: f32,
+            blocks: u32,
+            threads: u32,
+        ) -> i32;
         pub fn cudaMalloc(p: *mut *mut c_void, bytes: usize) -> i32;
         pub fn cudaFree(p: *mut c_void) -> i32;
         pub fn cudaMemcpy(dst: *mut c_void, src: *const c_void, bytes: usize, kind: i32) -> i32;
         pub fn cudaMemset(dst: *mut c_void, value: i32, bytes: usize) -> i32;
-        pub fn cudaLaunchKernel(
-            f: *const c_void,
-            grid: super::Dim3,
-            block: super::Dim3,
-            shared: usize,
-            stream: *mut c_void,
-            args: *mut *mut c_void,
-        ) -> i32;
         pub fn cudaDeviceSynchronize() -> i32;
     }
 }
@@ -151,42 +130,19 @@ mod cuda {
 mod rocm {
     use std::ffi::c_void;
     extern "C" {
-        pub fn heat_rocm_kernel_address() -> *const c_void;
+        pub fn heat_rocm_launch(
+            u: *const f32,
+            next: *mut f32,
+            n: i32,
+            alpha: f32,
+            blocks: u32,
+            threads: u32,
+        ) -> i32;
         pub fn hipMalloc(p: *mut *mut c_void, bytes: usize) -> i32;
         pub fn hipFree(p: *mut c_void) -> i32;
         pub fn hipMemcpy(dst: *mut c_void, src: *const c_void, bytes: usize, kind: i32) -> i32;
         pub fn hipMemset(dst: *mut c_void, value: i32, bytes: usize) -> i32;
-        pub fn hipLaunchKernel(
-            f: *const c_void,
-            grid: super::Dim3,
-            block: super::Dim3,
-            args: *mut *mut c_void,
-            shared: usize,
-            stream: *mut c_void,
-        ) -> i32;
         pub fn hipDeviceSynchronize() -> i32;
     }
 }
 
-use platform_aware::platformaware;
-
-#[platformaware]
-mod heat_solver_equation {
-    use platform_aware_amd::ROCM;
-    use platform_aware_nvidia::CUDA;
-
-    #[kernelversion(acc_backend=CUDA)]
-    pub fn solve_heat(n: usize, steps: usize, alpha: f32) -> Vec<f32> {
-        super::solve_heat_cuda_impl(n, steps, alpha)
-    }
-
-    #[kernelversion(acc_backend=ROCM)]
-    pub fn solve_heat(n: usize, steps: usize, alpha: f32) -> Vec<f32> {
-        super::solve_heat_rocm_impl(n, steps, alpha)
-    }
-}
-
-fn main() {
-    let answer = heat_solver_equation::solve_heat(1024, 100, 0.4);
-    println!("centre after 100 steps: {}", answer[512]);
-}
