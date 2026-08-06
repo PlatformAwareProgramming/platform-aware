@@ -28,9 +28,17 @@ LIBRARY_PATH=/usr/local/cuda/lib64:/opt/rocm/lib cargo build --release
 
 The platform description must identify the backend available on the machine,
 for example `acc_backend = ["CUDA"]` or `acc_backend = ["ROCM"]` in the
-accelerator section of `Platform.toml`. The same executable contains both
-implementations and selects the matching version when it starts; no Cargo
-feature or recompilation is involved in that selection.
+accelerator section of `Platform.toml`. The build creates the executable and
+two backend plugins beside it: `libheat_cuda.so` and `libheat_rocm.so`. The
+executable selects the matching version and dynamically opens only that
+version's plugin, so it has no startup dependency on either vendor runtime.
+No Cargo feature or recompilation is involved in that selection.
+
+Only the selected plugin and its vendor runtime need to be installed. For
+example, an AMD installation can contain the executable and
+`libheat_rocm.so`, without `libheat_cuda.so` or the CUDA runtime. By default,
+plugins are found beside the executable. `HEAT_CUDA_LIBRARY` and
+`HEAT_ROCM_LIBRARY` can override their respective full paths.
 
 Run that same executable on either platform after placing the appropriate
 `Platform.toml` in the working directory:
