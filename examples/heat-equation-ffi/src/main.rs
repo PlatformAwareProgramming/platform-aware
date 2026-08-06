@@ -4,14 +4,36 @@ use platform_aware::platformaware;
 mod heat_solver_equation {
     use platform_aware_amd::ROCM;
     use platform_aware_nvidia::CUDA;
+    use platform_aware::{AtLeast};
 
-    #[kernelversion(acc_backend=CUDA)]
+    // Fallback: explicit finite differences executed sequentially on the CPU.
+    #[kernelversion]
     pub fn solve_heat(n: usize, steps: usize, alpha: f32) -> Vec<f32> {
+        println!("fall-back version");
+        assert!(n >= 3 && (0.0..=0.5).contains(&alpha));
+        let mut u = super::initial_grid(n);
+        let mut next = vec![0.0; n];
+
+        for _ in 0..steps {
+            // Fixed Dirichlet boundary conditions: u[0] = u[n - 1] = 0.
+            for i in 1..n - 1 {
+                next[i] = u[i] + alpha * (u[i - 1] - 2.0 * u[i] + u[i + 1]);
+            }
+            std::mem::swap(&mut u, &mut next);
+        }
+
+        u
+    }
+
+    #[kernelversion(acc_count=AtLeast{val: 1}, acc_backend=CUDA)]
+    pub fn solve_heat(n: usize, steps: usize, alpha: f32) -> Vec<f32> {
+        println!("CUDA version");
         super::solve_heat_cuda_impl(n, steps, alpha)
     }
 
-    #[kernelversion(acc_backend=ROCM)]
+    #[kernelversion(acc_count=AtLeast{val: 1}, acc_backend=ROCM)]
     pub fn solve_heat(n: usize, steps: usize, alpha: f32) -> Vec<f32> {
+        println!("ROCM version");
         super::solve_heat_rocm_impl(n, steps, alpha)
     }
 }
