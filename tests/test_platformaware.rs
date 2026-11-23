@@ -167,3 +167,122 @@ fn test_macro() {
     let r  = mymodule2::f(1, 2, 3);
     assert_eq!(r, 4i64)
 }
+
+#[platformaware]
+mod taxonomy_dispatch_mod {
+    use platform_aware::{CPUISA, ISA_x86_64_v3};
+    use platform_aware_intel::{IntelCore, KabyLake};
+    use platform_aware_nvidia::NVIDIA;
+
+    #[kernelversion]
+    pub fn check_platform() -> &'static str {
+        "fallback"
+    }
+
+    #[kernelversion(cpu_isa = CPUISA)]
+    pub fn check_platform() -> &'static str {
+        "generic_isa"
+    }
+
+    #[kernelversion(
+        cpu_model = IntelCore,
+        cpu_microarchitecture = KabyLake,
+        cpu_isa = ISA_x86_64_v3,
+        acc_manufacturer = NVIDIA
+    )]
+    pub fn check_platform() -> &'static str {
+        "intel_core_kabylake_nvidia"
+    }
+}
+
+#[test]
+fn test_platform_toml_resolves_vendor_taxonomies_without_ctor_race() {
+    assert_eq!(
+        taxonomy_dispatch_mod::check_platform(),
+        "intel_core_kabylake_nvidia"
+    );
+}
+
+pub trait ExternalVecKernel {
+    fn sum_scaled(&self, factor: f64) -> f64;
+}
+
+pub trait TraitA {
+    type Output;
+    fn compute<const K: usize>(&self, x: i64) -> Self::Output;
+}
+
+pub trait TraitB {
+    fn compute(&self, x: i64) -> i64;
+}
+
+pub struct DualTarget {
+    pub base: i64,
+}
+
+#[platformaware]
+mod trait_extensibility_mod {
+    use super::{DualTarget, ExternalVecKernel, TraitA, TraitB};
+    use platform_aware::AVX512;
+    use platform_aware_nvidia::CUDA;
+
+    // Implementing a k-method trait for an external std type (Vec<f64>) —
+    // must compile without orphan-rule E0116 errors.
+    impl ExternalVecKernel for Vec<f64> {
+        #[kernelversion]
+        fn sum_scaled(&self, factor: f64) -> f64 {
+            self.iter().map(|v| v * factor).sum()
+        }
+    }
+
+    #[platform]
+    mod cpu_simd {
+        impl ExternalVecKernel for Vec<f64> {
+            #[kernelversion(cpu_simd = AVX512)]
+            fn sum_scaled(&self, factor: f64) -> f64 {
+                self.iter().map(|v| v * factor).sum::<f64>() + 100.0
+            }
+        }
+    }
+
+    // Two distinct traits with a homonymous k-method `compute` on the same type —
+    // must compile without E0592 duplicate definition errors.
+    impl TraitA for DualTarget {
+        type Output = i64;
+
+        #[kernelversion]
+        fn compute<const K: usize>(&self, x: i64) -> Self::Output {
+            self.base + x + K as i64
+        }
+
+        #[kernelversion(cpu_simd = AVX512)]
+        fn compute<const K: usize>(&self, x: i64) -> Self::Output {
+            (self.base + x) * K as i64
+        }
+    }
+
+    impl TraitB for DualTarget {
+        #[kernelversion]
+        fn compute(&self, x: i64) -> i64 {
+            self.base - x
+        }
+
+        #[kernelversion(acc_backend = CUDA)]
+        fn compute(&self, x: i64) -> i64 {
+            self.base + x * 10
+        }
+    }
+}
+
+#[test]
+fn test_k_methods_support_external_types_and_avoid_cross_trait_collisions() {
+    let data = vec![1.0_f64, 2.0, 3.0];
+    // Platform.toml includes AVX512 -> selects the #[platform] cpu_simd variant (+ 100.0)
+    assert_eq!(data.sum_scaled(2.0), 112.0);
+
+    let target = DualTarget { base: 5 };
+    // TraitA selects AVX512 variant: (5 + 3) * 4 = 32
+    assert_eq!(TraitA::compute::<4>(&target, 3), 32);
+    // TraitB selects CUDA variant (Platform.toml has CUDA50 <: CUDA): 5 + 3 * 10 = 35
+    assert_eq!(TraitB::compute(&target, 3), 35);
+}

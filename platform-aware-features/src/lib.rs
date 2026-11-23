@@ -10,11 +10,6 @@ use ctor::ctor;
 
 #[ctor]
 fn module_initializer() {
-    
-    let mut m0 = CURRENT_FEATURES.lock().unwrap();
-    let m = readplatformfeatures();
-   
-    m0.extend(m.into_iter());
-
+    register_feature_loader(readplatformfeatures);
 }
 
