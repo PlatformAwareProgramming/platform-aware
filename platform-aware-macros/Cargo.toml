@@ -11,7 +11,7 @@ syn = {version="2.0.98", features = ["full", "extra-traits"]}
 lazy_static = "1.5.0"
 proc-macro2 = "1.0.94"
 ctor = "0.4.2"
-configurable-features = {path = "../../configurable-features"}
+configurable-features = {path = "../configurable-features"}
 
 [lib]
 proc-macro = true

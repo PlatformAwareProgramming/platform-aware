@@ -1,7 +1,17 @@
 [workspace]
 resolver="2"
 members = [
-    ".", "platform-aware-amd", "platform-aware-intel", "platform-aware-nvidia", "platform-aware-macros", "platform-aware-features"]
+    ".",
+    "platform-aware-amd",
+    "platform-aware-intel",
+    "platform-aware-nvidia",
+    "platform-aware-macros",
+    "platform-aware-features",
+    "configurable-features",
+    "configurable-features/configurable-macros",
+    "configurable-features/configurable-internal",
+]
+exclude = ["examples/heat-equation-ffi"]
 
 [package]
 name = "platform-aware"
