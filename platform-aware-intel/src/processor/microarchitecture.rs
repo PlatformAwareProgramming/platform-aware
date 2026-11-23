@@ -41,6 +41,7 @@ create_feature_hierarchy! {
                             Kittson &
                             Skylake &
                             SkylakeSP &
+                            KabyLake &
                             Goldmont &
                             ApolloLake &
                             Denverton &

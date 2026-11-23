@@ -1,11 +1,12 @@
 
-use platform_aware_features::{AccModel, create_feature_hierarchy};
+use platform_aware_features::create_feature_hierarchy;
+use super::IntelAccelerator;
 
 // ------------------------------------------------------------------
 // Xeon Phi family
 // ------------------------------------------------------------------
 
-create_feature_hierarchy! { register_features_model_xeonphi_1 ; "acc_model" : AccModel :> IntelXeonPhi; }
+create_feature_hierarchy! { register_features_model_xeonphi_1 ; "acc_model" : IntelAccelerator :> IntelXeonPhi; }
 
 // ------------------------------------------------------------------
 // Xeon Phi series
@@ -13,9 +14,9 @@ create_feature_hierarchy! { register_features_model_xeonphi_1 ; "acc_model" : Ac
 
 create_feature_hierarchy! {
     register_features_model_xeonphi_2 ; "acc_model" :
-    AccModel :> IntelXeonPhi_72x5 &
-                IntelXeonPhi_x100 &
-                IntelXeonPhi_x200;
+    IntelXeonPhi :> IntelXeonPhi_72x5 &
+                    IntelXeonPhi_x100 &
+                    IntelXeonPhi_x200;
 }
 
 // ------------------------------------------------------------------

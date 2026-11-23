@@ -6,7 +6,7 @@ create_feature_hierarchy! { register_features_1 ; "acc_backend" : None :> AccBac
 create_feature_hierarchy! { register_features_2 ; "acc_type" : None :> AccType;}
 create_feature_hierarchy! { register_features_3 ; "acc_interconnect" : None :> AccInterconnect;}
 create_feature_hierarchy! { register_features_4 ; "acc_manufacturer" : None :> AccManufacturer;}
-create_feature_hierarchy! { register_features_5 ; "acc_memorytype" : None :> AccMemoryType;}
+pub use crate::MemoryType as AccMemoryType;
 create_feature_hierarchy! { register_features_6 ; "acc_architecture" : None :> AccArchitecture;}
 create_feature_hierarchy! { register_features_7 ; "acc_model" : None :> AccModel;}
 create_feature_hierarchy! { register_features_8 ; "acc_processor" : None :> AccProcessor;}

@@ -12,17 +12,17 @@ create_feature_hierarchy! { register_features_model_pentium_1 ; "cpu_model" : CP
 
 create_feature_hierarchy! {
     register_features_model_pentium_2 ; "cpu_model" :
-    CPUModel :> IntelPentium_Gold &
-                IntelPentium_Silver &
-                IntelPentium_D &
-                IntelPentium_G &
-                IntelPentium_J &
-                IntelPentium_N &
-                IntelPentium_6800 &
-                IntelPentium_4000 &
-                IntelPentium_3000 &
-                IntelPentium_2000 &
-                IntelPentium_1000;
+    IntelPentium :> IntelPentium_Gold &
+                    IntelPentium_Silver &
+                    IntelPentium_D &
+                    IntelPentium_G &
+                    IntelPentium_J &
+                    IntelPentium_N &
+                    IntelPentium_6800 &
+                    IntelPentium_4000 &
+                    IntelPentium_3000 &
+                    IntelPentium_2000 &
+                    IntelPentium_1000;
 }
 
 // ------------------------------------------------------------------

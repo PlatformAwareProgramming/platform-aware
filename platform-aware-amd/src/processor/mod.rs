@@ -11,10 +11,9 @@ create_feature_hierarchy! { register_features_model_amd_1 ; "cpu_manufacturer" :
 
 // ------------------------------------------------------------
 // AMD Microarchitectures
-// (kept as CPUModel nodes to mirror the Atom translation style)
 // ------------------------------------------------------------
 create_feature_hierarchy! {
-    register_features_model_amd_microarch_1 ; "cpu_microarchitecture" : CPUModel :> AMDMicroarchitecture; }
+    register_features_model_amd_microarch_1 ; "cpu_microarchitecture" : CPUMicroarchitecture :> AMDMicroarchitecture; }
 
 create_feature_hierarchy! {
     register_features_model_amd_microarch_2 ; "cpu_microarchitecture" :
@@ -36,6 +35,11 @@ create_feature_hierarchy! {
                            Excavator &
                            Jaguar &
                            Puma;
+}
+
+create_feature_hierarchy! {
+    register_features_model_amd_microarch_zen3 ; "cpu_microarchitecture" :
+    Zen3 :> Milan;
 }
 
 

@@ -56,6 +56,12 @@ create_feature_hierarchy! {
                        NVIDIA_GB200;
 }
 
+create_feature_hierarchy! {
+    register_features_model_nvidia_a100_variants ; "acc_model" :
+    NVIDIA_A100 :> NVIDIA_A100_40GB &
+                   NVIDIA_A100_80GB;
+}
+
 // ------------------------------------------------------------
 // GPU models (Tesla)
 // ------------------------------------------------------------
@@ -423,6 +429,11 @@ create_feature_hierarchy! {
                        NVIDIAGeForce_MX450 &
                        NVIDIAGeForce_MX550 &
                        NVIDIAGeForce_MX570;
+}
+
+create_feature_hierarchy! {
+    register_features_model_nvidia_geforce_models_mx570_1 ; "acc_model" :
+    NVIDIAGeForce_MX570 :> NVIDIAGeForce_MX570A;
 }
 
 create_feature_hierarchy! {

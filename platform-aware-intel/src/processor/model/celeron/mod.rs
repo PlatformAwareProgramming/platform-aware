@@ -12,16 +12,16 @@ create_feature_hierarchy! { register_features_model_celeron_1 ; "cpu_model" : CP
 
 create_feature_hierarchy! {
     register_features_model_celeron_2 ; "cpu_model" :
-    CPUModel :> IntelCeleron_G &
-                IntelCeleron_J &
-                IntelCeleron_N &
-                IntelCeleron_7000 &
-                IntelCeleron_6000 &
-                IntelCeleron_5000 &
-                IntelCeleron_4000 &
-                IntelCeleron_3000 &
-                IntelCeleron_2000 &
-                IntelCeleron_1000;
+    IntelCeleron :> IntelCeleron_G &
+                    IntelCeleron_J &
+                    IntelCeleron_N &
+                    IntelCeleron_7000 &
+                    IntelCeleron_6000 &
+                    IntelCeleron_5000 &
+                    IntelCeleron_4000 &
+                    IntelCeleron_3000 &
+                    IntelCeleron_2000 &
+                    IntelCeleron_1000;
 }
 
 // ------------------------------------------------------------------

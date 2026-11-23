@@ -8,14 +8,14 @@ create_feature_hierarchy! { register_features_model_atom_1 ; "cpu_model" : CPUMo
 
 create_feature_hierarchy! { 
     register_features_model_atom_2 ; "cpu_model" : 
-    CPUModel :> IntelAtom_C & 
-                IntelAtom_D & 
-                IntelAtom_E & 
-                IntelAtom_N & 
-                IntelAtom_P & 
-                IntelAtom_S & 
-                IntelAtom_X & 
-                IntelAtom_Z;
+    IntelAtom :> IntelAtom_C & 
+                 IntelAtom_D & 
+                 IntelAtom_E & 
+                 IntelAtom_N & 
+                 IntelAtom_P & 
+                 IntelAtom_S & 
+                 IntelAtom_X & 
+                 IntelAtom_Z;
 }
 
 // Atom Models

@@ -12,12 +12,12 @@ create_feature_hierarchy! { register_features_model_itanium_1 ; "cpu_model" : CP
 
 create_feature_hierarchy! {
     register_features_model_itanium_2 ; "cpu_model" :
-    CPUModel :> IntelItanium_9700 &
-                IntelItanium_9500 &
-                IntelItanium_9300 &
-                IntelItanium_9100 &
-                IntelItanium_9000 &
-                IntelItanium_FSB;
+    IntelItanium :> IntelItanium_9700 &
+                    IntelItanium_9500 &
+                    IntelItanium_9300 &
+                    IntelItanium_9100 &
+                    IntelItanium_9000 &
+                    IntelItanium_FSB;
 }
 
 create_feature_hierarchy! {

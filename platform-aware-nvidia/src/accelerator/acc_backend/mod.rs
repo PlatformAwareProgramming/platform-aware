@@ -14,7 +14,7 @@ create_feature_hierarchy! {
     CUDA70 :>       // for CUDA 7.0
     CUDA80 :>       // for CUDA 8.0
     CUDA90 :>       // for CUDA 9.0
-    CUDA91 :>       // for CUDA 9.1AMD_EPYC_7513
+    CUDA91 :>       // for CUDA 9.1
     CUDA92 :>       // for CUDA 9.2
     CUDA100 :>       // for CUDA 10.0
     CUDA101 :>       // for CUDA 10.1
@@ -31,5 +31,11 @@ create_feature_hierarchy! {
     CUDA120 :>       // for CUDA 12.0
     CUDA121 :>       // for CUDA 12.1
     CUDA122;   
+}
+
+create_feature_hierarchy! {
+    register_features_cuda120_alias ;
+    "acc_backend" :
+    CUDA120 :> CUDA_12_0;
 }
 

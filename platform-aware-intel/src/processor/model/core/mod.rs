@@ -14,12 +14,12 @@ create_feature_hierarchy! { register_features_model_core_1 ; "cpu_model" : CPUMo
 
 create_feature_hierarchy! {
     register_features_model_core_2 ; "cpu_model" :
-    CPUModel :> IntelCore_X &
-                IntelCore_i9 &
-                IntelCore_i7 &
-                IntelCore_i5 &
-                IntelCore_i3 &
-                IntelCore_M;
+    IntelCore :> IntelCore_X &
+                 IntelCore_i9 &
+                 IntelCore_i7 &
+                 IntelCore_i5 &
+                 IntelCore_i3 &
+                 IntelCore_M;
 }
 
 // ------------------------------------------------------------------
@@ -1166,7 +1166,7 @@ create_feature_hierarchy! {
 
 create_feature_hierarchy! {
     register_features_model_core_ultra_1 ; "cpu_model" :
-    CPUModel :> IntelCore_Ultra;
+    IntelCore :> IntelCore_Ultra;
 }
 
 create_feature_hierarchy! {

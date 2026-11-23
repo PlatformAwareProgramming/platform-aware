@@ -15,3 +15,7 @@ create_feature_hierarchy! {  register_features ;
     PCIe_v6 :>
     PCIe_v7;
 }
+create_feature_hierarchy! {  register_features_lanes ;
+    "acc_interconnect" :
+    PCIe_v4 :> PCIe_4_0_x16;
+}
