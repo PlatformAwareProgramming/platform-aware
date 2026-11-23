@@ -1,0 +1,20 @@
+[package]
+name = "micro-tensor-engine"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[features]
+default = []
+# Static compile-time multithreading toggle (used to contrast static cfg builds
+# against a single dynamic platform-aware binary).
+static-multicore = []
+
+[dependencies]
+platform-aware = { path = "../.." }
+platform-aware-amd = { path = "../../platform-aware-amd" }
+platform-aware-intel = { path = "../../platform-aware-intel" }
+
+# Keep this self-contained benchmark crate out of the parent workspace so it
+# can be compiled independently with different static RUSTFLAGS / features.
+[workspace]

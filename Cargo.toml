@@ -11,7 +11,7 @@ members = [
     "configurable-features/configurable-macros",
     "configurable-features/configurable-internal",
 ]
-exclude = ["examples/heat-equation-ffi"]
+exclude = ["examples/heat-equation-ffi", "examples/micro-tensor-engine"]
 
 [package]
 name = "platform-aware"
