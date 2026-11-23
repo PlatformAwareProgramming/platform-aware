@@ -1,12 +1,35 @@
 use std::{
     env,
+    io::ErrorKind,
     path::{Path, PathBuf},
     process::Command,
 };
 
 fn run(mut command: Command, tool: &str) {
-    let status = command.status().unwrap_or_else(|e| panic!("cannot execute {tool}: {e}"));
+    let status = command
+        .status()
+        .unwrap_or_else(|e| panic!("cannot execute {tool}: {e}"));
     assert!(status.success(), "{tool} failed with status {status}");
+}
+
+fn try_run(mut command: Command, tool: &str, plugin_name: &str) -> bool {
+    match command.status() {
+        Ok(status) => {
+            assert!(
+                status.success(),
+                "{tool} failed while building {plugin_name} with status {status}"
+            );
+            true
+        }
+        Err(e) if e.kind() == ErrorKind::NotFound => {
+            println!(
+                "cargo:warning={tool} not found on PATH; skipping {plugin_name}. \
+                 CPU fallback and other built backends remain available."
+            );
+            false
+        }
+        Err(e) => panic!("cannot execute {tool}: {e}"),
+    }
 }
 
 fn hip_gcc_install_dir() -> Option<PathBuf> {
@@ -44,54 +67,61 @@ fn profile_dir(out: &Path) -> &Path {
 fn main() {
     let out = PathBuf::from(env::var_os("OUT_DIR").unwrap());
     let destination = profile_dir(&out);
+    println!("cargo:rustc-env=HEAT_PLUGIN_DIR={}", destination.display());
     println!("cargo:rerun-if-env-changed=CXX");
     println!("cargo:rerun-if-env-changed=HIP_GCC_INSTALL_DIR");
     println!("cargo:rerun-if-env-changed=CUDA_PATH");
     println!("cargo:rerun-if-env-changed=ROCM_PATH");
 
-    let cuda_object = out.join("heat_cuda.o");
-    let mut nvcc = Command::new("nvcc");
-    nvcc.args(["-c", "kernels/heat_cuda.cu", "-o"]).arg(&cuda_object).args([
-        "-O2",
-        "--compiler-options",
-        "-fPIC",
-    ]);
-    run(nvcc, "nvcc");
-    let mut cuda_linker = Command::new(env::var_os("CXX").unwrap_or_else(|| "c++".into()));
-    cuda_linker
-        .args(["-shared", "-o"])
-        .arg(destination.join("libheat_cuda.so"))
-        .arg(&cuda_object)
-        .arg("-lcudart");
-    if let Some(directory) = sdk_library_dir(
-        "CUDA_PATH",
-        "/usr/local/cuda",
-        &["lib64", "targets/x86_64-linux/lib"],
-    ) {
-        cuda_linker.arg(format!("-L{}", directory.display()));
+    // Compile CUDA and ROCm kernels into separate shared-library plugins beside the executable.
+    // The main executable is not directly linked against cudart or amdhip64.
+    {
+        let cuda_object = out.join("heat_cuda.o");
+        let mut nvcc = Command::new("nvcc");
+        nvcc.args(["-c", "kernels/heat_cuda.cu", "-o"])
+            .arg(&cuda_object)
+            .args(["-O2", "--compiler-options", "-fPIC"]);
+        if try_run(nvcc, "nvcc", "libheat_cuda.so") {
+            let mut cuda_linker = Command::new(env::var_os("CXX").unwrap_or_else(|| "c++".into()));
+            cuda_linker
+                .args(["-shared", "-o"])
+                .arg(destination.join("libheat_cuda.so"))
+                .arg(&cuda_object)
+                .arg("-lcudart");
+            if let Some(directory) = sdk_library_dir(
+                "CUDA_PATH",
+                "/usr/local/cuda",
+                &["lib64", "targets/x86_64-linux/lib"],
+            ) {
+                cuda_linker.arg(format!("-L{}", directory.display()));
+            }
+            run(cuda_linker, "C++ linker for CUDA plugin");
+        }
+        println!("cargo:rerun-if-changed=kernels/heat_cuda.cu");
     }
-    run(cuda_linker, "C++ linker for CUDA plugin");
-    println!("cargo:rerun-if-changed=kernels/heat_cuda.cu");
 
-    let mut hipcc = Command::new("hipcc");
-    if let Some(directory) = hip_gcc_install_dir() {
-        hipcc.arg(format!("--gcc-install-dir={}", directory.display()));
+    {
+        let mut hipcc = Command::new("hipcc");
+        if let Some(directory) = hip_gcc_install_dir() {
+            hipcc.arg(format!("--gcc-install-dir={}", directory.display()));
+        }
+        let rocm_object = out.join("heat_rocm.o");
+        hipcc
+            .args(["-c", "kernels/heat_rocm.hip", "-o"])
+            .arg(&rocm_object)
+            .args(["-O2", "-fPIC"]);
+        if try_run(hipcc, "hipcc", "libheat_rocm.so") {
+            let mut rocm_linker = Command::new(env::var_os("CXX").unwrap_or_else(|| "c++".into()));
+            rocm_linker
+                .args(["-shared", "-o"])
+                .arg(destination.join("libheat_rocm.so"))
+                .arg(&rocm_object)
+                .args(["-lamdhip64", "-lstdc++"]);
+            if let Some(directory) = sdk_library_dir("ROCM_PATH", "/opt/rocm", &["lib", "lib64"]) {
+                rocm_linker.arg(format!("-L{}", directory.display()));
+            }
+            run(rocm_linker, "C++ linker for ROCm plugin");
+        }
+        println!("cargo:rerun-if-changed=kernels/heat_rocm.hip");
     }
-    let rocm_object = out.join("heat_rocm.o");
-    hipcc
-        .args(["-c", "kernels/heat_rocm.hip", "-o"])
-        .arg(&rocm_object)
-        .args(["-O2", "-fPIC"]);
-    run(hipcc, "hipcc");
-    let mut rocm_linker = Command::new(env::var_os("CXX").unwrap_or_else(|| "c++".into()));
-    rocm_linker
-        .args(["-shared", "-o"])
-        .arg(destination.join("libheat_rocm.so"))
-        .arg(&rocm_object)
-        .args(["-lamdhip64", "-lstdc++"]);
-    if let Some(directory) = sdk_library_dir("ROCM_PATH", "/opt/rocm", &["lib", "lib64"]) {
-        rocm_linker.arg(format!("-L{}", directory.display()));
-    }
-    run(rocm_linker, "C++ linker for ROCm plugin");
-    println!("cargo:rerun-if-changed=kernels/heat_rocm.hip");
 }
