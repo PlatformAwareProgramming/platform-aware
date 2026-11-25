@@ -17,9 +17,11 @@ pub trait TensorOps {
 
 #[platformaware]
 pub mod ops {
-    use platform_aware::{AVX2, AVX512, AtLeast, SSE_4_2};
+    use platform_aware::{AVX2, AVX512, AtLeast, SSE_4_2, x86_64_v3, x86_64_v4};
+    use platform_aware_nvidia::{CUDA, Turing};
 
     use super::{Tensor, TensorOps};
+    use crate::cuda_backend;
     use crate::kernels::{avx2, avx512, multicore, scalar, sse42};
 
     // Lightweight k-function used to measure first-call resolution latency
@@ -36,7 +38,7 @@ pub mod ops {
         x.wrapping_add(1)
     }
 
-    #[kernelversion(cpu_simd = AVX2)]
+    #[kernelversion(cpu_isa = x86_64_v3, cpu_simd = AVX2)]
     #[inline(never)]
     pub fn dispatch_probe(x: u64) -> u64 {
         x.wrapping_add(1)
@@ -48,15 +50,65 @@ pub mod ops {
         x.wrapping_add(1)
     }
 
-    #[kernelversion(cpu_simd = AVX2, cpu_core_count = AtLeast { val: 2 })]
+    #[kernelversion(cpu_isa = x86_64_v3, cpu_simd = AVX2, cpu_core_count = AtLeast { val: 2 })]
     #[inline(never)]
     pub fn dispatch_probe(x: u64) -> u64 {
         x.wrapping_add(1)
     }
 
-    #[kernelversion(cpu_simd = AVX512, cpu_core_count = AtLeast { val: 2 })]
+    #[kernelversion(cpu_isa = x86_64_v4, cpu_simd = AVX512, cpu_core_count = AtLeast { val: 2 })]
     #[inline(never)]
     pub fn dispatch_probe(x: u64) -> u64 {
+        x.wrapping_add(1)
+    }
+
+    #[kernelversion(acc_backend = CUDA, acc_architecture = Turing)]
+    #[inline(never)]
+    pub fn dispatch_probe(x: u64) -> u64 {
+        x.wrapping_add(1)
+    }
+
+    // Second independent k-function used to separate global `Platform.toml` loading
+    // (`Once`) from per-k-function `LazyLock` + `resolve()` initialization latency.
+    #[kernelversion]
+    #[inline(never)]
+    pub fn dispatch_probe_second(x: u64) -> u64 {
+        x.wrapping_add(1)
+    }
+
+    #[kernelversion(cpu_simd = SSE_4_2)]
+    #[inline(never)]
+    pub fn dispatch_probe_second(x: u64) -> u64 {
+        x.wrapping_add(1)
+    }
+
+    #[kernelversion(cpu_isa = x86_64_v3, cpu_simd = AVX2)]
+    #[inline(never)]
+    pub fn dispatch_probe_second(x: u64) -> u64 {
+        x.wrapping_add(1)
+    }
+
+    #[kernelversion(cpu_core_count = AtLeast { val: 2 })]
+    #[inline(never)]
+    pub fn dispatch_probe_second(x: u64) -> u64 {
+        x.wrapping_add(1)
+    }
+
+    #[kernelversion(cpu_isa = x86_64_v3, cpu_simd = AVX2, cpu_core_count = AtLeast { val: 2 })]
+    #[inline(never)]
+    pub fn dispatch_probe_second(x: u64) -> u64 {
+        x.wrapping_add(1)
+    }
+
+    #[kernelversion(cpu_isa = x86_64_v4, cpu_simd = AVX512, cpu_core_count = AtLeast { val: 2 })]
+    #[inline(never)]
+    pub fn dispatch_probe_second(x: u64) -> u64 {
+        x.wrapping_add(1)
+    }
+
+    #[kernelversion(acc_backend = CUDA, acc_architecture = Turing)]
+    #[inline(never)]
+    pub fn dispatch_probe_second(x: u64) -> u64 {
         x.wrapping_add(1)
     }
 
@@ -93,7 +145,10 @@ pub mod ops {
         }
     }
 
-    // External platform modules (Listing 11 / Section 4.7)
+    // External platform modules (Listing 11 / Section 4.7).
+    // Declared from least-specialized CPU to multicore CPU to GPU accelerator
+    // so `resolve()`'s reverse-lexical pass prioritizes the GPU when present.
     platform!(cpu_simd);
     platform!(cpu_multicore);
+    platform!(gpu_cuda);
 }

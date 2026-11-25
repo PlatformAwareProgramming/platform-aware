@@ -63,14 +63,20 @@ pub mod scalar {
     }
 
     #[inline(never)]
-    pub fn relu(x: &Tensor) -> Tensor {
-        let mut out = Tensor::zeros(x.shape());
+    pub fn relu_into(x: &Tensor, out: &mut Tensor) {
+        assert_eq!(x.len(), out.len(), "relu_into: mismatched lengths");
         let xs = x.as_slice();
         let os = out.as_mut_slice();
         for i in 0..xs.len() {
             let v = xs[i];
             os[i] = if v > 0.0 { v } else { 0.0 };
         }
+    }
+
+    #[inline(never)]
+    pub fn relu(x: &Tensor) -> Tensor {
+        let mut out = Tensor::zeros(x.shape());
+        relu_into(x, &mut out);
         out
     }
 
@@ -86,9 +92,22 @@ pub mod scalar {
     pub(crate) fn matvec_rows(a_rows: &[f32], x: &[f32], y_rows: &mut [f32], k: usize) {
         for (row_idx, y_out) in y_rows.iter_mut().enumerate() {
             let row = &a_rows[row_idx * k..(row_idx + 1) * k];
-            let mut sum = 0.0_f32;
-            for j in 0..k {
+            let mut s0 = 0.0_f32;
+            let mut s1 = 0.0_f32;
+            let mut s2 = 0.0_f32;
+            let mut s3 = 0.0_f32;
+            let mut j = 0;
+            while j + 4 <= k {
+                s0 += row[j] * x[j];
+                s1 += row[j + 1] * x[j + 1];
+                s2 += row[j + 2] * x[j + 2];
+                s3 += row[j + 3] * x[j + 3];
+                j += 4;
+            }
+            let mut sum = (s0 + s1) + (s2 + s3);
+            while j < k {
                 sum += row[j] * x[j];
+                j += 1;
             }
             *y_out = sum;
         }
@@ -336,16 +355,20 @@ pub mod sse42 {
     }
 
     #[inline(never)]
-    pub fn relu(x: &Tensor) -> Tensor {
-        let mut out = Tensor::zeros(x.shape());
+    pub fn relu_into(x: &Tensor, out: &mut Tensor) {
+        assert_eq!(x.len(), out.len(), "relu_into: mismatched lengths");
         #[cfg(target_arch = "x86_64")]
         unsafe {
             relu_impl(x.as_slice(), out.as_mut_slice());
         }
         #[cfg(not(target_arch = "x86_64"))]
-        {
-            out = super::scalar::relu(x);
-        }
+        super::scalar::relu_into(x, out);
+    }
+
+    #[inline(never)]
+    pub fn relu(x: &Tensor) -> Tensor {
+        let mut out = Tensor::zeros(x.shape());
+        relu_into(x, &mut out);
         out
     }
 
@@ -383,7 +406,12 @@ pub mod sse42 {
     }
 }
 
-/// Explicit x86_64 AVX2 + FMA kernels (256-bit SIMD, 8 x f32 per register).
+/// Explicit x86_64 pure AVX2 kernels (256-bit SIMD, 8 x f32 per register, no FMA required).
+///
+/// Using pure AVX2 (`_mm256_add_ps` + `_mm256_mul_ps`) instead of FMA guarantees execution
+/// safety on any x86-64 CPU advertising `AVX2` regardless of whether `FMA` is present,
+/// Explicit x86_64 AVX2 + FMA kernels (256-bit SIMD, 8 x f32 per register),
+/// safely gated by `cpu_isa = x86_64_v3` (which guarantees both AVX2 and FMA per x86-64 psABI).
 pub mod avx2 {
     use super::Tensor;
 
@@ -453,7 +481,10 @@ pub mod avx2 {
             let x1 = _mm256_loadu_ps(xs.as_ptr().add(i + 8));
             let y1 = _mm256_loadu_ps(ys.as_ptr().add(i + 8));
             _mm256_storeu_ps(ys.as_mut_ptr().add(i), _mm256_fmadd_ps(va, x0, y0));
-            _mm256_storeu_ps(ys.as_mut_ptr().add(i + 8), _mm256_fmadd_ps(va, x1, y1));
+            _mm256_storeu_ps(
+                ys.as_mut_ptr().add(i + 8),
+                _mm256_fmadd_ps(va, x1, y1),
+            );
             i += 16;
         }
         while i + 8 <= n {
@@ -501,7 +532,7 @@ pub mod avx2 {
         }
     }
 
-    /// Cache-blocked 4-row micro-kernel GEMM with AVX2 + FMA.
+    /// Cache-blocked 4x16 register micro-kernel GEMM with AVX2 + FMA (`x86_64_v3`).
     #[cfg(target_arch = "x86_64")]
     #[target_feature(enable = "avx2", enable = "fma")]
     pub(crate) unsafe fn matmul_rows(a_rows: &[f32], b: &[f32], c_rows: &mut [f32], k: usize, n: usize) {
@@ -580,7 +611,10 @@ pub mod avx2 {
                             while jj + 8 <= j_end {
                                 let vc = _mm256_loadu_ps(c_row.add(jj));
                                 let vb = _mm256_loadu_ps(b_row.add(jj));
-                                _mm256_storeu_ps(c_row.add(jj), _mm256_fmadd_ps(va, vb, vc));
+                                _mm256_storeu_ps(
+                                    c_row.add(jj),
+                                    _mm256_fmadd_ps(va, vb, vc),
+                                );
                                 jj += 8;
                             }
                             while jj < j_end {
@@ -619,6 +653,117 @@ pub mod avx2 {
         }
     }
 
+    /// Auxiliary pure-AVX2 (no FMA) matmul kernel used to quantify the exact FMA speedup delta.
+    #[cfg(target_arch = "x86_64")]
+    #[target_feature(enable = "avx2")]
+    pub(crate) unsafe fn matmul_rows_no_fma(a_rows: &[f32], b: &[f32], c_rows: &mut [f32], k: usize, n: usize) {
+        use std::arch::x86_64::*;
+        const BK: usize = 64;
+        const BJ: usize = 128;
+
+        let m_rows = c_rows.len() / n;
+        let a_base = a_rows.as_ptr();
+        let b_base = b.as_ptr();
+        let c_base = c_rows.as_mut_ptr();
+
+        let mut i = 0;
+        while i + 4 <= m_rows {
+            let mut p0 = 0;
+            while p0 < k {
+                let p_end = (p0 + BK).min(k);
+                let mut j0 = 0;
+                while j0 < n {
+                    let j_end = (j0 + BJ).min(n);
+                    let mut j = j0;
+                    while j + 16 <= j_end {
+                        let c00_ptr = c_base.add(i * n + j);
+                        let c10_ptr = c_base.add((i + 1) * n + j);
+                        let c20_ptr = c_base.add((i + 2) * n + j);
+                        let c30_ptr = c_base.add((i + 3) * n + j);
+
+                        let mut r00 = _mm256_loadu_ps(c00_ptr);
+                        let mut r01 = _mm256_loadu_ps(c00_ptr.add(8));
+                        let mut r10 = _mm256_loadu_ps(c10_ptr);
+                        let mut r11 = _mm256_loadu_ps(c10_ptr.add(8));
+                        let mut r20 = _mm256_loadu_ps(c20_ptr);
+                        let mut r21 = _mm256_loadu_ps(c20_ptr.add(8));
+                        let mut r30 = _mm256_loadu_ps(c30_ptr);
+                        let mut r31 = _mm256_loadu_ps(c30_ptr.add(8));
+
+                        for p in p0..p_end {
+                            let bp = b_base.add(p * n + j);
+                            let bv0 = _mm256_loadu_ps(bp);
+                            let bv1 = _mm256_loadu_ps(bp.add(8));
+                            let a0 = _mm256_set1_ps(*a_base.add(i * k + p));
+                            let a1 = _mm256_set1_ps(*a_base.add((i + 1) * k + p));
+                            let a2 = _mm256_set1_ps(*a_base.add((i + 2) * k + p));
+                            let a3 = _mm256_set1_ps(*a_base.add((i + 3) * k + p));
+
+                            r00 = _mm256_add_ps(r00, _mm256_mul_ps(a0, bv0));
+                            r01 = _mm256_add_ps(r01, _mm256_mul_ps(a0, bv1));
+                            r10 = _mm256_add_ps(r10, _mm256_mul_ps(a1, bv0));
+                            r11 = _mm256_add_ps(r11, _mm256_mul_ps(a1, bv1));
+                            r20 = _mm256_add_ps(r20, _mm256_mul_ps(a2, bv0));
+                            r21 = _mm256_add_ps(r21, _mm256_mul_ps(a2, bv1));
+                            r30 = _mm256_add_ps(r30, _mm256_mul_ps(a3, bv0));
+                            r31 = _mm256_add_ps(r31, _mm256_mul_ps(a3, bv1));
+                        }
+
+                        _mm256_storeu_ps(c00_ptr, r00);
+                        _mm256_storeu_ps(c00_ptr.add(8), r01);
+                        _mm256_storeu_ps(c10_ptr, r10);
+                        _mm256_storeu_ps(c10_ptr.add(8), r11);
+                        _mm256_storeu_ps(c20_ptr, r20);
+                        _mm256_storeu_ps(c20_ptr.add(8), r21);
+                        _mm256_storeu_ps(c30_ptr, r30);
+                        _mm256_storeu_ps(c30_ptr.add(8), r31);
+
+                        j += 16;
+                    }
+                    for ii in i..i + 4 {
+                        let c_row = c_base.add(ii * n);
+                        for p in p0..p_end {
+                            let a_ip = *a_base.add(ii * k + p);
+                            let b_row = b_base.add(p * n);
+                            for jj in j..j_end {
+                                *c_row.add(jj) += a_ip * *b_row.add(jj);
+                            }
+                        }
+                    }
+                    j0 = j_end;
+                }
+                p0 = p_end;
+            }
+            i += 4;
+        }
+        while i < m_rows {
+            let c_row = c_base.add(i * n);
+            for p in 0..k {
+                let a_ip = *a_base.add(i * k + p);
+                let b_row = b_base.add(p * n);
+                for j in 0..n {
+                    *c_row.add(j) += a_ip * *b_row.add(j);
+                }
+            }
+            i += 1;
+        }
+    }
+
+    #[inline(never)]
+    pub fn matmul_no_fma(a: &Tensor, b: &Tensor) -> Tensor {
+        let (m, k) = a.dims_2d();
+        let (bk, n) = b.dims_2d();
+        assert_eq!(k, bk, "matmul_no_fma: inner dims {} != {}", k, bk);
+        let mut c = Tensor::zeros(&[m, n]);
+        #[cfg(target_arch = "x86_64")]
+        unsafe {
+            matmul_rows_no_fma(a.as_slice(), b.as_slice(), c.as_mut_slice(), k, n);
+        }
+        #[cfg(not(target_arch = "x86_64"))]
+        super::scalar::matmul_rows(a.as_slice(), b.as_slice(), c.as_mut_slice(), k, n);
+        c
+    }
+
     #[inline(never)]
     pub fn dot(a: &Tensor, b: &Tensor) -> f32 {
         assert_eq!(a.len(), b.len(), "dot: mismatched lengths");
@@ -642,16 +787,20 @@ pub mod avx2 {
     }
 
     #[inline(never)]
-    pub fn relu(x: &Tensor) -> Tensor {
-        let mut out = Tensor::zeros(x.shape());
+    pub fn relu_into(x: &Tensor, out: &mut Tensor) {
+        assert_eq!(x.len(), out.len(), "relu_into: mismatched lengths");
         #[cfg(target_arch = "x86_64")]
         unsafe {
             relu_slice(x.as_slice(), out.as_mut_slice());
         }
         #[cfg(not(target_arch = "x86_64"))]
-        {
-            out = super::scalar::relu(x);
-        }
+        super::scalar::relu_into(x, out);
+    }
+
+    #[inline(never)]
+    pub fn relu(x: &Tensor) -> Tensor {
+        let mut out = Tensor::zeros(x.shape());
+        relu_into(x, &mut out);
         out
     }
 
@@ -1094,16 +1243,16 @@ pub mod multicore {
         });
     }
 
-    fn parallel_relu<F>(x: &Tensor, chunk_relu: F) -> Tensor
+    fn parallel_relu_into<F>(x: &Tensor, out: &mut Tensor, chunk_relu: F)
     where
         F: Fn(&[f32], &mut [f32]) + Sync,
     {
+        assert_eq!(x.len(), out.len(), "relu_into: mismatched lengths");
         let n = x.len();
-        let mut out = Tensor::zeros(x.shape());
         let threads = worker_count().min(n.max(1));
         if threads <= 1 || n < 65_536 {
             chunk_relu(x.as_slice(), out.as_mut_slice());
-            return out;
+            return;
         }
         let xs = x.as_slice();
         let o_ptr = SendMutPtr(out.as_mut_slice().as_mut_ptr());
@@ -1118,6 +1267,14 @@ pub mod multicore {
                 chunk_relu(&xs[start..end], o_chunk);
             }
         });
+    }
+
+    fn parallel_relu<F>(x: &Tensor, chunk_relu: F) -> Tensor
+    where
+        F: Fn(&[f32], &mut [f32]) + Sync,
+    {
+        let mut out = Tensor::zeros(x.shape());
+        parallel_relu_into(x, &mut out, chunk_relu);
         out
     }
 
@@ -1206,6 +1363,15 @@ pub mod multicore {
         }
 
         #[inline(never)]
+        pub fn relu_into(x: &Tensor, out: &mut Tensor) {
+            parallel_relu_into(x, out, |xs, os| {
+                for i in 0..xs.len() {
+                    os[i] = if xs[i] > 0.0 { xs[i] } else { 0.0 };
+                }
+            });
+        }
+
+        #[inline(never)]
         pub fn relu(x: &Tensor) -> Tensor {
             parallel_relu(x, |xs, os| {
                 for i in 0..xs.len() {
@@ -1251,6 +1417,16 @@ pub mod multicore {
         }
 
         #[inline(never)]
+        pub fn relu_into(x: &Tensor, out: &mut Tensor) {
+            #[cfg(target_arch = "x86_64")]
+            parallel_relu_into(x, out, |xs, os| unsafe {
+                crate::kernels::avx2::relu_slice(xs, os);
+            });
+            #[cfg(not(target_arch = "x86_64"))]
+            scalar_mt::relu_into(x, out);
+        }
+
+        #[inline(never)]
         pub fn relu(x: &Tensor) -> Tensor {
             #[cfg(target_arch = "x86_64")]
             {
@@ -1284,6 +1460,74 @@ pub mod multicore {
             }
             #[cfg(not(target_arch = "x86_64"))]
             scalar_mt::matmul(a, b)
+        }
+
+        #[inline(never)]
+        pub fn matmul_no_fma(a: &Tensor, b: &Tensor) -> Tensor {
+            #[cfg(target_arch = "x86_64")]
+            {
+                parallel_matmul(a, b, |ar, bs, cr, k, n| unsafe {
+                    crate::kernels::avx2::matmul_rows_no_fma(ar, bs, cr, k, n);
+                })
+            }
+            #[cfg(not(target_arch = "x86_64"))]
+            scalar_mt::matmul(a, b)
+        }
+    }
+
+    /// Parallel STREAM Triad (`a[i] = b[i] + scalar * c[i]`) using the exact same `ParallelPool`
+    /// to establish empirical L3 and DRAM bandwidth ceilings for the Roofline model.
+    pub fn stream_triad_mt(a: &mut [f32], b: &[f32], c: &[f32], scalar: f32) {
+        let n = a.len();
+        let threads = worker_count().min(n.max(1));
+        let a_ptr = SendMutPtr(a.as_mut_ptr());
+        pool().parallel_for(threads, |tid, active| {
+            let chunk = n.div_ceil(active);
+            let start = tid * chunk;
+            if start < n {
+                let end = (start + chunk).min(n);
+                let a_chunk = unsafe {
+                    std::slice::from_raw_parts_mut(a_ptr.ptr().add(start), end - start)
+                };
+                let b_chunk = &b[start..end];
+                let c_chunk = &c[start..end];
+                #[cfg(target_arch = "x86_64")]
+                if is_x86_feature_detected!("avx2") && is_x86_feature_detected!("fma") {
+                    unsafe { stream_triad_avx2(a_chunk, b_chunk, c_chunk, scalar) };
+                    return;
+                }
+                for i in 0..a_chunk.len() {
+                    a_chunk[i] = b_chunk[i] + scalar * c_chunk[i];
+                }
+            }
+        });
+    }
+
+    #[cfg(target_arch = "x86_64")]
+    #[target_feature(enable = "avx2", enable = "fma")]
+    pub unsafe fn stream_triad_avx2(a: &mut [f32], b: &[f32], c: &[f32], scalar: f32) {
+        use std::arch::x86_64::*;
+        let n = a.len();
+        let vs = _mm256_set1_ps(scalar);
+        let mut i = 0;
+        while i + 16 <= n {
+            let b0 = _mm256_loadu_ps(b.as_ptr().add(i));
+            let c0 = _mm256_loadu_ps(c.as_ptr().add(i));
+            let b1 = _mm256_loadu_ps(b.as_ptr().add(i + 8));
+            let c1 = _mm256_loadu_ps(c.as_ptr().add(i + 8));
+            _mm256_storeu_ps(a.as_mut_ptr().add(i), _mm256_fmadd_ps(vs, c0, b0));
+            _mm256_storeu_ps(a.as_mut_ptr().add(i + 8), _mm256_fmadd_ps(vs, c1, b1));
+            i += 16;
+        }
+        while i + 8 <= n {
+            let b0 = _mm256_loadu_ps(b.as_ptr().add(i));
+            let c0 = _mm256_loadu_ps(c.as_ptr().add(i));
+            _mm256_storeu_ps(a.as_mut_ptr().add(i), _mm256_fmadd_ps(vs, c0, b0));
+            i += 8;
+        }
+        while i < n {
+            a[i] = b[i] + scalar * c[i];
+            i += 1;
         }
     }
 

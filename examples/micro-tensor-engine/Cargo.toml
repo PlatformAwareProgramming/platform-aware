@@ -5,15 +5,76 @@ edition = "2021"
 publish = false
 
 [features]
-default = []
+default = ["engine-pa"]
+# Enables the platform-aware engine and its workspace crate dependencies.
+# Disabling default features allows building pure static-cfg / ad-hoc binaries
+# without compiling or linking platform-aware, syn, serde, toml, or dashmap.
+engine-pa = ["dep:platform-aware", "dep:platform-aware-amd", "dep:platform-aware-intel", "dep:platform-aware-nvidia"]
+# Enables the `multiversion` crate comparison engine (CPU SIMD function multi-versioning).
+engine-mv = ["dep:multiversion"]
+# Enables `cfg-if` for idiomatic static conditional compilation experiments.
+engine-cfg-if = ["dep:cfg-if"]
+# Enables the `gemm` crate as an absolute optimized BLAS/GEMM reference baseline.
+bench-gemm = ["dep:gemm"]
 # Static compile-time multithreading toggle (used to contrast static cfg builds
 # against a single dynamic platform-aware binary).
 static-multicore = []
 
 [dependencies]
-platform-aware = { path = "../.." }
-platform-aware-amd = { path = "../../platform-aware-amd" }
-platform-aware-intel = { path = "../../platform-aware-intel" }
+platform-aware = { path = "../..", optional = true }
+platform-aware-amd = { path = "../../platform-aware-amd", optional = true }
+platform-aware-intel = { path = "../../platform-aware-intel", optional = true }
+platform-aware-nvidia = { path = "../../platform-aware-nvidia", optional = true }
+multiversion = { version = "0.8", optional = true }
+cfg-if = { version = "1", optional = true }
+gemm = { version = "0.18", optional = true }
+
+[[bin]]
+name = "micro-tensor-engine"
+path = "src/main.rs"
+required-features = ["engine-pa"]
+
+[[bin]]
+name = "bench_pa"
+path = "src/bin/bench_pa.rs"
+required-features = ["engine-pa"]
+
+[[bin]]
+name = "bench_static"
+path = "src/bin/bench_static.rs"
+
+[[bin]]
+name = "bench_adhoc"
+path = "src/bin/bench_adhoc.rs"
+
+[[bin]]
+name = "bench_adhoc_idiom"
+path = "src/bin/bench_adhoc_idiom.rs"
+
+[[bin]]
+name = "bench_mv"
+path = "src/bin/bench_mv.rs"
+required-features = ["engine-mv"]
+
+[[bin]]
+name = "bench_ctor_empty"
+path = "src/bin/bench_ctor_empty.rs"
+
+[[bin]]
+name = "bench_ctor_pa"
+path = "src/bin/bench_ctor_pa.rs"
+required-features = ["engine-pa"]
+
+[[bin]]
+name = "bench_stream_gemm"
+path = "src/bin/bench_stream_gemm.rs"
+required-features = ["bench-gemm"]
+
+[profile.release]
+lto = true
+codegen-units = 1
+panic = "abort"
+strip = true
 
 # Keep this self-contained benchmark crate out of the parent workspace so it
 # can be compiled independently with different static RUSTFLAGS / features.

@@ -328,8 +328,8 @@ impl StaticCfgEngine {
             avx2::matmul(a, b)
         }
         #[cfg(all(
-            not(feature = "static-multicore"),
             not(target_feature = "avx512f"),
+            not(feature = "static-multicore"),
             not(all(target_feature = "avx2", target_feature = "fma")),
             target_feature = "sse4.2"
         ))]
@@ -363,6 +363,7 @@ pub fn direct_dot(backend: &str, a: &Tensor, b: &Tensor) -> f32 {
         "multicore_scalar" => multicore::scalar_mt::dot(a, b),
         "multicore_avx2" => multicore::avx2_mt::dot(a, b),
         "multicore_avx512" => multicore::avx512_mt::dot(a, b),
+        "gpu_cuda" => crate::cuda_backend::dot(a, b),
         _ => scalar::dot(a, b),
     }
 }
@@ -375,6 +376,7 @@ pub fn direct_axpy(backend: &str, alpha: f32, x: &Tensor, y: &mut Tensor) {
         "multicore_scalar" => multicore::scalar_mt::axpy(alpha, x, y),
         "multicore_avx2" => multicore::avx2_mt::axpy(alpha, x, y),
         "multicore_avx512" => multicore::avx512_mt::axpy(alpha, x, y),
+        "gpu_cuda" => crate::cuda_backend::axpy(alpha, x, y),
         _ => scalar::axpy(alpha, x, y),
     }
 }
@@ -387,6 +389,7 @@ pub fn direct_relu(backend: &str, x: &Tensor) -> Tensor {
         "multicore_scalar" => multicore::scalar_mt::relu(x),
         "multicore_avx2" => multicore::avx2_mt::relu(x),
         "multicore_avx512" => multicore::avx512_mt::relu(x),
+        "gpu_cuda" => crate::cuda_backend::relu(x),
         _ => scalar::relu(x),
     }
 }
@@ -399,6 +402,7 @@ pub fn direct_matvec(backend: &str, a: &Tensor, x: &Tensor) -> Tensor {
         "multicore_scalar" => multicore::scalar_mt::matvec(a, x),
         "multicore_avx2" => multicore::avx2_mt::matvec(a, x),
         "multicore_avx512" => multicore::avx512_mt::matvec(a, x),
+        "gpu_cuda" => crate::cuda_backend::matvec(a, x),
         _ => scalar::matvec(a, x),
     }
 }
@@ -411,6 +415,7 @@ pub fn direct_matmul(backend: &str, a: &Tensor, b: &Tensor) -> Tensor {
         "multicore_scalar" => multicore::scalar_mt::matmul(a, b),
         "multicore_avx2" => multicore::avx2_mt::matmul(a, b),
         "multicore_avx512" => multicore::avx512_mt::matmul(a, b),
+        "gpu_cuda" => crate::cuda_backend::matmul(a, b),
         _ => scalar::matmul(a, b),
     }
 }
