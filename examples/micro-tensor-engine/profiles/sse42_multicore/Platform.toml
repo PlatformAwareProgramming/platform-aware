@@ -1,0 +1,6 @@
+[processor]
+cpu_count = 1
+cpu_core_count = 8
+cpu_core_threads_count = 16
+cpu_isa = "ISA_x86_64_v2"
+cpu_simd = ["SSE_4_2"]

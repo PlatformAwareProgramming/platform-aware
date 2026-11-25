@@ -1,0 +1,16 @@
+[processor]
+cpu_count = 1
+cpu_core_count = 8
+cpu_core_threads_count = 16
+cpu_isa = "ISA_x86_64_v3"
+cpu_simd = ["SSE_4_2", "AVX2"]
+
+[accelerator]
+acc_count = 1
+acc_type = "GPU"
+acc_manufacturer = "NVIDIA"
+acc_backend = ["CUDA_12_0"]
+acc_architecture = "Turing"
+acc_processorcount = 2304
+acc_memorysize = 8
+acc_cudacc = 75
